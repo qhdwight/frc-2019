@@ -1,5 +1,0 @@
-C:/Users/qhdwi/Documents/Robotics/2019/frc-2019/cmake-build-debug/CMakeFiles/frcUserProgram_deploy.dir
-C:/Users/qhdwi/Documents/Robotics/2019/frc-2019/cmake-build-debug/CMakeFiles/fake_frcUserProgram.dir
-C:/Users/qhdwi/Documents/Robotics/2019/frc-2019/cmake-build-debug/CMakeFiles/edit_cache.dir
-C:/Users/qhdwi/Documents/Robotics/2019/frc-2019/cmake-build-debug/CMakeFiles/frcUserProgram_build.dir
-C:/Users/qhdwi/Documents/Robotics/2019/frc-2019/cmake-build-debug/CMakeFiles/rebuild_cache.dir

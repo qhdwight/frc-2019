@@ -1,6 +1,5 @@
 #include <frc/Joystick.h>
 #include <frc/TimedRobot.h>
-#include <ctre/phoenix/motorcontrol/ControlMode.h>
 
 #include "ctre.hpp"
 

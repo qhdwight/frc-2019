@@ -23,7 +23,4 @@ include_directories(build/tmp/expandedArchives/core-5.12.0-headers.zip_318ff6fc4
 include_directories(src/main/include)
 set(ALL_INCLUDES ${INCLUDES} ${DEP_INCLUDES})
 
-add_executable(fake_frcUserProgram ${SOURCES} ${ALL_INCLUDES})
-
-add_custom_target(frcUserProgram_build gradlew.bat build WORKING_DIRECTORY ../ SOURCES ${SOURCES} ${ALL_INCLUDES})
-add_custom_target(frcUserProgram_deploy gradlew.bat deploy WORKING_DIRECTORY ../ SOURCES ${SOURCES} ${ALL_INCLUDES})
+add_executable(program ${SOURCES} ${ALL_INCLUDES})

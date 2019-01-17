@@ -1,6 +1,6 @@
-CXX=./raspbian-tools/bin/arm-raspbian9-linux-gnueabihf-g++
-EXE=program
-DESTDIR?=./build/
+CXX=raspbian-tools/bin/arm-raspbian9-linux-gnueabihf-g++
+EXE=build/program
+DESTDIR?=build/
 
 .PHONY: clean build install
 
@@ -12,7 +12,7 @@ install: build
 clean:
 	rm ${EXE} *.o
 
-${EXE}: program.o
+${EXE}: build/program.o
 	${CXX} -pthread -o $@ $< \
 	    -L./raspbian-frc/lib \
 	    -lcameraserver \
@@ -36,5 +36,5 @@ ${EXE}: program.o
 	    -lopencv_flann \
 	    -lopencv_core
 
-.cpp.o:
+build/program.o: src/program.cpp
 	${CXX} -pthread -O -c -o $@ -I./raspbian-frc/include $<

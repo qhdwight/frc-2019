@@ -4,4 +4,4 @@ set(CMAKE_CXX_STANDARD 14)
 
 include_directories(raspbian-frc/include)
 
-add_executable(program program.cpp raspbian-frc/include)
+add_executable(program src/program.cpp raspbian-frc/include)

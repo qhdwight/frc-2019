@@ -1,25 +1,40 @@
-#include "robot.hpp"
+#include <algorithm>
+
+#include <robot.hpp>
+
+#include <cameraserver/CameraServer.h>
 
 namespace robot {
-    void Robot::RobotInit() {}
+    void Robot::RobotInit() {
+//        std::thread visionThread(VisionThread);
+//        visionThread.detach();
+         m_Subsystems.push_back(m_Drive);
+         m_Subsystems.push_back(m_Intake);
+    }
+
+    void Robot::RobotPeriodic() {}
 
     void Robot::DisabledInit() {}
+
+    void Robot::DisabledPeriodic() {}
 
     void Robot::AutonomousInit() {}
 
     void Robot::AutonomousPeriodic() {}
 
-    void Robot::TeleopInit() {
-        m_LeftSPX.Follow(m_LeftSRX);
-        m_RightSPX.Follow(m_RightSRX);
-        m_LeftSPX.SetInverted(true);
-    }
+    void Robot::TeleopInit() {}
 
     void Robot::TeleopPeriodic() {
-        double forward = -m_Stick.GetY(), turn = m_Stick.GetX();
-        m_LeftSRX.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, forward + turn * 2);
-        m_RightSRX.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, forward - turn * 2);
+         Command command = GetCommand();
+         for (const auto& subsystem : m_Subsystems)
+            subsystem->ExecuteCommand(command);
     }
+
+    Command Robot::GetCommand() {
+        return { -m_Stick.GetY(), m_Stick.GetX(), m_Stick.GetTrigger() };
+    }
+
+    void Robot::VisionThread() {}
 }
 
 #ifndef RUNNING_FRC_TESTS

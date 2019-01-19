@@ -142,24 +142,22 @@ namespace vision {
         wpi::outs() << "Starting camera '" << config.name << "' on " << config.path << '\n';
         auto cameraServer = frc::CameraServer::GetInstance();
         cs::UsbCamera camera{config.name, config.path};
-        camera.SetConfigJson(config.cameraConfig);
-        camera.SetConnectionStrategy(cs::VideoSource::kConnectionKeepOpen);
         auto capture = cameraServer->StartAutomaticCapture(camera);
         std::thread([&] {
             cs::CvSink sink = cameraServer->GetVideo();
-            cs::CvSource outputStream = cameraServer->PutVideo("Raspberry Pi", 320, 180);
-            if (config.streamConfig.is_object())
-                outputStream.SetConfigJson(config.streamConfig);
+            cs::CvSource outputStream = cameraServer->PutVideo("Raspberry Pi", 160, 90);
+            outputStream.SetFPS(30);
             outputStream.SetConnectionStrategy(cs::VideoSource::kConnectionKeepOpen);
-            cv::Mat source, output;
+            cv::Mat frame;
             while (true) {
-                sink.GrabFrame(source);
-                if (!source.empty()) {
-                    source.copyTo(output);
-                    outputStream.PutFrame(output);
-                }
+                sink.GrabFrame(frame);
+                if (frame.empty()) continue;
+                cv::putText(frame, "Meme", cv::Point(10, 160), CV_FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(255, 0, 255), 2, CV_AA);
+                outputStream.PutFrame(frame);
             }
         }).detach();
+        camera.SetConfigJson(config.cameraConfig);
+        camera.SetConnectionStrategy(cs::VideoSource::kConnectionKeepOpen);
         if (config.streamConfig.is_object())
             capture.SetConfigJson(config.streamConfig);
         return camera;

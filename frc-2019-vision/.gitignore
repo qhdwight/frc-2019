@@ -1,6 +1,6 @@
-# Toolchains and libraries
-raspbian-frc/
-raspbian-tools/
+# Program
+build/
+program
 
 # User-specific stuff
 .idea/**/workspace.xml

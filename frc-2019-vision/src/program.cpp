@@ -10,7 +10,7 @@
 #include <wpi/json.h>
 #include <wpi/raw_istream.h>
 #include <wpi/raw_ostream.h>
-#include <opencv2/imgproc.hpp>
+#include <opencv2/opencv.hpp>
 
 #include "cameraserver/CameraServer.h"
 
@@ -142,25 +142,26 @@ namespace vision {
         wpi::outs() << "Starting camera '" << config.name << "' on " << config.path << '\n';
         auto cameraServer = frc::CameraServer::GetInstance();
         cs::UsbCamera camera{config.name, config.path};
-        auto server = cameraServer->StartAutomaticCapture(camera);
+        camera.SetConfigJson(config.cameraConfig);
+        camera.SetConnectionStrategy(cs::VideoSource::kConnectionKeepOpen);
+        auto capture = cameraServer->StartAutomaticCapture(camera);
         std::thread([&] {
             cs::CvSink sink = cameraServer->GetVideo();
-            cs::CvSource outputStream = cameraServer->PutVideo("Processed", 320, 240);
-            outputStream.SetConfigJson(config.streamConfig);
+            cs::CvSource outputStream = cameraServer->PutVideo("Raspberry Pi", 320, 180);
+            if (config.streamConfig.is_object())
+                outputStream.SetConfigJson(config.streamConfig);
             outputStream.SetConnectionStrategy(cs::VideoSource::kConnectionKeepOpen);
             cv::Mat source, output;
             while (true) {
                 sink.GrabFrame(source);
                 if (!source.empty()) {
-                    cv::cvtColor(source, output, cv::COLOR_BGR2GRAY);
+                    source.copyTo(output);
                     outputStream.PutFrame(output);
                 }
             }
         }).detach();
-        camera.SetConfigJson(config.cameraConfig);
-        camera.SetConnectionStrategy(cs::VideoSource::kConnectionKeepOpen);
         if (config.streamConfig.is_object())
-            server.SetConfigJson(config.streamConfig);
+            capture.SetConfigJson(config.streamConfig);
         return camera;
     }
 

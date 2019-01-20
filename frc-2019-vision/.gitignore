@@ -1,5 +1,5 @@
 # Program
-build/
+build/**
 program
 
 # User-specific stuff

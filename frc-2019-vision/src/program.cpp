@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <string>
 #include <thread>
+#include <array>
 #include <vector>
 
 #include <networktables/NetworkTableInstance.h>
@@ -49,6 +50,7 @@
    }
  */
 
+#define VISION_TARGET_COUNT 2
 
 namespace vision {
 
@@ -145,15 +147,50 @@ namespace vision {
         auto capture = cameraServer->StartAutomaticCapture(camera);
         std::thread([&] {
             cs::CvSink sink = cameraServer->GetVideo();
-            cs::CvSource outputStream = cameraServer->PutVideo("Raspberry Pi", 160, 90);
-            outputStream.SetFPS(30);
+            cs::CvSource outputStream = cameraServer->PutVideo("Processed rPi 0", 160, 90);
             outputStream.SetConnectionStrategy(cs::VideoSource::kConnectionKeepOpen);
-            cv::Mat frame;
-            while (true) {
-                sink.GrabFrame(frame);
-                if (frame.empty()) continue;
-                cv::putText(frame, "Meme", cv::Point(10, 160), CV_FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(255, 0, 255), 2, CV_AA);
-                outputStream.PutFrame(frame);
+            cv::Scalar lowerGreen(45, 80, 40), upperGreen(105, 255, 255);
+            cv::Mat bgr, hsv, mask, output = cv::Mat::zeros(cv::Size(160, 90), CV_8UC3);
+            while (outputStream.IsEnabled()) {
+                output.setTo(cv::Scalar(0));
+                sink.GrabFrame(bgr);
+                if (!bgr.empty()) {
+                    cv::cvtColor(bgr, hsv, CV_BGR2HSV);
+                    cv::inRange(hsv, lowerGreen, upperGreen, mask);
+                    std::vector<std::vector<cv::Point>> contours;
+                    std::vector<cv::Vec4i> hierarchy;
+                    cv::findContours(mask, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, cv::Point());
+                    cv::putText(output, std::to_string(contours.size()), cv::Point(10, 160), CV_FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(255, 0, 255), 2, CV_AA);
+                    if (contours.size() >= VISION_TARGET_COUNT) {
+                        std::array<double, VISION_TARGET_COUNT> largestContourAreas{0, 0};
+                        std::array<int, VISION_TARGET_COUNT> largestContourIndices{0, 1};
+                        for (int contourIndex = 0; contourIndex < contours.size(); contourIndex++) {
+                            double area = cv::contourArea(contours[contourIndex], false);
+                            if (area > largestContourAreas[0]) {
+                                largestContourAreas[1] = largestContourAreas[0];
+                                largestContourIndices[1] = largestContourIndices[0];
+                                largestContourAreas[0] = area;
+                                largestContourIndices[0] = contourIndex;
+                            }
+                        }
+                        std::vector<cv::Point>&
+                                firstLargestContour = contours[largestContourIndices[0]],
+                                secondLargestContour = contours[largestContourIndices[1]];
+                        bool leftFirst = firstLargestContour[0].x < secondLargestContour[0].x;
+                        std::vector<cv::Point>&
+                                leftContour = leftFirst ? firstLargestContour : secondLargestContour,
+                                rightContour = leftFirst ? secondLargestContour : firstLargestContour;
+                        std::vector<std::vector<cv::Point>> tapeContours{leftContour, rightContour};
+                        double leftEpsilon = cv::arcLength(leftContour, true) * 0.005, rightEpsilon = cv::arcLength(rightContour, true) * 0.005;
+                        std::vector<cv::Point> leftTape, rightTape;
+                        cv::approxPolyDP(leftContour, leftTape, leftEpsilon, true);
+                        cv::approxPolyDP(rightContour, rightTape, rightEpsilon, true);
+                        cv::bitwise_and(bgr, bgr, output, mask);
+                        std::vector<std::vector<cv::Point>> tapes {leftTape, rightTape};
+                        cv::drawContours(output, tapes, -1, cv::Scalar(255, 0, 255), 2);
+                    }
+                }
+                outputStream.PutFrame(output);
             }
         }).detach();
         camera.SetConfigJson(config.cameraConfig);
@@ -187,9 +224,9 @@ int main(int argc, char* argv[]) {
     if (!cameras.empty()) {
         std::thread([&] {
             frc::VisionRunner<vision::MyPipeline> runner(cameras[0], new vision::MyPipeline(),
-                                                 [&](vision::MyPipeline& pipeline) {
+                                                         [&](vision::MyPipeline& pipeline) {
 
-                                                 });
+                                                         });
             runner.RunForever();
         }).join();
     }

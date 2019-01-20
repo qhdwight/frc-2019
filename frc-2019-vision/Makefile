@@ -2,7 +2,7 @@ CXX=arm-raspbian9-linux-gnueabihf-g++
 
 .PHONY: clean build install
 
-build: program
+build: setup program
 
 install: build
 	cp program runCamera /home/pi/
@@ -36,5 +36,8 @@ program: build/program.o
 	    -lopencv_flann \
 	    -lopencv_core
 
-build/program.o: src/program.cpp
+build/%.o: src/%.cpp
 	${CXX} -pthread -O -c -o $@ -Iinclude $<
+
+setup:
+	mkdir -p build

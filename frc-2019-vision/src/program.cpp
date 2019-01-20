@@ -149,23 +149,24 @@ namespace vision {
             cs::CvSink sink = cameraServer->GetVideo();
             cs::CvSource outputStream = cameraServer->PutVideo("Processed rPi 0", 160, 90);
             outputStream.SetConnectionStrategy(cs::VideoSource::kConnectionKeepOpen);
-            cv::Scalar lowerGreen(45, 80, 40), upperGreen(105, 255, 255);
-            cv::Mat bgr, hsv, mask, output = cv::Mat::zeros(cv::Size(160, 90), CV_8UC3);
+            cv::Scalar lowerGreen(40, 80, 40), upperGreen(110, 255, 255);
+            cv::Mat bgr, hsv, hsvBlur = cv::Mat::zeros(cv::Size(160, 90), CV_8UC3), mask, output = cv::Mat::zeros(cv::Size(160, 90), CV_8UC3);
             while (outputStream.IsEnabled()) {
                 output.setTo(cv::Scalar(0));
                 sink.GrabFrame(bgr);
+                std::vector<std::vector<cv::Point>> contours;
+                std::vector<cv::Vec4i> hierarchy;
                 if (!bgr.empty()) {
                     cv::cvtColor(bgr, hsv, CV_BGR2HSV);
-                    cv::inRange(hsv, lowerGreen, upperGreen, mask);
-                    std::vector<std::vector<cv::Point>> contours;
-                    std::vector<cv::Vec4i> hierarchy;
+                    cv::medianBlur(hsv, hsvBlur, 11);
+                    cv::inRange(hsvBlur, lowerGreen, upperGreen, mask);
                     cv::findContours(mask, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, cv::Point());
                     cv::putText(output, std::to_string(contours.size()), cv::Point(10, 160), CV_FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(255, 0, 255), 2, CV_AA);
                     if (contours.size() >= VISION_TARGET_COUNT) {
                         std::array<double, VISION_TARGET_COUNT> largestContourAreas{0, 0};
                         std::array<int, VISION_TARGET_COUNT> largestContourIndices{0, 1};
                         for (int contourIndex = 0; contourIndex < contours.size(); contourIndex++) {
-                            double area = cv::contourArea(contours[contourIndex], false);
+                            const double area = cv::contourArea(contours[contourIndex], false);
                             if (area > largestContourAreas[0]) {
                                 largestContourAreas[1] = largestContourAreas[0];
                                 largestContourIndices[1] = largestContourIndices[0];
@@ -181,15 +182,17 @@ namespace vision {
                                 leftContour = leftFirst ? firstLargestContour : secondLargestContour,
                                 rightContour = leftFirst ? secondLargestContour : firstLargestContour;
                         std::vector<std::vector<cv::Point>> tapeContours{leftContour, rightContour};
-                        double leftEpsilon = cv::arcLength(leftContour, true) * 0.005, rightEpsilon = cv::arcLength(rightContour, true) * 0.005;
+                        double leftEpsilon = cv::arcLength(leftContour, true) * 0.5, rightEpsilon = cv::arcLength(rightContour, true) * 0.5;
                         std::vector<cv::Point> leftTape, rightTape;
                         cv::approxPolyDP(leftContour, leftTape, leftEpsilon, true);
                         cv::approxPolyDP(rightContour, rightTape, rightEpsilon, true);
                         cv::bitwise_and(bgr, bgr, output, mask);
-                        std::vector<std::vector<cv::Point>> tapes {leftTape, rightTape};
+                        std::vector<std::vector<cv::Point>> tapes {leftContour, rightContour};
                         cv::drawContours(output, tapes, -1, cv::Scalar(255, 0, 255), 2);
                     }
                 }
+//                cv::Mat meme;
+//                cv::cvtColor(hsvBlur, meme, CV_HSV2BGR);
                 outputStream.PutFrame(output);
             }
         }).detach();

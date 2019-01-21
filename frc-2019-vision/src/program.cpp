@@ -145,6 +145,7 @@ namespace vision {
         auto cameraServer = frc::CameraServer::GetInstance();
         cs::UsbCamera camera{config.name, config.path};
         auto capture = cameraServer->StartAutomaticCapture(camera);
+        wpi::outs() << "Using OpenCV version: " << cv::getVersionString() << '\n';
         std::thread([&] {
             cs::CvSink sink = cameraServer->GetVideo();
             cs::CvSource outputStream = cameraServer->PutVideo("Processed rPi 0", 160, 90);
@@ -188,7 +189,8 @@ namespace vision {
                         cv::approxPolyDP(rightContour, rightTape, rightEpsilon, true);
                         cv::bitwise_and(bgr, bgr, output, mask);
                         std::vector<std::vector<cv::Point>> tapes {leftContour, rightContour};
-                        cv::drawContours(output, tapes, -1, cv::Scalar(255, 0, 255), 2);
+                        cv::drawContours(output, std::vector<std::vector<cv::Point>>{leftContour}, -1, cv::Scalar(0, 255, 255), 2);
+                        cv::drawContours(output, std::vector<std::vector<cv::Point>>{rightContour}, -1, cv::Scalar(255, 0, 255), 2);
                     }
                 }
 //                cv::Mat meme;

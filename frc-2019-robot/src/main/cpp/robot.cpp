@@ -4,12 +4,12 @@
 
 #include <cameraserver/CameraServer.h>
 
-namespace robot {
+namespace garage {
     void Robot::RobotInit() {
 //        std::thread visionThread(VisionThread);
 //        visionThread.detach();
-         m_Subsystems.push_back(m_Drive);
-         m_Subsystems.push_back(m_Intake);
+        m_Subsystems.push_back(m_Drive);
+        m_Subsystems.push_back(m_Intake);
     }
 
     void Robot::RobotPeriodic() {}
@@ -25,13 +25,13 @@ namespace robot {
     void Robot::TeleopInit() {}
 
     void Robot::TeleopPeriodic() {
-         Command command = GetCommand();
-         for (const auto& subsystem : m_Subsystems)
+        Command command = GetCommand();
+        for (const auto& subsystem : m_Subsystems)
             subsystem->ExecuteCommand(command);
     }
 
     Command Robot::GetCommand() {
-        return { -m_Stick.GetY(), m_Stick.GetX(), m_Stick.GetTrigger() };
+        return {-m_Stick.GetY(), m_Stick.GetX(), m_Stick.GetTrigger()};
     }
 
     void Robot::VisionThread() {}
@@ -40,7 +40,7 @@ namespace robot {
 #ifndef RUNNING_FRC_TESTS
 
 int main() {
-    return frc::StartRobot<robot::Robot>();
+    return frc::StartRobot<garage::Robot>();
 }
 
 #endif

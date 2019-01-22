@@ -1,9 +1,13 @@
 #pragma once
 
-#include <lib/command.hpp>
+#include <command.hpp>
 
-class Subsystem {
-public:
-    Subsystem() = default;
-    virtual void ExecuteCommand(Command& command) {};
-};
+namespace garage {
+    namespace lib {
+        class Subsystem {
+        public:
+            Subsystem() = default;
+            virtual void ExecuteCommand(Command& command) {};
+        };
+    }
+}

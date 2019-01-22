@@ -1,6 +1,7 @@
 #include <subsystem/intake.hpp>
 
-void Intake::ExecuteCommand(Command& command) {
+namespace garage {
+    void Intake::ExecuteCommand(Command& command) {
 //    if (command.trigger) {
 //        m_ChangeIntakeOpen = true;
 //        const double current = m_IntakeOpen ? INTAKE_OUTPUT : -INTAKE_OUTPUT;
@@ -11,8 +12,9 @@ void Intake::ExecuteCommand(Command& command) {
 //        m_ChangeIntakeOpen = false;
 //        m_IntakeSPX.StopMotor();
 //    }
-}
+    }
 
-Intake::Intake() : Subsystem() {
+    Intake::Intake() : Subsystem() {
 
+    }
 }

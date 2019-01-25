@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.3)
 project(frc-2019-robot)
 set(CMAKE_CXX_STANDARD 14)
 
+add_subdirectory(garage-math)
+include_directories(garage-math/src)
+
 file(GLOB_RECURSE SOURCES "src/main/cpp/*.*")
 file(GLOB_RECURSE INCLUDES "src/main/include/*.*")
 include_directories(src/main/include)

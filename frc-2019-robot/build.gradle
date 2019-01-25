@@ -54,10 +54,11 @@ model {
             sources.cpp {
                 source {
                     srcDir 'src/main/cpp'
-                    include '**/*.cpp', '**/*.cc'
+                    include '**/*.cpp'
                 }
                 exportedHeaders {
                     srcDir 'src/main/include'
+                    srcDir 'garage-math/src'
                     if (includeSrcInIncludeRoot) {
                         srcDir 'src/main/cpp'
                     }

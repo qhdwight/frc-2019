@@ -9,7 +9,7 @@ namespace garage {
 //        std::thread visionThread(VisionThread);
 //        visionThread.detach();
         m_Subsystems.push_back(m_Drive);
-        m_Subsystems.push_back(m_Intake);
+        m_Subsystems.push_back(m_BallIntake);
     }
 
     void Robot::RobotPeriodic() {}
@@ -31,7 +31,12 @@ namespace garage {
     }
 
     Command Robot::GetCommand() {
-        return {-m_Stick.GetY(), m_Stick.GetX(), m_Stick.GetTrigger()};
+        const double forward = -m_Controller.GetY(frc::GenericHID::JoystickHand::kRightHand),
+                turn = m_Controller.GetX(frc::GenericHID::JoystickHand::kRightHand);
+        const double intake = m_Controller.GetTriggerAxis(frc::GenericHID::JoystickHand::kRightHand) -
+                              m_Controller.GetTriggerAxis(frc::GenericHID::JoystickHand::kLeftHand);
+        return {forward, turn, intake, false};
+        // return {-m_Stick.GetY(), m_Stick.GetX(), m_Stick.GetTrigger()};
     }
 
     void Robot::VisionThread() {}

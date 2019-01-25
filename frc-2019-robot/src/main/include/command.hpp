@@ -3,7 +3,7 @@
 namespace garage {
     struct Command {
     public:
-        double forward, turn;
+        double forward, turn, ballIntake;
         bool trigger;
     };
 }

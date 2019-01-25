@@ -1,0 +1,3 @@
+[submodule "frc-2019-robot/garage-math"]
+	path = frc-2019-robot/garage-math
+	url = https://github.com/frc-team-7445/garage-math

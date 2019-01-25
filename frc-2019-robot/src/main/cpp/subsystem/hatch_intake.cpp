@@ -1,20 +1,16 @@
-#include <subsystem/intake.hpp>
+#include <subsystem/hatch_intake.hpp>
 
 namespace garage {
-    void Intake::ExecuteCommand(Command& command) {
+    void HatchIntake::ExecuteCommand(Command& command) {
 //    if (command.trigger) {
 //        m_ChangeIntakeOpen = true;
 //        const double current = m_IntakeOpen ? INTAKE_OUTPUT : -INTAKE_OUTPUT;
-//        m_IntakeSPX.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, current);
+//        m_LeftIntakeSPX.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, current);
 //    } else {
 //        if (m_ChangeIntakeOpen)
 //            m_IntakeOpen = !m_IntakeOpen;
 //        m_ChangeIntakeOpen = false;
-//        m_IntakeSPX.StopMotor();
+//        m_LeftIntakeSPX.StopMotor();
 //    }
-    }
-
-    Intake::Intake() : Subsystem() {
-
     }
 }

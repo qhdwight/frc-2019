@@ -12,5 +12,6 @@ namespace garage {
     Drive::Drive() : Subsystem() {
         m_LeftSPX.Follow(m_LeftSRX);
         m_RightSPX.Follow(m_RightSRX);
+        m_Pigeon.SetFusedHeading(0);
     }
 }

@@ -25,7 +25,6 @@ namespace garage {
     void Robot::TeleopInit() {}
 
     void Robot::TeleopPeriodic() {
-        return;
         Command command = GetCommand();
         for (const auto& subsystem : m_Subsystems)
             subsystem->ExecuteCommand(command);
@@ -39,8 +38,6 @@ namespace garage {
         return {forward, turn, intake, false};
         // return {-m_Stick.GetY(), m_Stick.GetX(), m_Stick.GetTrigger()};
     }
-
-    void Robot::VisionThread() {}
 
     std::shared_ptr<NetworkTable> Robot::GetNetworkTable() const {
         return m_NetworkTable;

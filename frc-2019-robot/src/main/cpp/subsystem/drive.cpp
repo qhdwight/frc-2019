@@ -11,6 +11,7 @@ namespace garage {
         m_LeftSlave.Follow(m_LeftMaster);
         m_RightSlave.Follow(m_RightMaster);
         m_Pigeon.SetFusedHeading(0);
+        m_PoseEstimator = std::make_shared<lib::PoseEstimator>(m_LeftMaster, m_RightMaster, m_Pigeon);
     }
 
     void Drive::ExecuteCommand(Command& command) {

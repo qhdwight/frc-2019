@@ -8,6 +8,9 @@
 #include <frc/XboxController.h>
 #include <frc/TimedRobot.h>
 
+#include <networktables/NetworkTableInstance.h>
+#include <networktables/NetworkTable.h>
+
 #include <lib/subsystem.hpp>
 
 #include <command.hpp>
@@ -33,7 +36,11 @@ namespace garage {
 
         void TeleopPeriodic() override;
 
+        std::shared_ptr<NetworkTable> GetNetworkTable() const;
+
     protected:
+        nt::NetworkTableInstance m_NetworkTableInstace;
+        std::shared_ptr<nt::NetworkTable> m_NetworkTable;
         frc::XboxController m_Controller{0};
         std::shared_ptr<Drive> m_Drive = std::make_shared<Drive>();
         std::shared_ptr<BallIntake> m_BallIntake = std::make_shared<BallIntake>();

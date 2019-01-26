@@ -6,8 +6,8 @@
 
 namespace garage {
     void Robot::RobotInit() {
-//        std::thread visionThread(VisionThread);
-//        visionThread.detach();
+        m_NetworkTableInstace = nt::NetworkTableInstance::GetDefault();
+        m_NetworkTable = m_NetworkTableInstace.GetTable("Garage Robotics");
         m_Subsystems.push_back(m_Drive);
         m_Subsystems.push_back(m_BallIntake);
     }
@@ -25,6 +25,7 @@ namespace garage {
     void Robot::TeleopInit() {}
 
     void Robot::TeleopPeriodic() {
+        return;
         Command command = GetCommand();
         for (const auto& subsystem : m_Subsystems)
             subsystem->ExecuteCommand(command);
@@ -40,6 +41,10 @@ namespace garage {
     }
 
     void Robot::VisionThread() {}
+
+    std::shared_ptr<NetworkTable> Robot::GetNetworkTable() const {
+        return m_NetworkTable;
+    }
 }
 
 #ifndef RUNNING_FRC_TESTS

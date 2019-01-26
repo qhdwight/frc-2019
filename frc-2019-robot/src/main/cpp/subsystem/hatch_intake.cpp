@@ -1,6 +1,10 @@
 #include <subsystem/hatch_intake.hpp>
 
 namespace garage {
+    void HatchIntake::Initialize() {
+        m_Intake.ConfigFactoryDefault();
+    }
+
     void HatchIntake::ExecuteCommand(Command& command) {
 //    if (command.trigger) {
 //        m_ChangeIntakeOpen = true;

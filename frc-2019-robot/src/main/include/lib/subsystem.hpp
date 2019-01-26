@@ -6,7 +6,10 @@ namespace garage {
     namespace lib {
         class Subsystem {
         public:
-            Subsystem() = default;
+            Subsystem();
+
+            virtual void Initialize() {};
+
             virtual void ExecuteCommand(Command& command) {};
         };
     }

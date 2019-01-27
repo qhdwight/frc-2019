@@ -2,8 +2,8 @@
 
 namespace garage {
     namespace lib {
-        Subsystem::Subsystem() {
-            Initialize();
+        Subsystem::Subsystem(std::shared_ptr<Robot>& robot) : m_Robot(robot) {
+            this->Initialize();
         }
     }
 }

@@ -1,15 +1,23 @@
-#include <algorithm>
-
 #include <robot.hpp>
+
+#include <algorithm>
 
 #include <cameraserver/CameraServer.h>
 
 namespace garage {
     void Robot::RobotInit() {
-        m_NetworkTableInstace = nt::NetworkTableInstance::GetDefault();
-        m_NetworkTable = m_NetworkTableInstace.GetTable("Garage Robotics");
+        auto robot = std::make_shared<Robot>();
+        robot.reset(this);
+        m_NetworkTableInstance = nt::NetworkTableInstance::GetDefault();
+        m_NetworkTable = m_NetworkTableInstance.GetTable("Garage Robotics");
+        m_Drive = std::make_shared<Drive>(robot);
+//        m_Elevator = std::make_shared<Elevator>(robot);
+//        m_BallIntake = std::make_shared<BallIntake>(robot);
+//        m_HatchIntake = std::make_shared<HatchIntake>(robot);
         m_Subsystems.push_back(m_Drive);
-        m_Subsystems.push_back(m_BallIntake);
+//        m_Subsystems.push_back(m_Elevator);
+//        m_Subsystems.push_back(m_BallIntake);
+//        m_Subsystems.push_back(m_HatchIntake);
     }
 
     void Robot::RobotPeriodic() {}
@@ -22,7 +30,10 @@ namespace garage {
 
     void Robot::AutonomousPeriodic() {}
 
-    void Robot::TeleopInit() {}
+    void Robot::TeleopInit() {
+        for (const auto& subsystem : m_Subsystems)
+            subsystem->TeleopInit();
+    }
 
     void Robot::TeleopPeriodic() {
         Command command = GetCommand();
@@ -31,12 +42,12 @@ namespace garage {
     }
 
     Command Robot::GetCommand() {
-        const double forward = -m_Controller.GetY(frc::GenericHID::JoystickHand::kRightHand),
-                turn = m_Controller.GetX(frc::GenericHID::JoystickHand::kRightHand);
+        const double forward = m_Controller.GetY(frc::GenericHID::JoystickHand::kRightHand) * 0.5,
+                turn = -m_Controller.GetX(frc::GenericHID::JoystickHand::kRightHand) * 0.2;
         const double intake = m_Controller.GetTriggerAxis(frc::GenericHID::JoystickHand::kRightHand) -
                               m_Controller.GetTriggerAxis(frc::GenericHID::JoystickHand::kLeftHand);
-        return {forward, turn, intake, false};
-        // return {-m_Stick.GetY(), m_Stick.GetX(), m_Stick.GetTrigger()};
+        const bool button = m_Controller.GetAButtonPressed();
+        return {forward, turn, intake, button};
     }
 
     std::shared_ptr<NetworkTable> Robot::GetNetworkTable() const {

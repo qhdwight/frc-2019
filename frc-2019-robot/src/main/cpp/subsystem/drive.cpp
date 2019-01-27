@@ -16,7 +16,7 @@ namespace garage {
     }
 
     void Drive::TeleopInit() {
-
+        m_PoseEstimator->Reset();
     }
 
     void Drive::ExecuteCommand(Command& command) {
@@ -30,8 +30,12 @@ namespace garage {
         m_RightMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, turn - forward);
         auto pose = m_PoseEstimator->Update();
         auto gyroEntry = m_Robot->GetNetworkTable()->GetEntry("Gyro");
+        auto leftEncoderEntry = m_Robot->GetNetworkTable()->GetEntry("Left Encoder");
+        auto rightEncoderEntry = m_Robot->GetNetworkTable()->GetEntry("Right Encoder");
         auto poseEntry = m_Robot->GetNetworkTable()->GetEntry("Pose");
         gyroEntry.SetDouble(m_Pigeon.GetFusedHeading());
+        leftEncoderEntry.SetDouble(m_LeftMaster.GetSelectedSensorPosition());
+        rightEncoderEntry.SetDouble(m_RightMaster.GetSelectedSensorPosition());
         poseEntry.SetDoubleArray(wpi::ArrayRef<double>(pose.position.data()));
     }
 }

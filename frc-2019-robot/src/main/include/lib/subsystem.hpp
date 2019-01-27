@@ -7,7 +7,7 @@
 namespace garage {
     class Robot;
     namespace lib {
-        class Subsystem {
+        class Subsystem : public std::enable_shared_from_this<Subsystem> {
         protected:
             std::shared_ptr<Robot> m_Robot;
         public:

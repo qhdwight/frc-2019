@@ -26,9 +26,7 @@ namespace garage {
         ctre::phoenix::sensors::PigeonIMU m_Pigeon{PIGEON_IMU};
         std::shared_ptr<lib::PoseEstimator> m_PoseEstimator;
     public:
-        Drive(std::shared_ptr<Robot>& robot) : Subsystem(robot) {
-            Initialize();
-        }
+        Drive(std::shared_ptr<Robot>& robot) : Subsystem(robot) { }
 
         void Initialize() override;
 

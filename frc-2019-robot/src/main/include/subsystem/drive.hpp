@@ -1,6 +1,6 @@
 #pragma once
 
-#define JOYSTICK_THRESHOLD 0.1
+#define JOYSTICK_THRESHOLD 0.05
 
 #include <command.hpp>
 #include <hardware_map.hpp>
@@ -26,11 +26,13 @@ namespace garage {
         ctre::phoenix::sensors::PigeonIMU m_Pigeon{PIGEON_IMU};
         std::shared_ptr<lib::PoseEstimator> m_PoseEstimator;
     public:
-        Drive(std::shared_ptr<Robot>& robot) : Subsystem(robot) { }
+        Drive(std::shared_ptr<Robot>& robot);
 
         void Initialize() override;
 
         void TeleopInit() override;
+
+        double InputFromCommand(double commandInput);
 
         void ExecuteCommand(Command& command) override;
     };

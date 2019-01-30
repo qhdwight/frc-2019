@@ -42,8 +42,8 @@ namespace garage {
     }
 
     Command Robot::GetCommand() {
-        const double forward = m_Controller.GetY(frc::GenericHID::JoystickHand::kRightHand) * 0.5,
-                turn = -m_Controller.GetX(frc::GenericHID::JoystickHand::kRightHand) * 0.2;
+        const double forward = m_Controller.GetY(frc::GenericHID::JoystickHand::kRightHand) * 1,
+                turn = m_Controller.GetX(frc::GenericHID::JoystickHand::kRightHand) * 0.5;
         const double intake = m_Controller.GetTriggerAxis(frc::GenericHID::JoystickHand::kRightHand) -
                               m_Controller.GetTriggerAxis(frc::GenericHID::JoystickHand::kLeftHand);
         const bool button = m_Controller.GetAButtonPressed();

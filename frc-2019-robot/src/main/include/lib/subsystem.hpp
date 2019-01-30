@@ -7,9 +7,10 @@
 namespace garage {
     class Robot;
     namespace lib {
-        class Subsystem : public std::enable_shared_from_this<Subsystem> {
+        class Subsystem {
         protected:
             std::shared_ptr<Robot> m_Robot;
+            Command m_LastCommand;
         public:
             Subsystem(std::shared_ptr<Robot>& robot);
 
@@ -17,7 +18,7 @@ namespace garage {
 
             virtual void TeleopInit() {};
 
-            virtual void ExecuteCommand(Command& command) {};
+            virtual void ExecuteCommand(Command& command);
         };
     }
 }

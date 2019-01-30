@@ -2,9 +2,15 @@
 
 #include <robot.hpp>
 
+#include <garage_math/garage_math.hpp>
+
 #include <cmath>
 
 namespace garage {
+    Drive::Drive(std::shared_ptr<Robot>& robot) : Subsystem(robot) {
+        Initialize();
+    }
+
     void Drive::Initialize() {
         m_LeftMaster.ConfigFactoryDefault();
         m_RightMaster.ConfigFactoryDefault();
@@ -19,15 +25,18 @@ namespace garage {
         m_PoseEstimator->Reset();
     }
 
+    double Drive::InputFromCommand(double commandInput) {
+        return std::abs(commandInput) > JOYSTICK_THRESHOLD ? (commandInput - math::sign(commandInput) * JOYSTICK_THRESHOLD) : 0.0;
+    }
+
     void Drive::ExecuteCommand(Command& command) {
-        if (command.button) {
+        if (command.button)
             m_PoseEstimator->Reset();
-        }
-        const double
-                forward = std::abs(command.forward) > JOYSTICK_THRESHOLD ? std::pow(command.forward, 1) : 0.0,
-                turn = std::abs(command.turn) > JOYSTICK_THRESHOLD ? std::pow(command.turn, 1) : 0.0;
-        m_LeftMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, forward + turn);
-        m_RightMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, turn - forward);
+        const double forwardInput = InputFromCommand(command.forward), turnInput = InputFromCommand(command.turn),
+                leftOutput = forwardInput + turnInput * (1 - std::abs(forwardInput) * 0.5),
+                rightOutput = forwardInput - turnInput * (1 - std::abs(forwardInput) * 0.5);
+        m_LeftMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, leftOutput);
+        m_RightMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, rightOutput);
         auto pose = m_PoseEstimator->Update();
         auto gyroEntry = m_Robot->GetNetworkTable()->GetEntry("Gyro");
         auto leftEncoderEntry = m_Robot->GetNetworkTable()->GetEntry("Left Encoder");
@@ -37,5 +46,6 @@ namespace garage {
         leftEncoderEntry.SetDouble(m_LeftMaster.GetSelectedSensorPosition());
         rightEncoderEntry.SetDouble(m_RightMaster.GetSelectedSensorPosition());
         poseEntry.SetDoubleArray(wpi::ArrayRef<double>(pose.position.data()));
+        Subsystem::ExecuteCommand(command);
     }
 }

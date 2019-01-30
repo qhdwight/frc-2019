@@ -32,7 +32,7 @@ namespace garage {
     void Drive::ExecuteCommand(Command& command) {
         if (command.button)
             m_PoseEstimator->Reset();
-        const double forwardInput = InputFromCommand(command.forward), turnInput = InputFromCommand(command.turn),
+        const double forwardInput = InputFromCommand(command.driveForward), turnInput = InputFromCommand(command.driveTurn),
                 leftOutput = forwardInput + turnInput * (1 - std::abs(forwardInput) * 0.5),
                 rightOutput = forwardInput - turnInput * (1 - std::abs(forwardInput) * 0.5);
         m_LeftMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, leftOutput);

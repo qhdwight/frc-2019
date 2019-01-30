@@ -2,6 +2,7 @@
 
 #include <command.hpp>
 #include <subsystem/drive.hpp>
+#include <subsystem/flipper.hpp>
 #include <subsystem/elevator.hpp>
 #include <subsystem/ball_intake.hpp>
 #include <subsystem/hatch_intake.hpp>
@@ -46,6 +47,7 @@ namespace garage {
         std::shared_ptr<nt::NetworkTable> m_NetworkTable;
         frc::XboxController m_Controller{0};
         std::shared_ptr<Drive> m_Drive;
+        std::shared_ptr<Flipper> m_Flipper;
         std::shared_ptr<Elevator> m_Elevator;
         std::shared_ptr<BallIntake> m_BallIntake;
         std::shared_ptr<HatchIntake> m_HatchIntake;

@@ -11,8 +11,8 @@ namespace garage {
     }
 
     void BallIntake::ExecuteCommand(Command& command) {
-        const double ballIntake = command.ballIntake;
-        m_LeftIntake.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, ballIntake);
-        m_RightIntake.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, ballIntake);
+//        const double ballIntake = command.ballIntake;
+//        m_LeftIntake.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, ballIntake);
+//        m_RightIntake.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, ballIntake);
     }
 }

@@ -38,14 +38,12 @@ namespace garage {
         m_LeftMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, leftOutput);
         m_RightMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, rightOutput);
         auto pose = m_PoseEstimator->Update();
-        auto gyroEntry = m_Robot->GetNetworkTable()->GetEntry("Gyro");
-        auto leftEncoderEntry = m_Robot->GetNetworkTable()->GetEntry("Left Encoder");
-        auto rightEncoderEntry = m_Robot->GetNetworkTable()->GetEntry("Right Encoder");
-        auto poseEntry = m_Robot->GetNetworkTable()->GetEntry("Pose");
-        gyroEntry.SetDouble(m_Pigeon.GetFusedHeading());
-        leftEncoderEntry.SetDouble(m_LeftMaster.GetSelectedSensorPosition());
-        rightEncoderEntry.SetDouble(m_RightMaster.GetSelectedSensorPosition());
-        poseEntry.SetDoubleArray(wpi::ArrayRef<double>(pose.position.data()));
+        m_Robot->GetNetworkTable()->PutNumber("Gyro", m_Pigeon.GetFusedHeading());
+        m_Robot->GetNetworkTable()->PutNumber("Left Encoder", m_LeftMaster.GetSelectedSensorPosition());
+        m_Robot->GetNetworkTable()->PutNumber("Left Amperage", m_LeftMaster.GetOutputCurrent());
+        m_Robot->GetNetworkTable()->PutNumber("Right Encoder", m_RightMaster.GetSelectedSensorPosition());
+        m_Robot->GetNetworkTable()->PutNumber("Right Amperage", m_RightMaster.GetOutputCurrent());
+        m_Robot->GetNetworkTable()->PutNumberArray("Pose", wpi::ArrayRef<double>(pose.position.data()));
         Subsystem::ExecuteCommand(command);
     }
 }

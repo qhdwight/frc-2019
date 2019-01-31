@@ -1,5 +1,7 @@
 #include <subsystem/flipper.hpp>
 
+#include <robot.hpp>
+
 namespace garage {
     void Flipper::Initialize() {
         m_Flipper.ConfigFactoryDefault();
@@ -9,5 +11,6 @@ namespace garage {
         const double flipper = command.flipper;
 //        m_Flipper.ConfigOpenloopRamp()
         m_Flipper.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, flipper * 0.25);
+        m_Robot->GetNetworkTable()->PutNumber("Flipper Amperage", m_Flipper.GetOutputCurrent());
     }
 }

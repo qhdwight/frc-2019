@@ -1,19 +1,22 @@
+#include <array>
 #include <cstdio>
 #include <string>
 #include <thread>
-#include <array>
 #include <vector>
+#include <memory>
 
-#include <networktables/NetworkTableInstance.h>
-#include <vision/VisionPipeline.h>
 #include <vision/VisionRunner.h>
-#include <wpi/StringRef.h>
+#include <vision/VisionPipeline.h>
+
+#include <cameraserver/CameraServer.h>
+#include <networktables/NetworkTableInstance.h>
+
 #include <wpi/json.h>
+#include <wpi/StringRef.h>
 #include <wpi/raw_istream.h>
 #include <wpi/raw_ostream.h>
-#include <opencv2/opencv.hpp>
 
-#include "cameraserver/CameraServer.h"
+#include <opencv2/opencv.hpp>
 
 /*
    JSON format:
@@ -54,8 +57,16 @@
 
 namespace vision {
 
-    static const char* k_ConfigFile = "/boot/frc.json";
+    static const char* k_ConfigFileName = "/boot/frc.json";
 
+    static const wpi::json k_VisionConfig{{"Lower Hue",        1.0},
+                                          {"Lower Saturation", 90.0},
+                                          {"Lower Value",      110.0},
+                                          {"Upper Hue",        85.0},
+                                          {"Upper Saturation", 255.0},
+                                          {"Upper Value",      255.0}};
+
+    std::shared_ptr<nt::NetworkTable> networkTable;
     unsigned int teamNumber;
     bool isServer = false;
 
@@ -67,7 +78,7 @@ namespace vision {
     std::vector<CameraConfig> cameraConfigs;
 
     wpi::raw_ostream& ParseError() {
-        return wpi::errs() << "config error in '" << k_ConfigFile << "': ";
+        return wpi::errs() << "config error in '" << k_ConfigFileName << "': ";
     }
 
     bool ReadCameraConfig(const wpi::json& config) {
@@ -92,9 +103,9 @@ namespace vision {
 
     bool ReadConfig() {
         std::error_code errorCode;
-        wpi::raw_fd_istream configFile(k_ConfigFile, errorCode);
+        wpi::raw_fd_istream configFile(k_ConfigFileName, errorCode);
         if (errorCode) {
-            wpi::errs() << "could not open '" << k_ConfigFile << "': " << errorCode.message() << '\n';
+            wpi::errs() << "could not open '" << k_ConfigFileName << "': " << errorCode.message() << '\n';
             return false;
         }
         wpi::json config;
@@ -150,7 +161,6 @@ namespace vision {
             cs::CvSink sink = cameraServer->GetVideo();
             cs::CvSource outputStream = cameraServer->PutVideo("Processed rPi 0", 160, 90);
             outputStream.SetConnectionStrategy(cs::VideoSource::kConnectionKeepOpen);
-            cv::Scalar lowerGreen(40, 80, 40), upperGreen(110, 255, 255);
             cv::Mat bgr, hsv, hsvBlur = cv::Mat::zeros(cv::Size(160, 90), CV_8UC3), mask, output = cv::Mat::zeros(cv::Size(160, 90), CV_8UC3);
             while (outputStream.IsEnabled()) {
                 output.setTo(cv::Scalar(0));
@@ -159,10 +169,19 @@ namespace vision {
                 std::vector<cv::Vec4i> hierarchy;
                 if (!bgr.empty()) {
                     cv::cvtColor(bgr, hsv, CV_BGR2HSV);
-                    cv::medianBlur(hsv, hsvBlur, 11);
+//                    cv::medianBlur(hsv, hsvBlur, 11);
+                    hsv.copyTo(hsvBlur);
+                    cv::Scalar
+                            lowerGreen(vision::networkTable->GetNumber("Lower Hue", 40.0),
+                                       vision::networkTable->GetNumber("Lower Saturation", 80.0),
+                                       vision::networkTable->GetNumber("Lower Value", 40.0)),
+                            upperGreen(vision::networkTable->GetNumber("Upper Hue", 110.0),
+                                       vision::networkTable->GetNumber("Upper Saturation", 255.0),
+                                       vision::networkTable->GetNumber("Upper Value", 255.0));
                     cv::inRange(hsvBlur, lowerGreen, upperGreen, mask);
                     cv::findContours(mask, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, cv::Point());
-                    cv::putText(output, std::to_string(contours.size()), cv::Point(10, 160), CV_FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(255, 0, 255), 2, CV_AA);
+                    cv::putText(output, std::to_string(contours.size()), cv::Point(10, 160), CV_FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(255, 0, 255), 2,
+                                CV_AA);
                     if (contours.size() >= VISION_TARGET_COUNT) {
                         std::array<double, VISION_TARGET_COUNT> largestContourAreas{0, 0};
                         std::array<int, VISION_TARGET_COUNT> largestContourIndices{0, 1};
@@ -188,14 +207,17 @@ namespace vision {
                         cv::approxPolyDP(leftContour, leftTape, leftEpsilon, true);
                         cv::approxPolyDP(rightContour, rightTape, rightEpsilon, true);
                         cv::bitwise_and(bgr, bgr, output, mask);
-                        std::vector<std::vector<cv::Point>> tapes {leftContour, rightContour};
+                        std::vector<std::vector<cv::Point>> tapes{leftTape, rightTape};
                         cv::drawContours(output, std::vector<std::vector<cv::Point>>{leftContour}, -1, cv::Scalar(0, 255, 255), 2);
-                        cv::drawContours(output, std::vector<std::vector<cv::Point>>{rightContour}, -1, cv::Scalar(255, 0, 255), 2);
+                        cv::drawContours(output, std::vector<std::vector<cv::Point>>{rightContour}, -1, cv::Scalar(255, 0, 255), 1);
                     }
                 }
-//                cv::Mat meme;
-//                cv::cvtColor(hsvBlur, meme, CV_HSV2BGR);
-                outputStream.PutFrame(output);
+                if (!mask.empty()) {
+                    cv::Mat meme;
+                    cv::cvtColor(mask, meme, CV_GRAY2BGR);
+                    //mask.copyTo(meme);
+                    outputStream.PutFrame(meme);
+                }
             }
         }).detach();
         camera.SetConfigJson(config.cameraConfig);
@@ -213,15 +235,19 @@ namespace vision {
 }
 
 int main(int argc, char* argv[]) {
-    if (argc >= 2) vision::k_ConfigFile = argv[1];
+    if (argc >= 2) vision::k_ConfigFileName = argv[1];
     if (!vision::ReadConfig()) return EXIT_FAILURE;
-    auto networkTable = nt::NetworkTableInstance::GetDefault();
+    auto networkTableInstance = nt::NetworkTableInstance::GetDefault();
+    vision::networkTable = networkTableInstance.GetTable("Garage Robotics Vision");
+    for (auto& config : vision::k_VisionConfig) {
+        vision::networkTable->PutNumber(config, config.get<double>());
+    }
     if (vision::isServer) {
         wpi::outs() << "Setting up NetworkTables server\n";
-        networkTable.StartServer();
+        networkTableInstance.StartServer();
     } else {
         wpi::outs() << "Setting up NetworkTables client for team " << vision::teamNumber << '\n';
-        networkTable.StartClientTeam(vision::teamNumber);
+        networkTableInstance.StartClientTeam(vision::teamNumber);
     }
     std::vector<cs::VideoSource> cameras;
     for (auto&& cameraConfig : vision::cameraConfigs)

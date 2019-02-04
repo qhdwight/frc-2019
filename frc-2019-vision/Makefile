@@ -5,7 +5,8 @@ CXX=arm-raspbian9-linux-gnueabihf-g++
 build: setup program
 
 install: build
-	cp program runCamera /home/pi/
+	plink -pw 'raspberry' pi@frcvision.local "sudo rm -f runCamera" && pscp -pw 'raspberry' program pi@frcvision.local:/home/pi/runCamera && plink -pw 'raspberry' pi@frcvision.local "chmod +x runCamera && sudo svc -t /service/camera"
+#	cp program runCamera /home/pi/
 
 clean:
 	rm build/*.o program

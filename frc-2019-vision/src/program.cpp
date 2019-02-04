@@ -4,6 +4,7 @@
 #include <thread>
 #include <vector>
 #include <memory>
+#include <algorithm>
 
 #include <vision/VisionRunner.h>
 #include <vision/VisionPipeline.h>
@@ -160,8 +161,10 @@ namespace vision {
         std::thread([&] {
             cs::CvSink sink = cameraServer->GetVideo();
             cs::CvSource outputStream = cameraServer->PutVideo("Processed rPi 0", 160, 90);
+            cs::CvSource maskStream = cameraServer->PutVideo("Mask", 160, 90);
             outputStream.SetConnectionStrategy(cs::VideoSource::kConnectionKeepOpen);
-            cv::Mat bgr, hsv, hsvBlur = cv::Mat::zeros(cv::Size(160, 90), CV_8UC3), mask, output = cv::Mat::zeros(cv::Size(160, 90), CV_8UC3);
+            maskStream.SetConnectionStrategy(cs::VideoSource::kConnectionKeepOpen);
+            cv::Mat bgr, hsv, hsvBlur, hsvErode, edged, mask, output = cv::Mat::zeros(cv::Size(160, 90), CV_8UC3);
             while (outputStream.IsEnabled()) {
                 output.setTo(cv::Scalar(0));
                 sink.GrabFrame(bgr);
@@ -169,55 +172,52 @@ namespace vision {
                 std::vector<cv::Vec4i> hierarchy;
                 if (!bgr.empty()) {
                     cv::cvtColor(bgr, hsv, CV_BGR2HSV);
-//                    cv::medianBlur(hsv, hsvBlur, 11);
                     hsv.copyTo(hsvBlur);
+//                    cv::medianBlur(hsv, hsvBlur, 3);
+//                    hsvBlur.copyTo(hsvErode);
+                    cv::morphologyEx(hsvBlur, hsvErode, cv::MORPH_CLOSE, cv::Mat::ones(cv::Size(3, 3), CV_8UC1));
+//                    cv::erode(hsvBlur, hsvErode, cv::Mat::ones(cv::Size(3, 3), CV_8UC1));
                     cv::Scalar
-                            lowerGreen(vision::networkTable->GetNumber("Lower Hue", 40.0),
-                                       vision::networkTable->GetNumber("Lower Saturation", 80.0),
-                                       vision::networkTable->GetNumber("Lower Value", 40.0)),
-                            upperGreen(vision::networkTable->GetNumber("Upper Hue", 110.0),
-                                       vision::networkTable->GetNumber("Upper Saturation", 255.0),
-                                       vision::networkTable->GetNumber("Upper Value", 255.0));
-                    cv::inRange(hsvBlur, lowerGreen, upperGreen, mask);
-                    cv::findContours(mask, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, cv::Point());
-                    cv::putText(output, std::to_string(contours.size()), cv::Point(10, 160), CV_FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(255, 0, 255), 2,
+                            lowerGreen(vision::networkTable->GetNumber("Lower Hue", k_VisionConfig.at("Lower Hue").get<double>()),
+                                       vision::networkTable->GetNumber("Lower Saturation", k_VisionConfig.at("Lower Saturation").get<double>()),
+                                       vision::networkTable->GetNumber("Lower Value", k_VisionConfig.at("Lower Value").get<double>())),
+                            upperGreen(vision::networkTable->GetNumber("Upper Hue", k_VisionConfig.at("Upper Hue").get<double>()),
+                                       vision::networkTable->GetNumber("Upper Saturation", k_VisionConfig.at("Upper Saturation").get<double>()),
+                                       vision::networkTable->GetNumber("Upper Value", k_VisionConfig.at("Upper Value").get<double>()));
+                    cv::inRange(hsvErode, lowerGreen, upperGreen, mask);
+                    mask.copyTo(edged);
+//                    cv::Canny(mask, edged, 30, 30*3);
+                    cv::findContours(edged, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, cv::Point());
+                    const int contoursDetected = static_cast<const int>(contours.size());
+                    cv::putText(output, std::to_string(contoursDetected), cv::Point(10, 160), CV_FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(255, 0, 255), 2,
                                 CV_AA);
-                    if (contours.size() >= VISION_TARGET_COUNT) {
-                        std::array<double, VISION_TARGET_COUNT> largestContourAreas{0, 0};
-                        std::array<int, VISION_TARGET_COUNT> largestContourIndices{0, 1};
-                        for (int contourIndex = 0; contourIndex < contours.size(); contourIndex++) {
-                            const double area = cv::contourArea(contours[contourIndex], false);
-                            if (area > largestContourAreas[0]) {
-                                largestContourAreas[1] = largestContourAreas[0];
-                                largestContourIndices[1] = largestContourIndices[0];
-                                largestContourAreas[0] = area;
-                                largestContourIndices[0] = contourIndex;
-                            }
-                        }
+                    if (contoursDetected >= VISION_TARGET_COUNT) {
+                        std::partial_sort(contours.begin(), contours.begin() + VISION_TARGET_COUNT, contours.end(), [](const std::vector<cv::Point>& p1, const std::vector<cv::Point>& p2) -> bool {
+                            return cv::contourArea(p1) > cv::contourArea(p2);
+                        });
                         std::vector<cv::Point>&
-                                firstLargestContour = contours[largestContourIndices[0]],
-                                secondLargestContour = contours[largestContourIndices[1]];
+                                firstLargestContour = contours[0],
+                                secondLargestContour = contours[1];
                         bool leftFirst = firstLargestContour[0].x < secondLargestContour[0].x;
                         std::vector<cv::Point>&
                                 leftContour = leftFirst ? firstLargestContour : secondLargestContour,
                                 rightContour = leftFirst ? secondLargestContour : firstLargestContour;
                         std::vector<std::vector<cv::Point>> tapeContours{leftContour, rightContour};
-                        double leftEpsilon = cv::arcLength(leftContour, true) * 0.5, rightEpsilon = cv::arcLength(rightContour, true) * 0.5;
+                        double leftEpsilon = cv::arcLength(leftContour, true) * 0.025, rightEpsilon = cv::arcLength(rightContour, true) * 0.025;
                         std::vector<cv::Point> leftTape, rightTape;
                         cv::approxPolyDP(leftContour, leftTape, leftEpsilon, true);
                         cv::approxPolyDP(rightContour, rightTape, rightEpsilon, true);
                         cv::bitwise_and(bgr, bgr, output, mask);
                         std::vector<std::vector<cv::Point>> tapes{leftTape, rightTape};
-                        cv::drawContours(output, std::vector<std::vector<cv::Point>>{leftContour}, -1, cv::Scalar(0, 255, 255), 2);
-                        cv::drawContours(output, std::vector<std::vector<cv::Point>>{rightContour}, -1, cv::Scalar(255, 0, 255), 1);
+//                        cv::drawContours(output, std::vector<std::vector<cv::Point>>{leftContour}, -1, cv::Scalar(0, 255, 255), 2);
+//                        cv::drawContours(output, std::vector<std::vector<cv::Point>>{rightContour}, -1, cv::Scalar(255, 0, 255), 1);
+//                        cv::drawContours(output, contours, -1, cv::Scalar(255, 0, 255), 1);
+                        cv::drawContours(output, tapes, -1, cv::Scalar(255, 0, 255), 2);
                     }
                 }
-                if (!mask.empty()) {
-                    cv::Mat meme;
-                    cv::cvtColor(mask, meme, CV_GRAY2BGR);
-                    //mask.copyTo(meme);
-                    outputStream.PutFrame(meme);
-                }
+                if (!mask.empty())
+                    maskStream.PutFrame(mask);
+                outputStream.PutFrame(output);
             }
         }).detach();
         camera.SetConfigJson(config.cameraConfig);
@@ -239,9 +239,8 @@ int main(int argc, char* argv[]) {
     if (!vision::ReadConfig()) return EXIT_FAILURE;
     auto networkTableInstance = nt::NetworkTableInstance::GetDefault();
     vision::networkTable = networkTableInstance.GetTable("Garage Robotics Vision");
-    for (auto& config : vision::k_VisionConfig) {
-        vision::networkTable->PutNumber(config, config.get<double>());
-    }
+    for (auto item : vision::k_VisionConfig.items())
+        vision::networkTable->PutNumber(item.key(), item.value());
     if (vision::isServer) {
         wpi::outs() << "Setting up NetworkTables server\n";
         networkTableInstance.StartServer();

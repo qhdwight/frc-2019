@@ -11,13 +11,13 @@ namespace garage {
         m_NetworkTableInstance = nt::NetworkTableInstance::GetDefault();
         m_NetworkTable = m_NetworkTableInstance.GetTable("Garage Robotics");
         m_Drive = std::make_shared<Drive>(robot);
-        m_Flipper = std::make_shared<Flipper>(robot);
-//        m_Elevator = std::make_shared<Elevator>(robot);
+//        m_Flipper = std::make_shared<Flipper>(robot);
+        m_Elevator = std::make_shared<Elevator>(robot);
 //        m_BallIntake = std::make_shared<BallIntake>(robot);
 //        m_HatchIntake = std::make_shared<HatchIntake>(robot);
         m_Subsystems.push_back(m_Drive);
-        m_Subsystems.push_back(m_Flipper);
-//        m_Subsystems.push_back(m_Elevator);
+//        m_Subsystems.push_back(m_Flipper);
+        m_Subsystems.push_back(m_Elevator);
 //        m_Subsystems.push_back(m_BallIntake);
 //        m_Subsystems.push_back(m_HatchIntake);
     }

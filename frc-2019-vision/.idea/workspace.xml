@@ -12,8 +12,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="cacc78e3-87d8-47ae-9170-195b1e610cd5" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/../frc-2019-robot/src/main/cpp/subsystem/flipper.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/cpp/subsystem/flipper.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/program.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/program.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frc-2019-robot/src/main/cpp/robot.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/cpp/robot.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frc-2019-robot/src/main/cpp/subsystem/elevator.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/cpp/subsystem/elevator.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/subsystem/elevator.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/subsystem/elevator.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
     <ignored path="$PROJECT_DIR$/cmake-build-debug-cygwin/" />
@@ -85,7 +87,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -102,6 +103,7 @@
           <select />
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -163,17 +165,19 @@
       <workItem from="1547956147648" duration="8340000" />
       <workItem from="1548390053646" duration="599000" />
       <workItem from="1548474305426" duration="265000" />
-      <workItem from="1548981167595" duration="6979000" />
+      <workItem from="1548981167595" duration="7043000" />
+      <workItem from="1549233125535" duration="599000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="72076000" />
+    <option name="totallyTimeSpent" value="72739000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-7" y="-7" width="1550" height="878" extended-state="7" />
+    <frame x="40" y="-8" width="1120" height="800" extended-state="1" />
+    <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.14630872" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.1490566" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />

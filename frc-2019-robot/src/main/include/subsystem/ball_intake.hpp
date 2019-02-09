@@ -9,9 +9,7 @@ namespace garage {
     private:
         ctre::phoenix::motorcontrol::can::VictorSPX m_LeftIntake{6}, m_RightIntake{7};
     public:
-        BallIntake(std::shared_ptr<Robot>& robot) : Subsystem(robot) {}
-
-        void Initialize() override;
+        BallIntake(std::shared_ptr<Robot>& robot);
 
         void ExecuteCommand(Command& command) override;
     };

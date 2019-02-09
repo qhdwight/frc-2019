@@ -10,9 +10,7 @@ namespace garage {
     private:
         ctre::phoenix::motorcontrol::can::TalonSRX m_ElevatorMaster{5};
     public:
-        Elevator(std::shared_ptr<Robot>& robot) : Subsystem(robot) {}
-
-        void Initialize() override;
+        Elevator(std::shared_ptr<Robot>& robot);
 
         void ExecuteCommand(Command& command) override;
     };

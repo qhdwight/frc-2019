@@ -1,7 +1,7 @@
 #include <subsystem/ball_intake.hpp>
 
 namespace garage {
-    void BallIntake::Initialize() {
+    BallIntake::BallIntake(std::shared_ptr<Robot>& robot) : Subsystem(robot) {
         m_LeftIntake.ConfigFactoryDefault();
         m_RightIntake.ConfigFactoryDefault();
         m_LeftIntake.ConfigOpenloopRamp(1.0);

@@ -3,7 +3,7 @@
 #include <robot.hpp>
 
 namespace garage {
-    void Flipper::Initialize() {
+    Flipper::Flipper(std::shared_ptr<Robot>& robot) : Subsystem(robot) {
         m_Flipper.ConfigFactoryDefault();
     }
 

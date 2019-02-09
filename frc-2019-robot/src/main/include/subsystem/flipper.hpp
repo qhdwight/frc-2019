@@ -12,9 +12,7 @@ namespace garage {
     private:
         ctre::phoenix::motorcontrol::can::TalonSRX m_Flipper{FLIPPER};
     public:
-        Flipper(std::shared_ptr<Robot>& robot) : Subsystem(robot) {}
-
-        void Initialize() override;
+        Flipper(std::shared_ptr<Robot>& robot);
 
         void ExecuteCommand(Command& command) override;
     };

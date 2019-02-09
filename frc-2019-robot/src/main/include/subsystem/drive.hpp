@@ -26,8 +26,6 @@ namespace garage {
     public:
         Drive(std::shared_ptr<Robot>& robot);
 
-        void Initialize() override;
-
         void TeleopInit() override;
 
         double InputFromCommand(double commandInput);

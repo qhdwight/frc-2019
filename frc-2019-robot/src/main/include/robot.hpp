@@ -42,12 +42,17 @@ namespace garage {
 
         void TeleopPeriodic() override;
 
+        void AddSubsystem(std::shared_ptr<lib::Subsystem> subsystem);
+
+        void ExecuteCommand();
+
         std::shared_ptr<NetworkTable> GetNetworkTable() const;
 
     protected:
         nt::NetworkTableInstance m_NetworkTableInstance;
         std::shared_ptr<nt::NetworkTable> m_NetworkTable;
         frc::XboxController m_Controller{0};
+        Command m_Command;
         std::shared_ptr<lib::RoutineManager> m_RoutineManager = std::make_shared<lib::RoutineManager>();
         std::shared_ptr<Drive> m_Drive;
         std::shared_ptr<Flipper> m_Flipper;
@@ -56,6 +61,6 @@ namespace garage {
         std::shared_ptr<HatchIntake> m_HatchIntake;
         std::vector<std::shared_ptr<lib::Subsystem>> m_Subsystems;
 
-        Command GetCommand();
+        void UpdateCommand();
     };
 }

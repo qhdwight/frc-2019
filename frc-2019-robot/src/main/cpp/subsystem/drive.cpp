@@ -8,10 +8,6 @@
 
 namespace garage {
     Drive::Drive(std::shared_ptr<Robot>& robot) : Subsystem(robot) {
-        Initialize();
-    }
-
-    void Drive::Initialize() {
         m_LeftMaster.ConfigFactoryDefault();
         m_RightMaster.ConfigFactoryDefault();
         m_LeftSlave.ConfigFactoryDefault();

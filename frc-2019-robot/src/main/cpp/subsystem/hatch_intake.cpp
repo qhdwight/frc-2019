@@ -1,7 +1,7 @@
 #include <subsystem/hatch_intake.hpp>
 
 namespace garage {
-    void HatchIntake::Initialize() {
+    HatchIntake::HatchIntake(std::shared_ptr<Robot>& robot) : Subsystem(robot) {
         m_Servo.SetRaw(SERVO_LOW);
     }
 

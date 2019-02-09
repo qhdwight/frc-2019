@@ -3,7 +3,7 @@
 #include <robot.hpp>
 
 namespace garage {
-    void Elevator::Initialize() {
+    Elevator::Elevator(std::shared_ptr<Robot>& robot) : Subsystem(robot) {
         m_ElevatorMaster.ConfigFactoryDefault();
         m_ElevatorMaster.SetNeutralMode(ctre::phoenix::motorcontrol::NeutralMode::Brake);
 //        m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::MotionMagic, 0.0);

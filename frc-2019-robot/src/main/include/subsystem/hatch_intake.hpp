@@ -18,9 +18,7 @@ namespace garage {
         uint16_t m_ServoOutput;
         frc::Servo m_Servo {HATCH_SERVO};
     public:
-        HatchIntake(std::shared_ptr<Robot>& robot) : Subsystem(robot) {}
-
-        void Initialize() override;
+        HatchIntake(std::shared_ptr<Robot>& robot);
 
         void ExecuteCommand(Command& command) override;
     };

@@ -3,6 +3,7 @@
 #include <lib/routine.hpp>
 
 #include <queue>
+#include <command.hpp>
 
 namespace garage {
     namespace lib {
@@ -10,9 +11,7 @@ namespace garage {
         private:
             std::queue<Routine> m_Routines;
         public:
-            void AddRoutine(const Routine& routine) {
-                m_Routines.push(routine);
-            }
+            void AddRoutinesFromCommand(const Command& command);
         };
     }
 }

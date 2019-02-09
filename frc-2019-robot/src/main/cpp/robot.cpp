@@ -1,7 +1,5 @@
 #include <robot.hpp>
 
-#include <algorithm>
-
 #include <cameraserver/CameraServer.h>
 
 namespace garage {
@@ -10,18 +8,17 @@ namespace garage {
         robot.reset(this);
         m_NetworkTableInstance = nt::NetworkTableInstance::GetDefault();
         m_NetworkTable = m_NetworkTableInstance.GetTable("Garage Robotics");
-        m_NetworkTable->PutString("Meme1", "Dank1");
-        m_NetworkTable->PutString("Meme2", "Dank2");
-//        m_Drive = std::make_shared<Drive>(robot);
-//        m_Flipper = std::make_shared<Flipper>(robot);
-//        m_Elevator = std::make_shared<Elevator>(robot);
-//        m_BallIntake = std::make_shared<BallIntake>(robot);
-        m_HatchIntake = std::make_shared<HatchIntake>(robot);
-//        m_Subsystems.push_back(m_Drive);
-//        m_Subsystems.push_back(m_Flipper);
-//        m_Subsystems.push_back(m_Elevator);
-//        m_Subsystems.push_back(m_BallIntake);
-        m_Subsystems.push_back(m_HatchIntake);
+        m_NetworkTable->PutString("Test Entry 1", "Test Value 1");
+        m_NetworkTable->PutString("Test Entry 2", "Test Value 2");
+//        AddSubsystem(std::make_shared<Drive>(robot));
+//        AddSubsystem(std::make_shared<Flipper>(robot));
+//        AddSubsystem(std::make_shared<Elevator>(robot));
+//        AddSubsystem(std::make_shared<BallIntake>(robot));
+//        AddSubsystem(std::make_shared<HatchIntake>(robot));
+    }
+
+    void Robot::AddSubsystem(std::shared_ptr<lib::Subsystem> subsystem) {
+        m_Subsystems.push_back(subsystem);
     }
 
     void Robot::RobotPeriodic() {}
@@ -35,23 +32,30 @@ namespace garage {
     void Robot::AutonomousPeriodic() {}
 
     void Robot::TeleopInit() {
-        for (const auto &subsystem : m_Subsystems)
+        for (const auto& subsystem : m_Subsystems)
             subsystem->TeleopInit();
     }
 
     void Robot::TeleopPeriodic() {
-        Command command = GetCommand();
-        for (const auto &subsystem : m_Subsystems)
-            subsystem->ExecuteCommand(command);
+        UpdateCommand();
+        ExecuteCommand();
     }
 
-    Command Robot::GetCommand() {
-        const double forward = m_Controller.GetY(frc::GenericHID::JoystickHand::kRightHand) * 1,
-                turn = m_Controller.GetX(frc::GenericHID::JoystickHand::kRightHand) * 0.5;
-        const double flipper = m_Controller.GetTriggerAxis(frc::GenericHID::JoystickHand::kRightHand) -
-                               m_Controller.GetTriggerAxis(frc::GenericHID::JoystickHand::kLeftHand);
-        const bool button = m_Controller.GetAButtonPressed(), hatchIntakeDown = m_Controller.GetBButtonPressed();
-        return {forward, turn, flipper, button, hatchIntakeDown };
+    void Robot::UpdateCommand() {
+        m_Command.driveForward = m_Controller.GetY(frc::GenericHID::JoystickHand::kRightHand);
+        m_Command.driveTurn = m_Controller.GetX(frc::GenericHID::JoystickHand::kRightHand);
+        m_Command.flipper = m_Controller.GetTriggerAxis(frc::GenericHID::JoystickHand::kRightHand) -
+                            m_Controller.GetTriggerAxis(frc::GenericHID::JoystickHand::kLeftHand);
+        m_Command.button = m_Controller.GetAButtonPressed();
+        m_Command.hatchIntakeDown = m_Controller.GetBButtonPressed();
+        m_Command.elevatorPosition = std::min(m_Controller.GetY(frc::GenericHID::JoystickHand::kRightHand), 0.0) * ELEVATOR_HIGHER_POSITION;
+        m_Command.routines.clear();
+    }
+
+    void Robot::ExecuteCommand() {
+        for (const auto& subsystem : m_Subsystems)
+            subsystem->ExecuteCommand(m_Command);
+        m_RoutineManager->AddRoutinesFromCommand(m_Command);
     }
 
     std::shared_ptr<NetworkTable> Robot::GetNetworkTable() const {

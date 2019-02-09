@@ -10,16 +10,18 @@ namespace garage {
         robot.reset(this);
         m_NetworkTableInstance = nt::NetworkTableInstance::GetDefault();
         m_NetworkTable = m_NetworkTableInstance.GetTable("Garage Robotics");
-        m_Drive = std::make_shared<Drive>(robot);
+        m_NetworkTable->PutString("Meme1", "Dank1");
+        m_NetworkTable->PutString("Meme2", "Dank2");
+//        m_Drive = std::make_shared<Drive>(robot);
 //        m_Flipper = std::make_shared<Flipper>(robot);
-        m_Elevator = std::make_shared<Elevator>(robot);
+//        m_Elevator = std::make_shared<Elevator>(robot);
 //        m_BallIntake = std::make_shared<BallIntake>(robot);
-//        m_HatchIntake = std::make_shared<HatchIntake>(robot);
-        m_Subsystems.push_back(m_Drive);
+        m_HatchIntake = std::make_shared<HatchIntake>(robot);
+//        m_Subsystems.push_back(m_Drive);
 //        m_Subsystems.push_back(m_Flipper);
-        m_Subsystems.push_back(m_Elevator);
+//        m_Subsystems.push_back(m_Elevator);
 //        m_Subsystems.push_back(m_BallIntake);
-//        m_Subsystems.push_back(m_HatchIntake);
+        m_Subsystems.push_back(m_HatchIntake);
     }
 
     void Robot::RobotPeriodic() {}
@@ -48,8 +50,8 @@ namespace garage {
                 turn = m_Controller.GetX(frc::GenericHID::JoystickHand::kRightHand) * 0.5;
         const double flipper = m_Controller.GetTriggerAxis(frc::GenericHID::JoystickHand::kRightHand) -
                                m_Controller.GetTriggerAxis(frc::GenericHID::JoystickHand::kLeftHand);
-        const bool button = m_Controller.GetAButtonPressed();
-        return {forward, turn, flipper, button};
+        const bool button = m_Controller.GetAButtonPressed(), hatchIntakeDown = m_Controller.GetBButtonPressed();
+        return {forward, turn, flipper, button, hatchIntakeDown };
     }
 
     std::shared_ptr<NetworkTable> Robot::GetNetworkTable() const {

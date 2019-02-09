@@ -17,8 +17,6 @@
 #include <memory>
 
 namespace garage {
-    class Robot;
-
     class Drive : public lib::Subsystem {
     private:
         ctre::phoenix::motorcontrol::can::TalonSRX m_RightMaster{DRIVE_RIGHT_MASTER}, m_LeftMaster{DRIVE_LEFT_MASTER};

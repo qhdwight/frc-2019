@@ -55,17 +55,23 @@
  */
 
 #define VISION_TARGET_COUNT 2
+#define FOCAL_LENGTH_MM 3.04
+#define SENSOR_WIDTH_MM 2.07
+#define SENSOR_HEIGHT_MM 3.68
+#define IMAGE_WIDTH_PX 320
+#define IMAGE_HEIGHT_PX 180
 
 namespace vision {
 
     static const char* k_ConfigFileName = "/boot/frc.json";
 
-    static const wpi::json k_VisionConfig{{"Lower Hue",        1.0},
+    static const wpi::json k_VisionConfig{{"Lower Hue",        60.0},
                                           {"Lower Saturation", 90.0},
                                           {"Lower Value",      110.0},
                                           {"Upper Hue",        85.0},
                                           {"Upper Saturation", 255.0},
-                                          {"Upper Value",      255.0}};
+                                          {"Upper Value",      255.0},
+                                          {"Arc Constant",     0.05}};
 
     std::shared_ptr<nt::NetworkTable> networkTable;
     unsigned int teamNumber;
@@ -160,23 +166,31 @@ namespace vision {
         wpi::outs() << "Using OpenCV version: " << cv::getVersionString() << '\n';
         std::thread([&] {
             cs::CvSink sink = cameraServer->GetVideo();
-            cs::CvSource outputStream = cameraServer->PutVideo("Processed rPi 0", 160, 90);
-            cs::CvSource maskStream = cameraServer->PutVideo("Mask", 160, 90);
+            cs::CvSource outputStream = cameraServer->PutVideo("Processed rPi 0", IMAGE_WIDTH_PX, IMAGE_HEIGHT_PX);
+            cs::CvSource maskStream = cameraServer->PutVideo("Mask", IMAGE_WIDTH_PX, IMAGE_HEIGHT_PX);
             outputStream.SetConnectionStrategy(cs::VideoSource::kConnectionKeepOpen);
             maskStream.SetConnectionStrategy(cs::VideoSource::kConnectionKeepOpen);
-            cv::Mat bgr, hsv, hsvBlur, hsvErode, edged, mask, output = cv::Mat::zeros(cv::Size(160, 90), CV_8UC3);
+            std::vector<cv::Point3f> objectPoints{
+                    cv::Point3f(34.0f, 0.0f, 0.0f), cv::Point3f(0.0f, 136.0f, 0.0f), cv::Point3f(49.0f, 149.0f, 0.0f),
+                    cv::Point3f(85.0f, 13.0f, 0.0f),
+                    cv::Point3f(290.0f, 13.0f, 0.0f), cv::Point3f(326.0f, 149.0f, 0.0f), cv::Point3f(377.0f, 136.0f, 0.0f),
+                    cv::Point3f(340.0f, 0.0f, 0.0f)
+            };
+            cv::Mat bgr, hsv, hsvBlur, hsvMorph, edged, mask, output = cv::Mat::zeros(cv::Size(IMAGE_WIDTH_PX, IMAGE_HEIGHT_PX), CV_8UC3);
             while (outputStream.IsEnabled()) {
                 output.setTo(cv::Scalar(0));
                 sink.GrabFrame(bgr);
-                std::vector<std::vector<cv::Point>> contours;
+                std::vector<std::vector<cv::Point>> allContours;
                 std::vector<cv::Vec4i> hierarchy;
                 if (!bgr.empty()) {
+//                    cv::resize(raw_bgr, bgr, cv::Size(IMAGE_WIDTH_PX, IMAGE_HEIGHT_PX));
+                    // To gray scale
                     cv::cvtColor(bgr, hsv, CV_BGR2HSV);
+                    // Blur
                     hsv.copyTo(hsvBlur);
 //                    cv::medianBlur(hsv, hsvBlur, 3);
-//                    hsvBlur.copyTo(hsvErode);
-                    cv::morphologyEx(hsvBlur, hsvErode, cv::MORPH_CLOSE, cv::Mat::ones(cv::Size(3, 3), CV_8UC1));
-//                    cv::erode(hsvBlur, hsvErode, cv::Mat::ones(cv::Size(3, 3), CV_8UC1));
+                    // Morphology dilate and erode
+                    cv::morphologyEx(hsvBlur, hsvMorph, cv::MORPH_CLOSE, cv::Mat::ones(cv::Size(3, 3), CV_8UC1));
                     cv::Scalar
                             lowerGreen(vision::networkTable->GetNumber("Lower Hue", k_VisionConfig.at("Lower Hue").get<double>()),
                                        vision::networkTable->GetNumber("Lower Saturation", k_VisionConfig.at("Lower Saturation").get<double>()),
@@ -184,35 +198,88 @@ namespace vision {
                             upperGreen(vision::networkTable->GetNumber("Upper Hue", k_VisionConfig.at("Upper Hue").get<double>()),
                                        vision::networkTable->GetNumber("Upper Saturation", k_VisionConfig.at("Upper Saturation").get<double>()),
                                        vision::networkTable->GetNumber("Upper Value", k_VisionConfig.at("Upper Value").get<double>()));
-                    cv::inRange(hsvErode, lowerGreen, upperGreen, mask);
+                    // Masking, remove all except for tape
+                    cv::inRange(hsvMorph, lowerGreen, upperGreen, mask);
+                    // Find edges
                     mask.copyTo(edged);
 //                    cv::Canny(mask, edged, 30, 30*3);
-                    cv::findContours(edged, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, cv::Point());
-                    const int contoursDetected = static_cast<const int>(contours.size());
-                    cv::putText(output, std::to_string(contoursDetected), cv::Point(10, 160), CV_FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(255, 0, 255), 2,
-                                CV_AA);
+                    // Find contours
+                    cv::findContours(edged, allContours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE);
+                    const int contoursDetected = static_cast<const int>(allContours.size());
+//                    cv::putText(output, std::to_string(contoursDetected), cv::Point(10, 160), CV_FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(255, 0, 255), 2,
+//                                CV_AA);
                     if (contoursDetected >= VISION_TARGET_COUNT) {
-                        std::partial_sort(contours.begin(), contours.begin() + VISION_TARGET_COUNT, contours.end(), [](const std::vector<cv::Point>& p1, const std::vector<cv::Point>& p2) -> bool {
-                            return cv::contourArea(p1) > cv::contourArea(p2);
-                        });
-                        std::vector<cv::Point>&
-                                firstLargestContour = contours[0],
-                                secondLargestContour = contours[1];
-                        bool leftFirst = firstLargestContour[0].x < secondLargestContour[0].x;
-                        std::vector<cv::Point>&
+                        // Sort by contour area
+                        std::partial_sort(allContours.begin(), allContours.begin() + VISION_TARGET_COUNT, allContours.end(),
+                                          [](const std::vector<cv::Point>& p1, const std::vector<cv::Point>& p2) -> bool {
+                                              return cv::contourArea(p1) > cv::contourArea(p2);
+                                          });
+                        // Determine which is left tape and which is right tape
+                        auto& firstLargestContour = allContours[0], secondLargestContour = allContours[1];
+                        const bool leftFirst = firstLargestContour[0].x < secondLargestContour[0].x;
+                        auto&
                                 leftContour = leftFirst ? firstLargestContour : secondLargestContour,
                                 rightContour = leftFirst ? secondLargestContour : firstLargestContour;
-                        std::vector<std::vector<cv::Point>> tapeContours{leftContour, rightContour};
-                        double leftEpsilon = cv::arcLength(leftContour, true) * 0.025, rightEpsilon = cv::arcLength(rightContour, true) * 0.025;
-                        std::vector<cv::Point> leftTape, rightTape;
-                        cv::approxPolyDP(leftContour, leftTape, leftEpsilon, true);
-                        cv::approxPolyDP(rightContour, rightTape, rightEpsilon, true);
-                        cv::bitwise_and(bgr, bgr, output, mask);
-                        std::vector<std::vector<cv::Point>> tapes{leftTape, rightTape};
-//                        cv::drawContours(output, std::vector<std::vector<cv::Point>>{leftContour}, -1, cv::Scalar(0, 255, 255), 2);
-//                        cv::drawContours(output, std::vector<std::vector<cv::Point>>{rightContour}, -1, cv::Scalar(255, 0, 255), 1);
-//                        cv::drawContours(output, contours, -1, cv::Scalar(255, 0, 255), 1);
-                        cv::drawContours(output, tapes, -1, cv::Scalar(255, 0, 255), 2);
+                        std::vector<std::vector<cv::Point>> contours{leftContour, rightContour};
+                        // Approximate rectangles for tape
+                        const double
+                                leftEpsilon = cv::arcLength(leftContour, true) * vision::networkTable->GetNumber("Arc Constant", 0.005),
+                                rightEpsilon = cv::arcLength(rightContour, true) * vision::networkTable->GetNumber("Arc Constant", 0.005);
+                        std::vector<cv::Point> leftTarget, rightTarget;
+                        cv::approxPolyDP(leftContour, leftTarget, leftEpsilon, true);
+                        cv::approxPolyDP(rightContour, rightTarget, rightEpsilon, true);
+                        cv::putText(output, std::to_string(leftTarget.size()), cv::Size(150, 70), CV_FONT_HERSHEY_SIMPLEX, 0.5,
+                                    cv::Scalar(0, 255, 255), 1, CV_AA);
+                        cv::putText(output, std::to_string(rightTarget.size()), cv::Size(150, 50), CV_FONT_HERSHEY_SIMPLEX, 0.5,
+                                    cv::Scalar(0, 255, 255), 1, CV_AA);
+                        if (leftTarget.size() == 4 && rightTarget.size() == 4) {
+                            // Show only detected parts from original image
+                            cv::bitwise_and(bgr, bgr, output, mask);
+                            std::vector<std::vector<cv::Point>> targets{leftTarget, rightTarget};
+                            cv::drawContours(output, targets, -1, cv::Scalar(255, 0, 255), 2);
+                            for (int i = 0; i < VISION_TARGET_COUNT; i++) {
+                                for (int j = 0; j < 4; j++) {
+                                    cv::putText(output, std::to_string(i * 4 + j), targets[i][j], CV_FONT_HERSHEY_SIMPLEX, 0.5,
+                                                cv::Scalar(0, 255, 255), 1, CV_AA);
+                                }
+                            }
+                            cv::drawContours(output, contours, -1, cv::Scalar(0, 255, 255), 1);
+//                            std::vector<cv::Point> allTargets{4};
+//                            allTargets.insert(leftTarget.begin(), leftTarget.end(), allTargets.end());
+//                            allTargets.insert(rightTarget.begin(), rightTarget.end(), allTargets.end());
+                            cv::Mat translationVectors(3, 1, cv::DataType<double>::type), rotationVectors(3, 1, cv::DataType<double>::type);
+//                            auto& imagePoints = allTargets;
+//                            // Calculate pose
+                            std::vector<cv::Point2f> imagePoints;
+                            for (const auto& point : leftTarget) imagePoints.push_back(point);
+                            for (const auto& point : rightTarget) imagePoints.push_back(point);
+                            cv::Matx33d cameraMatrix(
+                                    FOCAL_LENGTH_MM * (IMAGE_WIDTH_PX / SENSOR_WIDTH_MM), 0.0, 80.0,
+                                    0.0, FOCAL_LENGTH_MM * (IMAGE_HEIGHT_PX / SENSOR_HEIGHT_MM), 45.0,
+                                    0.0, 0.0, 1.0
+                            );
+//                            std::array<double, 5> distortionData{0.07364798, 0.7798033, -0.01179736, 0.00429556, -3.34828984};
+//                            cv::Mat distortionCoefficients(5, 1, cv::DataType<double>::type, distortionData.data());
+                            cv::Mat distortionCoefficients = cv::Mat::zeros(cv::Size(5, 1), cv::DataType<double>::type);
+                            cv::solvePnP(objectPoints, imagePoints, cameraMatrix, distortionCoefficients, rotationVectors, translationVectors);
+                            cv::Mat rotationMatrix(3, 3, CV_64FC1);
+                            cv::Rodrigues(rotationVectors, rotationMatrix);
+                            cv::Vec3d axis{0.0, 0.0, -1.0};
+                            cv::Mat direction = rotationMatrix * cv::Mat(axis, false);
+                            double dirX = direction.at<double>(0);
+                            double dirY = direction.at<double>(1);
+                            double dirZ = direction.at<double>(2);
+                            double len = sqrt(dirX * dirX + dirY * dirY + dirZ * dirZ);
+                            dirX /= len;
+                            dirY /= len;
+                            dirZ /= len;
+                            cv::putText(output, std::to_string(dirX * (180.0/M_PI)), cv::Size(20, 70), CV_FONT_HERSHEY_SIMPLEX, 0.5,
+                                        cv::Scalar(0, 255, 255), 1, CV_AA);
+                            cv::putText(output, std::to_string(-dirY * (180.0/M_PI)), cv::Size(20, 50), CV_FONT_HERSHEY_SIMPLEX, 0.5,
+                                        cv::Scalar(0, 255, 255), 1, CV_AA);
+                            cv::putText(output, std::to_string(dirZ * (180.0/M_PI)), cv::Size(20, 30), CV_FONT_HERSHEY_SIMPLEX, 0.5,
+                                        cv::Scalar(0, 255, 255), 1, CV_AA);
+                        }
                     }
                 }
                 if (!mask.empty())
@@ -239,7 +306,7 @@ int main(int argc, char* argv[]) {
     if (!vision::ReadConfig()) return EXIT_FAILURE;
     auto networkTableInstance = nt::NetworkTableInstance::GetDefault();
     vision::networkTable = networkTableInstance.GetTable("Garage Robotics Vision");
-    for (auto item : vision::k_VisionConfig.items())
+    for (auto& item : vision::k_VisionConfig.items())
         vision::networkTable->PutNumber(item.key(), item.value());
     if (vision::isServer) {
         wpi::outs() << "Setting up NetworkTables server\n";

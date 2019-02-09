@@ -8,6 +8,7 @@
 #include <subsystem/hatch_intake.hpp>
 
 #include <lib/subsystem.hpp>
+#include <lib/routine_manager.hpp>
 
 #include <frc/TimedRobot.h>
 #include <frc/XboxController.h>
@@ -21,6 +22,7 @@
 
 namespace garage {
     class Drive;
+    class Elevator;
 
     class Robot : public frc::TimedRobot {
     public:
@@ -46,6 +48,7 @@ namespace garage {
         nt::NetworkTableInstance m_NetworkTableInstance;
         std::shared_ptr<nt::NetworkTable> m_NetworkTable;
         frc::XboxController m_Controller{0};
+        std::shared_ptr<lib::RoutineManager> m_RoutineManager = std::make_shared<lib::RoutineManager>();
         std::shared_ptr<Drive> m_Drive;
         std::shared_ptr<Flipper> m_Flipper;
         std::shared_ptr<Elevator> m_Elevator;

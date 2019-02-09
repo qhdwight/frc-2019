@@ -4,13 +4,14 @@
 
 #include <lib/subsystem.hpp>
 
-#include <ctre/phoenix/motorcontrol/can/TalonSRX.h>
-#include <ctre/phoenix/motorcontrol/can/VictorSPX.h>
+#include <rev/CANSparkMax.h>
 
 namespace garage {
     class Flipper : public lib::Subsystem {
     private:
-        ctre::phoenix::motorcontrol::can::TalonSRX m_Flipper{FLIPPER};
+        rev::CANSparkMax m_Flipper{FLIPPER, rev::CANSparkMax::MotorType::kBrushless};
+        rev::CANPIDController m_FlipperController = m_Flipper.GetPIDController();
+        rev::CANEncoder m_Encoder = m_Flipper.GetEncoder();
     public:
         Flipper(std::shared_ptr<Robot>& robot);
 

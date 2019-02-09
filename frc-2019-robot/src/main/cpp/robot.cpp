@@ -8,13 +8,11 @@ namespace garage {
         robot.reset(this);
         m_NetworkTableInstance = nt::NetworkTableInstance::GetDefault();
         m_NetworkTable = m_NetworkTableInstance.GetTable("Garage Robotics");
-        m_NetworkTable->PutString("Test Entry 1", "Test Value 1");
-        m_NetworkTable->PutString("Test Entry 2", "Test Value 2");
 //        AddSubsystem(std::make_shared<Drive>(robot));
 //        AddSubsystem(std::make_shared<Flipper>(robot));
 //        AddSubsystem(std::make_shared<Elevator>(robot));
 //        AddSubsystem(std::make_shared<BallIntake>(robot));
-//        AddSubsystem(std::make_shared<HatchIntake>(robot));
+        AddSubsystem(std::dynamic_pointer_cast<lib::Subsystem>(m_HatchIntake = std::make_shared<HatchIntake>(robot)));
     }
 
     void Robot::AddSubsystem(std::shared_ptr<lib::Subsystem> subsystem) {

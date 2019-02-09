@@ -12,28 +12,16 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="cacc78e3-87d8-47ae-9170-195b1e610cd5" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/cpp/lib/sequential_routine.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/lib/sequential_routine.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frc-2019-robot/garage-math" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/garage-math" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frc-2019-robot/src/main/cpp/lib/routine_manager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/cpp/lib/routine_manager.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../frc-2019-robot/src/main/cpp/lib/subsystem.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/cpp/lib/subsystem.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../frc-2019-robot/src/main/cpp/robot.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/cpp/robot.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frc-2019-robot/src/main/cpp/subsystem/ball_intake.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/cpp/subsystem/ball_intake.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frc-2019-robot/src/main/cpp/subsystem/drive.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/cpp/subsystem/drive.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../frc-2019-robot/src/main/cpp/subsystem/elevator.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/cpp/subsystem/elevator.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frc-2019-robot/src/main/cpp/subsystem/flipper.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/cpp/subsystem/flipper.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../frc-2019-robot/src/main/cpp/subsystem/hatch_intake.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/cpp/subsystem/hatch_intake.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/command.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/command.hpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/hardware_map.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/hardware_map.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/lib/routine.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/lib/routine.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/lib/routine_manager.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/lib/routine_manager.hpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/lib/subsystem.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/lib/subsystem.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/robot.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/robot.hpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/subsystem/ball_intake.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/subsystem/ball_intake.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/subsystem/drive.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/subsystem/drive.hpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/subsystem/elevator.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/subsystem/elevator.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/subsystem/flipper.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/subsystem/flipper.hpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/subsystem/hatch_intake.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/subsystem/hatch_intake.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/subsystem/outrigger.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/subsystem/outrigger.hpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
@@ -49,33 +37,32 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/program.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="412">
-              <caret line="304" column="32" selection-start-line="304" selection-start-column="32" selection-end-line="304" selection-end-column="32" />
+            <state relative-caret-position="138">
+              <caret line="267" column="86" lean-forward="true" selection-start-line="267" selection-start-column="86" selection-end-line="267" selection-end-column="86" />
               <folding>
                 <element signature="e#0#16#0" expanded="true" />
                 <element signature="e#425#1703#0" />
-                <element signature="e#2726#2844#0" />
-                <element signature="e#2850#3718#0" />
-                <element signature="e#3724#5770#0" />
+                <element signature="e#2636#3504#0" />
+                <element signature="e#3510#5556#0" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/CMakeLists.txt">
+        <entry file="file://$PROJECT_DIR$/include/opencv2/core/operations.hpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="161">
-              <caret line="7" selection-start-line="7" selection-end-line="7" />
+            <state relative-caret-position="302">
+              <caret line="396" column="23" lean-forward="true" selection-start-line="396" selection-start-column="23" selection-end-line="396" selection-end-column="23" />
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/Makefile">
+        <entry file="file://$PROJECT_DIR$/include/opencv2/core.hpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="92">
-              <caret line="4" column="20" selection-start-line="4" selection-start-column="20" selection-end-line="4" selection-end-column="20" />
+            <state relative-caret-position="95">
+              <caret line="3017" column="1" lean-forward="true" selection-start-line="3017" selection-start-column="1" selection-end-line="3017" selection-end-column="1" />
             </state>
           </provider>
         </entry>
@@ -136,6 +123,11 @@
             <path>
               <item name="frc-2019-vision" type="b2602c69:ProjectViewProjectNode" />
               <item name="frc-2019-vision" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="frc-2019-vision" type="b2602c69:ProjectViewProjectNode" />
+              <item name="frc-2019-vision" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -215,18 +207,18 @@
       <workItem from="1548474305426" duration="265000" />
       <workItem from="1548981167595" duration="7043000" />
       <workItem from="1549233125535" duration="599000" />
-      <workItem from="1549740034629" duration="678000" />
+      <workItem from="1549740034629" duration="930000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="105458000" />
+    <option name="totallyTimeSpent" value="105710000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1936" height="1096" extended-state="6" />
+    <frame x="-7" y="-7" width="1550" height="878" extended-state="7" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.10554371" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.10604027" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -364,14 +356,13 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/program.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="412">
-          <caret line="304" column="32" selection-start-line="304" selection-start-column="32" selection-end-line="304" selection-end-column="32" />
+        <state relative-caret-position="138">
+          <caret line="267" column="86" lean-forward="true" selection-start-line="267" selection-start-column="86" selection-end-line="267" selection-end-column="86" />
           <folding>
             <element signature="e#0#16#0" expanded="true" />
             <element signature="e#425#1703#0" />
-            <element signature="e#2726#2844#0" />
-            <element signature="e#2850#3718#0" />
-            <element signature="e#3724#5770#0" />
+            <element signature="e#2636#3504#0" />
+            <element signature="e#3510#5556#0" />
           </folding>
         </state>
       </provider>

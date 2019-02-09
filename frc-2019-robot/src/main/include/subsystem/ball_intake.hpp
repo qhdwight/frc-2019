@@ -1,5 +1,7 @@
 #pragma once
 
+#include <hardware_map.hpp>
+
 #include <lib/subsystem.hpp>
 
 #include <ctre/phoenix/motorcontrol/can/VictorSPX.h>
@@ -7,7 +9,7 @@
 namespace garage {
     class BallIntake : public lib::Subsystem {
     private:
-        ctre::phoenix::motorcontrol::can::VictorSPX m_LeftIntake{6}, m_RightIntake{7};
+        ctre::phoenix::motorcontrol::can::VictorSPX m_RightIntake{BALL_INTAKE_MASTER}, m_LeftIntake{BALL_INTAKE_SLAVE};
     public:
         BallIntake(std::shared_ptr<Robot>& robot);
 

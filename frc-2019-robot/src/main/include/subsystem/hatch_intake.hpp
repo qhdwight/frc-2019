@@ -1,8 +1,5 @@
 #pragma once
 
-#define SERVO_LOW 1000
-#define SERVO_HIGH 2000
-
 #include <hardware_map.hpp>
 
 #include <lib/subsystem.hpp>

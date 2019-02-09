@@ -14,11 +14,14 @@ namespace garage {
 //        m_ElevatorSRX.Config_kP();
 //        m_ElevatorSRX.Config_kI();
 //        m_ElevatorSRX.Config_kD();
+        m_Robot->GetNetworkTable()->PutNumber("Elevator Strength", 0.0);
     }
 
     void Elevator::ExecuteCommand(Command& command) {
-//        m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, command.flipper);
+        const double strength = m_Robot->GetNetworkTable()->GetNumber("Elevator Strength", 0.0);
+        m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, command.flipper * strength);
         m_Robot->GetNetworkTable()->PutNumber("Elevator Encoder", m_ElevatorMaster.GetSelectedSensorPosition(0));
         m_Robot->GetNetworkTable()->PutNumber("Elevator Output", m_ElevatorMaster.GetMotorOutputPercent());
+        Subsystem::ExecuteCommand(command);
     }
 }

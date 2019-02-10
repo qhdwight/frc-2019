@@ -5,6 +5,8 @@ namespace garage {
         class Routine {
         public:
             virtual bool IsFinished() { return true; };
+
+            void Update() { }
         };
     }
 }

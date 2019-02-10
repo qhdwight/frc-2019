@@ -55,6 +55,7 @@
  */
 
 #define VISION_TARGET_COUNT 2
+#define VISION_TARGET_CORNER_COUNT 4
 #define FOCAL_LENGTH_MM 3.04
 #define SENSOR_WIDTH_MM 2.07
 #define SENSOR_HEIGHT_MM 3.68
@@ -65,13 +66,13 @@ namespace vision {
 
     static const char* k_ConfigFileName = "/boot/frc.json";
 
-    static const wpi::json k_VisionConfig{{"Lower Hue",        60.0},
-                                          {"Lower Saturation", 90.0},
-                                          {"Lower Value",      110.0},
-                                          {"Upper Hue",        85.0},
-                                          {"Upper Saturation", 255.0},
-                                          {"Upper Value",      255.0},
-                                          {"Arc Constant",     0.05}};
+    static const wpi::json k_VisionConfig{{"Lower Hue",                    60.0},
+                                          {"Lower Saturation",             90.0},
+                                          {"Lower Value",                  110.0},
+                                          {"Upper Hue",                    85.0},
+                                          {"Upper Saturation",             255.0},
+                                          {"Upper Value",                  255.0},
+                                          {"Approximate Polygon Constant", 0.05}};
 
     std::shared_ptr<nt::NetworkTable> networkTable;
     unsigned int teamNumber;
@@ -176,6 +177,11 @@ namespace vision {
                     cv::Point3f(290.0f, 13.0f, 0.0f), cv::Point3f(326.0f, 149.0f, 0.0f), cv::Point3f(377.0f, 136.0f, 0.0f),
                     cv::Point3f(340.0f, 0.0f, 0.0f)
             };
+            cv::Matx33d cameraMatrix(
+                    FOCAL_LENGTH_MM * (IMAGE_WIDTH_PX / SENSOR_WIDTH_MM), 0.0, IMAGE_WIDTH_PX / 2.0,
+                    0.0, FOCAL_LENGTH_MM * (IMAGE_HEIGHT_PX / SENSOR_HEIGHT_MM), IMAGE_HEIGHT_PX / 2.0,
+                    0.0, 0.0, 1.0
+            );
             cv::Mat bgr, hsv, hsvBlur, hsvMorph, edged, mask, output = cv::Mat::zeros(cv::Size(IMAGE_WIDTH_PX, IMAGE_HEIGHT_PX), CV_8UC3);
             while (outputStream.IsEnabled()) {
                 output.setTo(cv::Scalar(0));
@@ -223,8 +229,12 @@ namespace vision {
                         std::vector<std::vector<cv::Point>> contours{leftContour, rightContour};
                         // Approximate rectangles for tape
                         const double
-                                leftEpsilon = cv::arcLength(leftContour, true) * vision::networkTable->GetNumber("Arc Constant", 0.005),
-                                rightEpsilon = cv::arcLength(rightContour, true) * vision::networkTable->GetNumber("Arc Constant", 0.005);
+                                leftEpsilon =
+                                cv::arcLength(leftContour, true) * vision::networkTable->GetNumber("Approximate Polygon Constant", k_VisionConfig.at(
+                                        "Approximate Polygon Constant").get<double>()),
+                                rightEpsilon =
+                                cv::arcLength(rightContour, true) * vision::networkTable->GetNumber("Approximate Polygon Constant", k_VisionConfig.at(
+                                        "Approximate Polygon Constant").get<double>());
                         std::vector<cv::Point> leftTarget, rightTarget;
                         cv::approxPolyDP(leftContour, leftTarget, leftEpsilon, true);
                         cv::approxPolyDP(rightContour, rightTarget, rightEpsilon, true);
@@ -232,7 +242,9 @@ namespace vision {
                                     cv::Scalar(0, 255, 255), 1, CV_AA);
                         cv::putText(output, std::to_string(rightTarget.size()), cv::Size(150, 50), CV_FONT_HERSHEY_SIMPLEX, 0.5,
                                     cv::Scalar(0, 255, 255), 1, CV_AA);
-                        if (leftTarget.size() == 4 && rightTarget.size() == 4) {
+                        if (leftTarget.size() == VISION_TARGET_CORNER_COUNT && rightTarget.size() == VISION_TARGET_CORNER_COUNT) {
+                            vision::networkTable->PutNumber("Left Target Area", cv::contourArea(leftTarget));
+                            vision::networkTable->PutNumber("Right Target Area", cv::contourArea(rightTarget));
                             // Show only detected parts from original image
                             cv::bitwise_and(bgr, bgr, output, mask);
                             std::vector<std::vector<cv::Point>> targets{leftTarget, rightTarget};
@@ -253,11 +265,6 @@ namespace vision {
                             std::vector<cv::Point2f> imagePoints;
                             for (const auto& point : leftTarget) imagePoints.push_back(point);
                             for (const auto& point : rightTarget) imagePoints.push_back(point);
-                            cv::Matx33d cameraMatrix(
-                                    FOCAL_LENGTH_MM * (IMAGE_WIDTH_PX / SENSOR_WIDTH_MM), 0.0, 80.0,
-                                    0.0, FOCAL_LENGTH_MM * (IMAGE_HEIGHT_PX / SENSOR_HEIGHT_MM), 45.0,
-                                    0.0, 0.0, 1.0
-                            );
 //                            std::array<double, 5> distortionData{0.07364798, 0.7798033, -0.01179736, 0.00429556, -3.34828984};
 //                            cv::Mat distortionCoefficients(5, 1, cv::DataType<double>::type, distortionData.data());
                             cv::Mat distortionCoefficients = cv::Mat::zeros(cv::Size(5, 1), cv::DataType<double>::type);
@@ -266,18 +273,16 @@ namespace vision {
                             cv::Rodrigues(rotationVectors, rotationMatrix);
                             cv::Vec3d axis{0.0, 0.0, -1.0};
                             cv::Mat direction = rotationMatrix * cv::Mat(axis, false);
-                            double dirX = direction.at<double>(0);
-                            double dirY = direction.at<double>(1);
-                            double dirZ = direction.at<double>(2);
-                            double len = sqrt(dirX * dirX + dirY * dirY + dirZ * dirZ);
+                            double dirX = direction.at<double>(0), dirY = direction.at<double>(1), dirZ = direction.at<double>(2);
+                            const double len = sqrt(dirX * dirX + dirY * dirY + dirZ * dirZ);
                             dirX /= len;
                             dirY /= len;
                             dirZ /= len;
-                            cv::putText(output, std::to_string(dirX * (180.0/M_PI)), cv::Size(20, 70), CV_FONT_HERSHEY_SIMPLEX, 0.5,
+                            cv::putText(output, std::to_string(dirX * (180.0 / CV_PI)), cv::Size(20, 70), CV_FONT_HERSHEY_SIMPLEX, 0.5,
                                         cv::Scalar(0, 255, 255), 1, CV_AA);
-                            cv::putText(output, std::to_string(-dirY * (180.0/M_PI)), cv::Size(20, 50), CV_FONT_HERSHEY_SIMPLEX, 0.5,
+                            cv::putText(output, std::to_string(-dirY * (180.0 / CV_PI)), cv::Size(20, 50), CV_FONT_HERSHEY_SIMPLEX, 0.5,
                                         cv::Scalar(0, 255, 255), 1, CV_AA);
-                            cv::putText(output, std::to_string(dirZ * (180.0/M_PI)), cv::Size(20, 30), CV_FONT_HERSHEY_SIMPLEX, 0.5,
+                            cv::putText(output, std::to_string(dirZ * (180.0 / CV_PI)), cv::Size(20, 30), CV_FONT_HERSHEY_SIMPLEX, 0.5,
                                         cv::Scalar(0, 255, 255), 1, CV_AA);
                         }
                     }
@@ -293,12 +298,6 @@ namespace vision {
             capture.SetConfigJson(config.streamConfig);
         return camera;
     }
-
-    class MyPipeline : public frc::VisionPipeline {
-    public:
-        void Process(cv::Mat& image) override {
-        }
-    };
 }
 
 int main(int argc, char* argv[]) {
@@ -318,14 +317,5 @@ int main(int argc, char* argv[]) {
     std::vector<cs::VideoSource> cameras;
     for (auto&& cameraConfig : vision::cameraConfigs)
         cameras.emplace_back(StartCamera(cameraConfig));
-    if (!cameras.empty()) {
-        std::thread([&] {
-            frc::VisionRunner<vision::MyPipeline> runner(cameras[0], new vision::MyPipeline(),
-                                                         [&](vision::MyPipeline& pipeline) {
-
-                                                         });
-            runner.RunForever();
-        }).join();
-    }
     return EXIT_SUCCESS;
 }

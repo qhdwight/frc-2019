@@ -4,8 +4,8 @@
 
 namespace garage {
     void Robot::RobotInit() {
-        auto robot = std::make_shared<Robot>();
-        robot.reset(this);
+        // Robot is a stack object but I do not give a damn
+        auto robot = std::shared_ptr<Robot>(this, [](auto robot) {});
         m_NetworkTableInstance = nt::NetworkTableInstance::GetDefault();
         m_NetworkTable = m_NetworkTableInstance.GetTable("Garage Robotics");
 //        AddSubsystem(std::make_shared<Drive>(robot));

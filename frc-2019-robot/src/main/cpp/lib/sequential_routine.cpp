@@ -3,7 +3,11 @@
 namespace garage {
     namespace lib {
         bool SequentialRoutine::IsFinished() {
-            return true;
+            bool allFinished = true;
+            for (auto& routine : m_SubRoutines) {
+                if (routine.first && !routine.second.IsFinished()) allFinished = false;
+            }
+            return allFinished;
         }
     }
 }

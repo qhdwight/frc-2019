@@ -12,12 +12,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="cacc78e3-87d8-47ae-9170-195b1e610cd5" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/../frc-2019-robot/src/main/cpp/lib/routine_manager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/cpp/lib/routine_manager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/lib/routine.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/lib/routine.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/lib/routine_manager.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/lib/routine_manager.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/subsystem/outrigger.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/subsystem/outrigger.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frc-2019-robot/src/main/cpp/lib/sequential_routine.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/cpp/lib/sequential_routine.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frc-2019-robot/src/main/cpp/robot.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/cpp/robot.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/lib/sequential_routine.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/lib/sequential_routine.hpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/program.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/program.cpp" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
     <ignored path="$PROJECT_DIR$/cmake-build-debug-cygwin/" />
@@ -32,8 +30,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/program.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="262">
-              <caret line="243" column="53" selection-start-line="243" selection-start-column="53" selection-end-line="243" selection-end-column="53" />
+            <state relative-caret-position="9">
+              <caret line="217" column="47" selection-start-line="217" selection-start-column="47" selection-end-line="217" selection-end-column="47" />
               <folding>
                 <element signature="e#0#16#0" expanded="true" />
                 <element signature="e#425#1703#0" />
@@ -199,16 +197,15 @@
       <workItem from="1548474305426" duration="265000" />
       <workItem from="1548981167595" duration="7043000" />
       <workItem from="1549233125535" duration="599000" />
-      <workItem from="1549740034629" duration="4412000" />
+      <workItem from="1549740034629" duration="5638000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="109192000" />
+    <option name="totallyTimeSpent" value="110418000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1096" extended-state="7" />
-    <editor active="true" />
     <layout>
       <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.10554371" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
@@ -363,8 +360,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/program.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="262">
-          <caret line="243" column="53" selection-start-line="243" selection-start-column="53" selection-end-line="243" selection-end-column="53" />
+        <state relative-caret-position="9">
+          <caret line="217" column="47" selection-start-line="217" selection-start-column="47" selection-end-line="217" selection-end-column="47" />
           <folding>
             <element signature="e#0#16#0" expanded="true" />
             <element signature="e#425#1703#0" />

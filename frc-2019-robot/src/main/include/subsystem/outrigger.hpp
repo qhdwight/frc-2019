@@ -11,7 +11,7 @@ namespace garage {
     private:
         rev::CANSparkMax
                 m_OutriggerMaster{OUTRIGGER_ARM_MASTER, rev::CANSparkMax::MotorType::kBrushless},
-                m_OutriggerSlave{OUTRIGGER_ARM_SLAVE, rev::CANSparkMax::MotorType::kBrushless}
+                m_OutriggerSlave{OUTRIGGER_ARM_SLAVE, rev::CANSparkMax::MotorType::kBrushless};
         rev::CANPIDController m_Controller = m_OutriggerMaster.GetPIDController();
         rev::CANEncoder m_Encoder = m_OutriggerMaster.GetEncoder();
     public:

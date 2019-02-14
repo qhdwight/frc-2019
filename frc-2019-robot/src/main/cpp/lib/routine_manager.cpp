@@ -8,17 +8,14 @@ namespace garage {
         }
 
         void RoutineManager::Update() {
-            if (m_ActiveRoutine.first) {
-                auto& routine = m_ActiveRoutine.second;
-                routine.Update();
-                if (routine.IsFinished()) {
-                    m_ActiveRoutine.first = false;
-                }
+            if (m_ActiveRoutine) {
+                m_ActiveRoutine->Update();
+                if (m_ActiveRoutine->CheckFinished())
+                    m_ActiveRoutine = nullptr;
             }
-            if (!m_ActiveRoutine.first && !m_QueuedRoutines.empty()) {
-                m_ActiveRoutine.second = m_QueuedRoutines.front();
+            if (!m_QueuedRoutines.empty() && !m_ActiveRoutine) {
+                m_ActiveRoutine = m_QueuedRoutines.front();
                 m_QueuedRoutines.pop();
-                m_ActiveRoutine.first = true;
             }
         }
     }

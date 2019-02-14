@@ -5,14 +5,15 @@
 #include <lib/routine.hpp>
 
 #include <queue>
+#include <memory>
 #include <utility>
 
 namespace garage {
     namespace lib {
         class RoutineManager {
         private:
-            std::queue<Routine> m_QueuedRoutines;
-            std::pair<bool, Routine> m_ActiveRoutine;
+            std::queue<std::shared_ptr<Routine>> m_QueuedRoutines;
+            std::shared_ptr<Routine> m_ActiveRoutine;
         public:
             void AddRoutinesFromCommand(const Command& command);
 

@@ -1,20 +1,16 @@
 #pragma once
 
-#include <lib/routine.hpp>
-
-#include <array>
-
-#define MAX_SEQUENTIAL_ROUTINES 10
+#include <lib/multi_routine.hpp>
 
 namespace garage {
     namespace lib {
-        class SequentialRoutine : public Routine {
-        private:
-            std::array<std::pair<bool, Routine>, MAX_SEQUENTIAL_ROUTINES> m_SubRoutines;
+        class SequentialRoutine : public MultiRoutine {
+        protected:
+            unsigned int m_CurrentRoutineIndex;
         public:
-//            SequentialRoutine(std::initializer_list<Routine> )
+            void Update() override;
 
-            bool IsFinished() override;
+            bool CheckFinished() override;
         };
     }
 }

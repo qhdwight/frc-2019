@@ -2,12 +2,17 @@
 
 namespace garage {
     namespace lib {
-        bool SequentialRoutine::IsFinished() {
-            bool allFinished = true;
-            for (auto& routine : m_SubRoutines) {
-                if (routine.first && !routine.second.IsFinished()) allFinished = false;
+        void SequentialRoutine::Update() {
+            if (m_CurrentRoutineIndex < m_SubRoutines.size()) {
+                auto& routine = m_SubRoutines[m_CurrentRoutineIndex];
+                routine->Update();
+                if (routine->CheckFinished())
+                    m_CurrentRoutineIndex++;
             }
-            return allFinished;
+        }
+
+        bool SequentialRoutine::CheckFinished() {
+            return m_CurrentRoutineIndex >= m_SubRoutines.size();
         }
     }
 }

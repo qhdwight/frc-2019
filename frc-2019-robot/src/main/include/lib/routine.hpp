@@ -4,9 +4,13 @@ namespace garage {
     namespace lib {
         class Routine {
         public:
-            virtual bool IsFinished() { return true; };
+            virtual void Begin() {}
 
-            void Update() { }
+            virtual void Terminate() {}
+
+            virtual bool CheckFinished() { return true; }
+
+            virtual void Update() {}
         };
     }
 }

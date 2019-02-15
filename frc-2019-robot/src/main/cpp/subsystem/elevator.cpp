@@ -19,7 +19,7 @@ namespace garage {
 
     void Elevator::ExecuteCommand(Command& command) {
         const double strength = m_Robot->GetNetworkTable()->GetNumber("Elevator Strength", 0.0);
-        m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, command.flipper * strength);
+        m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, command.test * strength);
         m_Robot->GetNetworkTable()->PutNumber("Elevator Encoder", m_ElevatorMaster.GetSelectedSensorPosition(0));
         m_Robot->GetNetworkTable()->PutNumber("Elevator Output", m_ElevatorMaster.GetMotorOutputPercent());
         Subsystem::ExecuteCommand(command);

@@ -57,7 +57,17 @@
 
 namespace vision {
     namespace streamer {
-        
+
+        struct Camera {
+            cs::UsbCamera camera;
+            std::shared_ptr<std::thread> thread;
+        };
+
+        struct CameraConfig {
+            std::string name, path;
+            wpi::json cameraConfig, streamConfig;
+        };
+
         static const char* k_ConfigFileName = "/boot/frc.json";
 
         static const wpi::json k_VisionConfig{{"Lower Hue",                    60.0},
@@ -69,13 +79,9 @@ namespace vision {
                                               {"Approximate Polygon Constant", 0.05}};
 
         std::shared_ptr<nt::NetworkTable> networkTable;
+
         unsigned int teamNumber;
         bool isServer = false;
-
-        struct CameraConfig {
-            std::string name, path;
-            wpi::json cameraConfig, streamConfig;
-        };
 
         std::vector<CameraConfig> cameraConfigs;
 
@@ -157,13 +163,14 @@ namespace vision {
             return networkTable->GetNumber(configName, k_VisionConfig.at(configName).get<double>());
         }
 
-        cs::UsbCamera StartCamera(const CameraConfig& config) {
+        Camera StartCamera(const CameraConfig& config) {
             wpi::outs() << "Starting camera '" << config.name << "' on " << config.path << '\n';
             auto cameraServer = frc::CameraServer::GetInstance();
             cs::UsbCamera camera{config.name, config.path};
             auto capture = cameraServer->StartAutomaticCapture(camera);
             wpi::outs() << "Using OpenCV version: " << cv::getVersionString() << '\n';
-            std::thread([&] {
+            auto thread = std::make_shared<std::thread>([] {
+                auto cameraServer = frc::CameraServer::GetInstance();
                 cs::CvSink sink = cameraServer->GetVideo();
                 cs::CvSource outputStream = cameraServer->PutVideo("Processed", IMAGE_WIDTH_PX, IMAGE_HEIGHT_PX);
                 cs::CvSource maskStream = cameraServer->PutVideo("Mask", IMAGE_WIDTH_PX, IMAGE_HEIGHT_PX);
@@ -286,12 +293,12 @@ namespace vision {
                         maskStream.PutFrame(mask);
                     outputStream.PutFrame(output);
                 }
-            }).detach();
+            });
             camera.SetConfigJson(config.cameraConfig);
             camera.SetConnectionStrategy(cs::VideoSource::kConnectionKeepOpen);
             if (config.streamConfig.is_object())
                 capture.SetConfigJson(config.streamConfig);
-            return camera;
+            return { camera, thread };
         }
 
         int start(int argc, char* argv[]) {
@@ -308,9 +315,10 @@ namespace vision {
                 wpi::outs() << "Setting up NetworkTables client for team " << teamNumber << '\n';
                 networkTableInstance.StartClientTeam(teamNumber);
             }
-            std::vector<cs::VideoSource> cameras;
-            for (auto&& cameraConfig : cameraConfigs)
-                cameras.emplace_back(StartCamera(cameraConfig));
+            if (!cameraConfigs.empty()) {
+                auto camera = StartCamera(cameraConfigs.front());
+                camera.thread->join();
+            }
             return EXIT_SUCCESS;
         }
     }

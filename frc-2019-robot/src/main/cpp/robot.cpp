@@ -10,9 +10,9 @@ namespace garage {
         m_NetworkTable = m_NetworkTableInstance.GetTable("Garage Robotics");
 //        AddSubsystem(std::make_shared<Drive>(robot));
 //        AddSubsystem(std::make_shared<Flipper>(robot));
-//        AddSubsystem(std::make_shared<Elevator>(robot));
 //        AddSubsystem(std::make_shared<BallIntake>(robot));
         AddSubsystem(std::dynamic_pointer_cast<lib::Subsystem>(m_HatchIntake = std::make_shared<HatchIntake>(robot)));
+        AddSubsystem(std::dynamic_pointer_cast<lib::Subsystem>(m_Elevator = std::make_shared<Elevator>(robot)));
     }
 
     void Robot::AddSubsystem(std::shared_ptr<lib::Subsystem> subsystem) {
@@ -46,7 +46,9 @@ namespace garage {
                             m_Controller.GetTriggerAxis(frc::GenericHID::JoystickHand::kLeftHand);
         m_Command.button = m_Controller.GetAButtonPressed();
         m_Command.hatchIntakeDown = m_Controller.GetBButtonPressed();
-        m_Command.elevatorPosition = std::min(m_Controller.GetY(frc::GenericHID::JoystickHand::kRightHand), 0.0) * ELEVATOR_HIGHER_POSITION;
+        m_Command.elevatorPosition += m_Controller.GetY(frc::GenericHID::JoystickHand::kRightHand);
+        m_Command.elevatorPosition = math::clamp(m_Command.elevatorPosition, 0.0, 4096.0);
+        m_Command.test = std::max(0.0, m_Controller.GetY(frc::GenericHID::JoystickHand::kRightHand));
         m_Command.routines.clear();
     }
 

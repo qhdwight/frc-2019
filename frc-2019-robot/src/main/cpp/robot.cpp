@@ -46,7 +46,7 @@ namespace garage {
                             m_Controller.GetTriggerAxis(frc::GenericHID::JoystickHand::kLeftHand);
         m_Command.button = m_Controller.GetAButtonPressed();
         m_Command.hatchIntakeDown = m_Controller.GetBButtonPressed();
-        m_Command.elevatorPosition = std::min(m_Controller.GetY(frc::GenericHID::JoystickHand::kRightHand), 0.0) * ELEVATOR_HIGHER_POSITION;
+        m_Command.elevatorPosition = std::max(m_Controller.GetY(frc::GenericHID::JoystickHand::kLeftHand), 0.0) * ELEVATOR_HIGHER_POSITION;
         m_Command.routines.clear();
     }
 

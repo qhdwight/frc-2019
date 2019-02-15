@@ -9,9 +9,10 @@ namespace garage {
     }
 
     void Flipper::ExecuteCommand(Command& command) {
-        const double flipper = command.flipper;
-        m_Flipper.Set(flipper * 0.5);
+        const double output = command.flipper * 0.5;
+        m_Flipper.Set(output);
         m_Robot->GetNetworkTable()->PutNumber("Flipper Amperage", m_Flipper.GetOutputCurrent());
+        m_Robot->GetNetworkTable()->PutNumber("Flipper Output", output);
         Subsystem::ExecuteCommand(command);
     }
 }

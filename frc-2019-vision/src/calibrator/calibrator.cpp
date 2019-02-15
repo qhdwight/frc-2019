@@ -36,6 +36,9 @@ namespace vision {
             camera.SetConfigJson(cameraConfig);
             camera.SetConnectionStrategy(cs::VideoSource::kConnectionKeepOpen);
             capture.SetConfigJson(streamConfig);
+            while (capture.IsEnabled()) {
+
+            }
         }
     }
 }

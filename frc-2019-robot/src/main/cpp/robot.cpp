@@ -48,6 +48,9 @@ namespace garage {
         m_Command.elevatorPosition = math::clamp(m_Command.elevatorPosition, 0.0, 120000.0);
         m_Command.test = -m_Controller.GetY(frc::GenericHID::JoystickHand::kRightHand);
         m_Command.routines.clear();
+        if (m_Controller.GetXButtonPressed()) {
+            m_Command.routines.push_back(m_RoutineManager->GetTestElevatorRoutine());
+        }
     }
 
     void Robot::ExecuteCommand() {

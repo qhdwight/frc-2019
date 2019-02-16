@@ -3,7 +3,7 @@
 namespace garage {
     namespace lib {
         void RoutineManager::AddRoutinesFromCommand(const Command& command) {
-            for (const auto& routine : command.routines)
+            for (auto& routine : command.routines)
                 m_QueuedRoutines.push(routine);
         }
 
@@ -11,7 +11,7 @@ namespace garage {
             if (m_ActiveRoutine) {
                 m_ActiveRoutine->Update();
                 if (m_ActiveRoutine->CheckFinished())
-                    m_ActiveRoutine = nullptr;
+                    m_ActiveRoutine.reset();
             }
             if (!m_QueuedRoutines.empty() && !m_ActiveRoutine) {
                 m_ActiveRoutine = m_QueuedRoutines.front();

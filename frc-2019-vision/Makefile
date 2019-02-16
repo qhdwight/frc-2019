@@ -5,10 +5,10 @@ build_streamer: setup streamer
 build_calibrator: setup calibrator
 
 install_streamer: build_streamer
-	plink -pw 'raspberry' pi@frcvision.local "sudo rm -f runCamera" && pscp -pw 'raspberry' streamer pi@frcvision.local:/home/pi/runCamera && plink -pw 'raspberry' pi@frcvision.local "chmod +x runCamera && sudo svc -t /service/camera"
+	plink -pw 'raspberry' pi@frcvision.local "sudo rm -f runCamera" && pscp -pw 'raspberry' streamer pi@frcvision.local:/home/pi/runCamera && plink -pw 'raspberry' pi@frcvision.local "chmod +xw runCamera && sudo svc -t /service/camera"
 
 install_calibrator: build_calibrator
-	plink -pw 'raspberry' pi@frcvision.local "sudo rm -f runCamera" && pscp -pw 'raspberry' calibrator pi@frcvision.local:/home/pi/runCamera && plink -pw 'raspberry' pi@frcvision.local "chmod +x runCamera && sudo svc -t /service/camera"
+	plink -pw 'raspberry' pi@frcvision.local "sudo rm -f runCamera" && pscp -pw 'raspberry' calibrator pi@frcvision.local:/home/pi/runCamera && plink -pw 'raspberry' pi@frcvision.local "chmod +xw runCamera && sudo svc -t /service/camera"
 
 clean:
 	rm build/*.o streamer calibrator

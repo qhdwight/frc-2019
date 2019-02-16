@@ -12,11 +12,19 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="cacc78e3-87d8-47ae-9170-195b1e610cd5" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/../frc-2019-robot/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frc-2019-robot/garage-math" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/garage-math" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frc-2019-robot/src/main/cpp/lib/pose_estimator.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/cpp/lib/pose_estimator.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../frc-2019-robot/src/main/cpp/robot.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/cpp/robot.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frc-2019-robot/src/main/cpp/subsystem/drive.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/cpp/subsystem/drive.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../frc-2019-robot/src/main/cpp/subsystem/elevator.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/cpp/subsystem/elevator.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frc-2019-robot/src/main/cpp/subsystem/flipper.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/cpp/subsystem/flipper.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frc-2019-robot/vendordeps/REVRobotics.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/hardware_map.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/hardware_map.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/lib/pose_estimator.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/lib/pose_estimator.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/subsystem/drive.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/subsystem/drive.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/subsystem/elevator.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/subsystem/elevator.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frc-2019-robot/vendordeps/REVRobotics.json" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/vendordeps/REVRobotics.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/Makefile" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/calibrator" beforeDir="false" afterPath="$PROJECT_DIR$/calibrator" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/calibrator/calibrator.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/calibrator/calibrator.cpp" afterDir="false" />
     </list>
@@ -33,8 +41,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/calibrator/calibrator.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="61">
-              <caret line="28" column="38" lean-forward="true" selection-start-line="28" selection-start-column="38" selection-end-line="28" selection-end-column="38" />
+            <state relative-caret-position="138">
+              <caret line="39" column="32" lean-forward="true" selection-start-line="39" selection-start-column="32" selection-end-line="39" selection-end-column="32" />
               <folding>
                 <element signature="e#0#16#0" expanded="true" />
               </folding>
@@ -45,11 +53,38 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/streamer/streamer.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="5382">
-              <caret line="288" column="29" lean-forward="true" selection-start-line="288" selection-start-column="29" selection-end-line="288" selection-end-column="29" />
+            <state relative-caret-position="176">
+              <caret line="168" column="32" selection-start-line="168" selection-start-column="26" selection-end-line="168" selection-end-column="32" />
               <folding>
                 <element signature="e#0#16#0" expanded="true" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/Makefile">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="253">
+              <caret line="11" selection-start-line="11" selection-end-line="11" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/include/frc/shuffleboard/Shuffleboard.h">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="115">
+              <caret line="5" column="47" selection-start-line="5" selection-start-column="47" selection-end-line="5" selection-end-column="47" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/include/cscore_oo.inl">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="3450">
+              <caret line="150" column="25" selection-start-line="150" selection-start-column="25" selection-end-line="150" selection-end-column="25" />
             </state>
           </provider>
         </entry>
@@ -71,6 +106,13 @@
       <find>M_PI</find>
       <find>detach</find>
       <find>what()</find>
+      <find>cameraServer</find>
+      <find>stream</find>
+      <find>&quot;stream&quot;</find>
+      <find>is_object</find>
+      <find>SetConfigJSON</find>
+      <find>SetConfig</find>
+      <find>capture</find>
     </findStrings>
     <replaceStrings>
       <replace>k_ConfigFile</replace>
@@ -87,8 +129,8 @@
         <option value="$PROJECT_DIR$/CMakeLists.txt" />
         <option value="$PROJECT_DIR$/src/constants.hpp" />
         <option value="$PROJECT_DIR$/src/program.cpp" />
-        <option value="$PROJECT_DIR$/Makefile" />
         <option value="$PROJECT_DIR$/src/streamer/streamer.cpp" />
+        <option value="$PROJECT_DIR$/Makefile" />
         <option value="$PROJECT_DIR$/src/calibrator/calibrator.cpp" />
       </list>
     </option>
@@ -97,7 +139,7 @@
     <option name="path" value="C:/cygwin64/bin/make" />
   </component>
   <component name="OCFindUsagesOptions" text="true" ivars="false" properties="true" derivedClasses="false" />
-  <component name="ProjectFrameBounds" extendedState="7">
+  <component name="ProjectFrameBounds" extendedState="6">
     <option name="x" value="50" />
     <option name="y" value="-10" />
     <option name="width" value="1400" />
@@ -116,6 +158,31 @@
             <path>
               <item name="frc-2019-vision" type="b2602c69:ProjectViewProjectNode" />
               <item name="frc-2019-vision" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="frc-2019-vision" type="b2602c69:ProjectViewProjectNode" />
+              <item name="frc-2019-vision" type="462c0819:PsiDirectoryNode" />
+              <item name="include" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="frc-2019-vision" type="b2602c69:ProjectViewProjectNode" />
+              <item name="frc-2019-vision" type="462c0819:PsiDirectoryNode" />
+              <item name="include" type="462c0819:PsiDirectoryNode" />
+              <item name="frc" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="frc-2019-vision" type="b2602c69:ProjectViewProjectNode" />
+              <item name="frc-2019-vision" type="462c0819:PsiDirectoryNode" />
+              <item name="include" type="462c0819:PsiDirectoryNode" />
+              <item name="frc" type="462c0819:PsiDirectoryNode" />
+              <item name="shuffleboard" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="frc-2019-vision" type="b2602c69:ProjectViewProjectNode" />
+              <item name="frc-2019-vision" type="462c0819:PsiDirectoryNode" />
+              <item name="include" type="462c0819:PsiDirectoryNode" />
+              <item name="frc" type="462c0819:PsiDirectoryNode" />
+              <item name="smartdashboard" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="frc-2019-vision" type="b2602c69:ProjectViewProjectNode" />
@@ -228,22 +295,24 @@
       <workItem from="1549740034629" duration="5638000" />
       <workItem from="1550078969594" duration="579000" />
       <workItem from="1550080070005" duration="288000" />
+      <workItem from="1550252961727" duration="12331000" />
+      <workItem from="1550290502032" duration="1398000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="120717000" />
+    <option name="totallyTimeSpent" value="134446000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-7" y="-7" width="1550" height="878" extended-state="7" />
+    <frame x="-7" y="-7" width="1550" height="878" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.15704697" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.19798657" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32916668" />
-      <window_info anchor="bottom" id="Run" order="2" weight="0.32777777" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.32777777" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -281,13 +350,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="233">
           <caret line="1167" column="15" selection-start-line="1167" selection-start-column="15" selection-end-line="1167" selection-end-column="15" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/include/cscore_oo.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1576">
-          <caret line="123" column="70" lean-forward="true" selection-start-line="123" selection-start-column="70" selection-end-line="123" selection-end-column="70" />
         </state>
       </provider>
     </entry>
@@ -398,27 +460,55 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/include/cscore_oo.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-118">
+          <caret line="419" column="6" selection-start-line="419" selection-start-column="6" selection-end-line="419" selection-end-column="6" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/Makefile">
       <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="253">
+          <caret line="11" selection-start-line="11" selection-end-line="11" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/include/frc/shuffleboard/Shuffleboard.h">
+      <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="115">
-          <caret line="5" lean-forward="true" selection-start-line="5" selection-end-line="5" />
+          <caret line="5" column="47" selection-start-line="5" selection-start-column="47" selection-end-line="5" selection-end-column="47" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/include/cscore_oo.inl">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="3450">
+          <caret line="150" column="25" selection-start-line="150" selection-start-column="25" selection-end-line="150" selection-end-column="25" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/streamer/streamer.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="5382">
-          <caret line="288" column="29" lean-forward="true" selection-start-line="288" selection-start-column="29" selection-end-line="288" selection-end-column="29" />
+        <state relative-caret-position="176">
+          <caret line="168" column="32" selection-start-line="168" selection-start-column="26" selection-end-line="168" selection-end-column="32" />
           <folding>
             <element signature="e#0#16#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/include/cameraserver/CameraServer.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-197">
+          <caret line="236" column="7" selection-start-line="236" selection-start-column="7" selection-end-line="236" selection-end-column="7" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/calibrator/calibrator.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="61">
-          <caret line="28" column="38" lean-forward="true" selection-start-line="28" selection-start-column="38" selection-end-line="28" selection-end-column="38" />
+        <state relative-caret-position="138">
+          <caret line="39" column="32" lean-forward="true" selection-start-line="39" selection-start-column="32" selection-end-line="39" selection-end-column="32" />
           <folding>
             <element signature="e#0#16#0" expanded="true" />
           </folding>

@@ -23,7 +23,7 @@ include_directories(build/tmp/expandedArchives/wpiapi-cpp-5.12.0-headers.zip_29d
 include_directories(build/tmp/expandedArchives/api-cpp-5.12.0-headers.zip_4c0f1181ce667c2b1da6d536e53054ec)
 include_directories(build/tmp/expandedArchives/cci-5.12.0-headers.zip_dcc0606199f9f03e2afc8c79f610ebba)
 include_directories(build/tmp/expandedArchives/core-5.12.0-headers.zip_318ff6fc4a9e78b523ef7a1e4e5003aa)
-include_directories(build/tmp/expandedArchives/SparkMax-cpp-1.0.27-headers.zip_6ab8224d8acabd8ef524cb19990140fc)
+include_directories(build/tmp/expandedArchives/SparkMax-cpp-1.1.8-headers.zip_e16eff92b4f67073aebb3710c8a00645)
 include_directories(src/main/include)
 
 set(ALL_INCLUDES ${INCLUDES} ${DEP_INCLUDES})

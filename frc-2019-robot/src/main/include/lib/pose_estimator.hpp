@@ -4,29 +4,29 @@
 
 #include <garage_math/garage_math.hpp>
 
+#include <rev/CANSparkMax.h>
 #include <ctre/phoenix/sensors/PigeonIMU.h>
-#include <ctre/phoenix/motorcontrol/can/TalonSRX.h>
 
 namespace garage {
     namespace lib {
         struct SensorValues {
         public:
-            int leftTicks, rightTicks;
-            double heading;
+            double leftTicks, rightTicks, heading;
         };
+
         class PoseEstimator {
         private:
             RobotPose m_RobotPose;
             SensorValues m_LastSensorValues;
         public:
-            PoseEstimator(ctre::phoenix::motorcontrol::can::TalonSRX& left, ctre::phoenix::motorcontrol::can::TalonSRX& right,
+            PoseEstimator(rev::CANEncoder& left, rev::CANEncoder& right,
                           ctre::phoenix::sensors::PigeonIMU& gyro);
 
             void Reset();
 
             RobotPose Update();
 
-            ctre::phoenix::motorcontrol::can::TalonSRX &m_Left, &m_Right;
+            rev::CANEncoder& m_Left, & m_Right;
             ctre::phoenix::sensors::PigeonIMU& m_Gyro;
         };
     }

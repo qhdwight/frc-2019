@@ -17,5 +17,7 @@ namespace garage {
         Elevator(std::shared_ptr<Robot>& robot);
 
         void ExecuteCommand(Command& command) override;
+
+        void TeleopInit() override;
     };
 }

@@ -8,13 +8,16 @@
 
 namespace garage {
     Drive::Drive(std::shared_ptr<Robot>& robot) : Subsystem(robot) {
-        m_LeftMaster.ConfigFactoryDefault();
-        m_RightMaster.ConfigFactoryDefault();
-        m_LeftSlave.ConfigFactoryDefault();
-        m_RightSlave.ConfigFactoryDefault();
+        m_LeftSlave.RestoreFactoryDefaults();
+        m_RightSlave.RestoreFactoryDefaults();
+        m_LeftMaster.RestoreFactoryDefaults();
+        m_RightMaster.RestoreFactoryDefaults();
+        m_RightMaster.SetInverted(true);
         m_LeftSlave.Follow(m_LeftMaster);
         m_RightSlave.Follow(m_RightMaster);
-        m_PoseEstimator = std::make_shared<lib::PoseEstimator>(m_LeftMaster, m_RightMaster, m_Pigeon);
+        m_LeftSlave.SetOpenLoopRampRate(0.1);
+        m_RightSlave.SetOpenLoopRampRate(0.1);
+        m_PoseEstimator = std::make_shared<lib::PoseEstimator>(m_LeftEncoder, m_RightEncoder, m_Pigeon);
     }
 
     void Drive::TeleopInit() {
@@ -31,15 +34,17 @@ namespace garage {
         const double forwardInput = InputFromCommand(command.driveForward), turnInput = InputFromCommand(command.driveTurn),
                 leftOutput = forwardInput + turnInput * (1 - std::abs(forwardInput) * 0.5),
                 rightOutput = forwardInput - turnInput * (1 - std::abs(forwardInput) * 0.5);
-        m_LeftMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, leftOutput);
-        m_RightMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, rightOutput);
+        m_LeftMaster.Set(leftOutput);
+        m_RightMaster.Set(rightOutput);
         auto pose = m_PoseEstimator->Update();
-        m_Robot->GetNetworkTable()->PutNumber("Gyro", m_Pigeon.GetFusedHeading());
-        m_Robot->GetNetworkTable()->PutNumber("Left Encoder", m_LeftMaster.GetSelectedSensorPosition());
-        m_Robot->GetNetworkTable()->PutNumber("Left Amperage", m_LeftMaster.GetOutputCurrent());
-        m_Robot->GetNetworkTable()->PutNumber("Right Encoder", m_RightMaster.GetSelectedSensorPosition());
-        m_Robot->GetNetworkTable()->PutNumber("Right Amperage", m_RightMaster.GetOutputCurrent());
-        m_Robot->GetNetworkTable()->PutNumberArray("Pose", wpi::ArrayRef<double>(pose.position.data()));
+        m_Robot->GetNetworkTable()->PutNumber("Drive/Gyro", m_Pigeon.GetFusedHeading());
+        m_Robot->GetNetworkTable()->PutNumber("Drive/Left Output", leftOutput);
+        m_Robot->GetNetworkTable()->PutNumber("Drive/Right Output", rightOutput);
+        m_Robot->GetNetworkTable()->PutNumber("Drive/Left Encoder", m_LeftEncoder.GetPosition());
+        m_Robot->GetNetworkTable()->PutNumber("Drive/Left Amperage", m_LeftMaster.GetOutputCurrent());
+        m_Robot->GetNetworkTable()->PutNumber("Drive/Right Encoder", m_RightEncoder.GetPosition());
+        m_Robot->GetNetworkTable()->PutNumber("Drive/Right Amperage", m_RightMaster.GetOutputCurrent());
+        m_Robot->GetNetworkTable()->PutNumberArray("Drive/Pose", wpi::ArrayRef<double>(pose.position.data()));
         Subsystem::ExecuteCommand(command);
     }
 }

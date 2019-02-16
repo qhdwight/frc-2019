@@ -8,12 +8,9 @@ namespace garage {
         auto robot = std::shared_ptr<Robot>(this, [](auto robot) {});
         m_NetworkTableInstance = nt::NetworkTableInstance::GetDefault();
         m_NetworkTable = m_NetworkTableInstance.GetTable("Garage Robotics");
-//        AddSubsystem(std::make_shared<Drive>(robot));
-//        AddSubsystem(std::make_shared<Flipper>(robot));
-//        AddSubsystem(std::make_shared<BallIntake>(robot));
-//        AddSubsystem(std::dynamic_pointer_cast<lib::Subsystem>(m_HatchIntake = std::make_shared<HatchIntake>(robot)));
-        AddSubsystem(std::dynamic_pointer_cast<lib::Subsystem>(m_Flipper = std::make_shared<Flipper>(robot)));
-        AddSubsystem(std::dynamic_pointer_cast<lib::Subsystem>(m_Elevator = std::make_shared<Elevator>(robot)));
+//        AddSubsystem(std::dynamic_pointer_cast<lib::Subsystem>(m_Flipper = std::make_shared<Flipper>(robot)));
+//        AddSubsystem(std::dynamic_pointer_cast<lib::Subsystem>(m_Elevator = std::make_shared<Elevator>(robot)));
+        AddSubsystem(std::dynamic_pointer_cast<lib::Subsystem>(m_Drive = std::make_shared<Drive>(robot)));
     }
 
     void Robot::AddSubsystem(std::shared_ptr<lib::Subsystem> subsystem) {
@@ -47,9 +44,9 @@ namespace garage {
                             m_Controller.GetTriggerAxis(frc::GenericHID::JoystickHand::kLeftHand);
         m_Command.button = m_Controller.GetAButtonPressed();
         m_Command.hatchIntakeDown = m_Controller.GetBButtonPressed();
-        m_Command.elevatorPosition += m_Controller.GetY(frc::GenericHID::JoystickHand::kRightHand);
-        m_Command.elevatorPosition = math::clamp(m_Command.elevatorPosition, 0.0, 4096.0);
-        m_Command.test = m_Controller.GetY(frc::GenericHID::JoystickHand::kRightHand);
+        m_Command.elevatorPosition -= math::threshold(m_Controller.GetY(frc::GenericHID::JoystickHand::kRightHand) * 500.0, 50.0);
+        m_Command.elevatorPosition = math::clamp(m_Command.elevatorPosition, 0.0, 120000.0);
+        m_Command.test = -m_Controller.GetY(frc::GenericHID::JoystickHand::kRightHand);
         m_Command.routines.clear();
     }
 

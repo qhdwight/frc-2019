@@ -8,9 +8,12 @@ namespace garage {
         auto robot = std::shared_ptr<Robot>(this, [](auto robot) {});
         m_NetworkTableInstance = nt::NetworkTableInstance::GetDefault();
         m_NetworkTable = m_NetworkTableInstance.GetTable("Garage Robotics");
-//        AddSubsystem(std::dynamic_pointer_cast<lib::Subsystem>(m_Flipper = std::make_shared<Flipper>(robot)));
 //        AddSubsystem(std::dynamic_pointer_cast<lib::Subsystem>(m_Elevator = std::make_shared<Elevator>(robot)));
-        AddSubsystem(std::dynamic_pointer_cast<lib::Subsystem>(m_Drive = std::make_shared<Drive>(robot)));
+//        AddSubsystem(std::dynamic_pointer_cast<lib::Subsystem>(m_Drive = std::make_shared<Drive>(robot)));
+//        AddSubsystem(std::dynamic_pointer_cast<lib::Subsystem>(m_Flipper = std::make_shared<Flipper>(robot)));
+//        AddSubsystem(std::dynamic_pointer_cast<lib::Subsystem>(m_BallIntake = std::make_shared<BallIntake>(robot)));
+//        AddSubsystem(std::dynamic_pointer_cast<lib::Subsystem>(m_HatchIntake = std::make_shared<HatchIntake>(robot)));
+        AddSubsystem(std::dynamic_pointer_cast<lib::Subsystem>(m_Outrigger = std::make_shared<Outrigger>(robot)));
     }
 
     void Robot::AddSubsystem(std::shared_ptr<lib::Subsystem> subsystem) {
@@ -38,25 +41,28 @@ namespace garage {
     }
 
     void Robot::UpdateCommand() {
-        m_Command.driveForward = m_Controller.GetY(frc::GenericHID::JoystickHand::kRightHand);
+        m_Command.driveForward = -m_Controller.GetY(frc::GenericHID::JoystickHand::kRightHand);
         m_Command.driveTurn = m_Controller.GetX(frc::GenericHID::JoystickHand::kRightHand);
-        m_Command.flipper = m_Controller.GetTriggerAxis(frc::GenericHID::JoystickHand::kRightHand) -
-                            m_Controller.GetTriggerAxis(frc::GenericHID::JoystickHand::kLeftHand);
+        m_Command.ballIntake = m_Controller.GetTriggerAxis(frc::GenericHID::JoystickHand::kRightHand) -
+                               m_Controller.GetTriggerAxis(frc::GenericHID::JoystickHand::kLeftHand);
         m_Command.button = m_Controller.GetAButtonPressed();
         m_Command.hatchIntakeDown = m_Controller.GetBButtonPressed();
-        m_Command.elevatorPosition -= math::threshold(m_Controller.GetY(frc::GenericHID::JoystickHand::kRightHand) * 500.0, 50.0);
-        m_Command.elevatorPosition = math::clamp(m_Command.elevatorPosition, 0.0, 120000.0);
-        m_Command.test = -m_Controller.GetY(frc::GenericHID::JoystickHand::kRightHand);
+        m_Command.flipper = (m_Controller.GetBumper(frc::GenericHID::JoystickHand::kRightHand) ? 1.0 : 0.0) + (m_Controller.GetBumper(
+                frc::GenericHID::JoystickHand::kLeftHand) ? -1.0 : 0.0);
+        m_Command.elevatorPosition -= math::threshold(m_Controller.GetY(frc::GenericHID::JoystickHand::kLeftHand) * 5000.0, 50.0);
+        m_Command.elevatorPosition = math::clamp(m_Command.elevatorPosition, ELEVATOR_MIN, ELEVATOR_MAX);
+//        m_Command.elevatorPosition = 6000.0;
+        m_Command.test = m_Controller.GetY(frc::GenericHID::JoystickHand::kLeftHand);
         m_Command.routines.clear();
-        if (m_Controller.GetXButtonPressed()) {
-            m_Command.routines.push_back(m_RoutineManager->GetTestElevatorRoutine());
-        }
+//        if (m_Controller.GetXButtonPressed()) {
+//            m_Command.routines.push_back(m_RoutineManager->GetTestElevatorRoutine());
+//        }
     }
 
     void Robot::ExecuteCommand() {
         for (const auto& subsystem : m_Subsystems)
             subsystem->ExecuteCommand(m_Command);
-        m_RoutineManager->AddRoutinesFromCommand(m_Command);
+//        m_RoutineManager->AddRoutinesFromCommand(m_Command);
     }
 
     std::shared_ptr<NetworkTable> Robot::GetNetworkTable() const {

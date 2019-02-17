@@ -4,12 +4,12 @@
 
 #include <lib/subsystem.hpp>
 
-#include <ctre/phoenix/motorcontrol/can/VictorSPX.h>
+#include <ctre/phoenix/motorcontrol/can/TalonSRX.h>
 
 namespace garage {
     class BallIntake : public lib::Subsystem {
     private:
-        ctre::phoenix::motorcontrol::can::VictorSPX m_RightIntake{BALL_INTAKE_MASTER}, m_LeftIntake{BALL_INTAKE_SLAVE};
+        ctre::phoenix::motorcontrol::can::TalonSRX m_RightIntake{BALL_INTAKE_MASTER}, m_LeftIntake{BALL_INTAKE_SLAVE};
     public:
         BallIntake(std::shared_ptr<Robot>& robot);
 

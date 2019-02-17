@@ -12,21 +12,18 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="cacc78e3-87d8-47ae-9170-195b1e610cd5" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/../frc-2019-robot/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frc-2019-robot/garage-math" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/garage-math" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frc-2019-robot/src/main/cpp/lib/pose_estimator.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/cpp/lib/pose_estimator.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../frc-2019-robot/src/main/cpp/robot.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/cpp/robot.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frc-2019-robot/src/main/cpp/subsystem/ball_intake.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/cpp/subsystem/ball_intake.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../frc-2019-robot/src/main/cpp/subsystem/drive.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/cpp/subsystem/drive.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../frc-2019-robot/src/main/cpp/subsystem/elevator.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/cpp/subsystem/elevator.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/hardware_map.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/hardware_map.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/lib/pose_estimator.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/lib/pose_estimator.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/subsystem/drive.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/subsystem/drive.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frc-2019-robot/src/main/cpp/subsystem/flipper.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/cpp/subsystem/flipper.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frc-2019-robot/src/main/cpp/subsystem/outrigger.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/cpp/subsystem/outrigger.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/command.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/command.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/lib/routine_manager.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/lib/routine_manager.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/robot.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/robot.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/subsystem/ball_intake.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/subsystem/ball_intake.hpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/subsystem/elevator.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/subsystem/elevator.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frc-2019-robot/vendordeps/REVRobotics.json" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/vendordeps/REVRobotics.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/Makefile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/calibrator" beforeDir="false" afterPath="$PROJECT_DIR$/calibrator" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/calibrator/calibrator.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/calibrator/calibrator.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/subsystem/outrigger.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/subsystem/outrigger.hpp" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
     <ignored path="$PROJECT_DIR$/cmake-build-debug-cygwin/" />
@@ -38,11 +35,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/calibrator/calibrator.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="138">
-              <caret line="39" column="32" lean-forward="true" selection-start-line="39" selection-start-column="32" selection-end-line="39" selection-end-column="32" />
+            <state relative-caret-position="383">
+              <caret line="49" column="5" selection-start-line="49" selection-start-column="5" selection-end-line="49" selection-end-column="5" />
               <folding>
                 <element signature="e#0#16#0" expanded="true" />
               </folding>
@@ -50,11 +47,11 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/streamer/streamer.cpp">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="176">
-              <caret line="168" column="32" selection-start-line="168" selection-start-column="26" selection-end-line="168" selection-end-column="32" />
+              <caret line="201" column="54" selection-start-line="201" selection-start-column="54" selection-end-line="201" selection-end-column="54" />
               <folding>
                 <element signature="e#0#16#0" expanded="true" />
               </folding>
@@ -304,7 +301,7 @@
     <option name="totallyTimeSpent" value="134446000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-7" y="-7" width="1550" height="878" extended-state="6" />
+    <frame x="-7" y="-7" width="1550" height="878" extended-state="7" />
     <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.19798657" />
@@ -491,7 +488,7 @@
     <entry file="file://$PROJECT_DIR$/src/streamer/streamer.cpp">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="176">
-          <caret line="168" column="32" selection-start-line="168" selection-start-column="26" selection-end-line="168" selection-end-column="32" />
+          <caret line="201" column="54" selection-start-line="201" selection-start-column="54" selection-end-line="201" selection-end-column="54" />
           <folding>
             <element signature="e#0#16#0" expanded="true" />
           </folding>
@@ -507,8 +504,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/calibrator/calibrator.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="138">
-          <caret line="39" column="32" lean-forward="true" selection-start-line="39" selection-start-column="32" selection-end-line="39" selection-end-column="32" />
+        <state relative-caret-position="383">
+          <caret line="49" column="5" selection-start-line="49" selection-start-column="5" selection-end-line="49" selection-end-column="5" />
           <folding>
             <element signature="e#0#16#0" expanded="true" />
           </folding>

@@ -7,6 +7,15 @@
 #include <ctre/phoenix/motorcontrol/can/TalonSRX.h>
 #include <ctre/phoenix/motorcontrol/can/VictorSPX.h>
 
+#define ELEVATOR_MIN 0.0
+#define ELEVATOR_MAX 340000.0
+#define ELEVATOR_VELOCITY 25000.0
+#define ELEVATOR_ACCELERATION 30000.0
+#define ELEVATOR_P 0.05
+#define ELEVATOR_I 0.0
+#define ELEVATOR_D ELEVATOR_P * 10.0
+#define ELEVATOR_F 1023.0 / ELEVATOR_VELOCITY
+
 namespace garage {
     class Elevator : public lib::Subsystem {
     private:

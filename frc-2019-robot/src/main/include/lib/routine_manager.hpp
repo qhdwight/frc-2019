@@ -15,16 +15,16 @@ namespace garage {
         class RoutineManager {
         private:
             std::queue<std::shared_ptr<Routine>> m_QueuedRoutines;
-            std::shared_ptr<Routine> m_TestElevatorRoutine = std::make_shared<test::TestElevatorRoutine>();
+//            std::shared_ptr<Routine> m_TestElevatorRoutsine = std::make_shared<test::TestElevatorRoutine>();
             std::shared_ptr<Routine> m_ActiveRoutine;
         public:
             void AddRoutinesFromCommand(const Command& command);
 
             void Update();
 
-            std::shared_ptr<Routine> GetTestElevatorRoutine() {
-                return m_TestElevatorRoutine;
-            }
+//            std::shared_ptr<Routine> GetTestElevatorRoutine() {
+//                return m_TestElevatorRoutine;
+//            }
         };
     }
 }

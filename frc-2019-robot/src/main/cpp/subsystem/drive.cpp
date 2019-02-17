@@ -15,8 +15,8 @@ namespace garage {
         m_RightMaster.SetInverted(true);
         m_LeftSlave.Follow(m_LeftMaster);
         m_RightSlave.Follow(m_RightMaster);
-        m_LeftSlave.SetOpenLoopRampRate(0.1);
-        m_RightSlave.SetOpenLoopRampRate(0.1);
+        m_LeftSlave.SetOpenLoopRampRate(0.25);
+        m_RightSlave.SetOpenLoopRampRate(0.25);
         m_PoseEstimator = std::make_shared<lib::PoseEstimator>(m_LeftEncoder, m_RightEncoder, m_Pigeon);
     }
 
@@ -32,8 +32,8 @@ namespace garage {
         if (command.button)
             m_PoseEstimator->Reset();
         const double forwardInput = InputFromCommand(command.driveForward), turnInput = InputFromCommand(command.driveTurn),
-                leftOutput = forwardInput + turnInput * (1 - std::abs(forwardInput) * 0.5),
-                rightOutput = forwardInput - turnInput * (1 - std::abs(forwardInput) * 0.5);
+                leftOutput = forwardInput + turnInput * (1 - std::abs(forwardInput) * 0.5) * 0.25,
+                rightOutput = forwardInput - turnInput * (1 - std::abs(forwardInput) * 0.5) * 0.25;
         m_LeftMaster.Set(leftOutput);
         m_RightMaster.Set(rightOutput);
         auto pose = m_PoseEstimator->Update();

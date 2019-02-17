@@ -1,13 +1,17 @@
 #include <robot.hpp>
 
+#include <test/test_elevator_routine.hpp>
+
+#include <lib/wait_routine.hpp>
+
 namespace garage {
     void Robot::RobotInit() {
         // Robot is a stack object but I do not give a damn
-        auto robot = std::shared_ptr<Robot>(this, [](auto robot) {});
+        m_Pointer = std::shared_ptr<Robot>(this, [](auto robot) {});
         m_NetworkTableInstance = nt::NetworkTableInstance::GetDefault();
         m_NetworkTable = m_NetworkTableInstance.GetTable("Garage Robotics");
-        m_RoutineManager = std::make_shared<lib::RoutineManager>(robot);
-        AddSubsystem(std::dynamic_pointer_cast<lib::Subsystem>(m_Elevator = std::make_shared<Elevator>(robot)));
+        m_RoutineManager = std::make_shared<lib::RoutineManager>(m_Pointer);
+        AddSubsystem(std::dynamic_pointer_cast<lib::Subsystem>(m_Elevator = std::make_shared<Elevator>(m_Pointer)));
 //        AddSubsystem(std::dynamic_pointer_cast<lib::Subsystem>(m_Drive = std::make_shared<Drive>(robot)));
 //        AddSubsystem(std::dynamic_pointer_cast<lib::Subsystem>(m_Flipper = std::make_shared<Flipper>(robot)));
 //        AddSubsystem(std::dynamic_pointer_cast<lib::Subsystem>(m_BallIntake = std::make_shared<BallIntake>(robot)));
@@ -52,8 +56,11 @@ namespace garage {
         m_Command.elevatorPosition = math::clamp(m_Command.elevatorPosition, ELEVATOR_MIN, ELEVATOR_MAX);
         m_Command.test = m_Controller.GetY(frc::GenericHID::JoystickHand::kLeftHand);
         m_Command.routines.clear();
-        if (m_Controller.GetXButtonPressed())
-            m_Command.routines.push_back(m_RoutineManager->GetTestElevatorRoutine());
+        if (m_Controller.GetXButtonPressed()) {
+            m_Command.routines.push_back(std::make_shared<test::TestElevatorRoutine>(m_Pointer, 100000.0));
+            m_Command.routines.push_back(std::make_shared<lib::WaitRoutine>(m_Pointer, 0.2));
+            m_Command.routines.push_back(std::make_shared<test::TestElevatorRoutine>(m_Pointer, 0.0));
+        }
     }
 
     void Robot::ExecuteCommand() {

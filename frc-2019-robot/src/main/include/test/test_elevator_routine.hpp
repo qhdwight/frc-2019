@@ -13,6 +13,8 @@ namespace garage {
             void Begin() override;
 
             void Terminate() override;
+
+            bool CheckFinished() override;
         };
     }
 }

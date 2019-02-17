@@ -25,7 +25,7 @@ namespace garage {
                 m_LeftSlave{DRIVE_LEFT_SLAVE, rev::CANSparkMax::MotorType::kBrushless};
         rev::CANEncoder m_LeftEncoder = m_LeftMaster.GetEncoder(), m_RightEncoder = m_RightMaster.GetEncoder();
         ctre::phoenix::sensors::PigeonIMU m_Pigeon{PIGEON_IMU};
-        std::shared_ptr<lib::PoseEstimator> m_PoseEstimator;
+//        std::shared_ptr<lib::PoseEstimator> m_PoseEstimator;
     public:
         Drive(std::shared_ptr<Robot>& robot);
 

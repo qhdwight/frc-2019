@@ -12,18 +12,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="cacc78e3-87d8-47ae-9170-195b1e610cd5" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/../frc-2019-robot/src/main/cpp/robot.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/cpp/robot.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frc-2019-robot/src/main/cpp/subsystem/ball_intake.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/cpp/subsystem/ball_intake.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../frc-2019-robot/src/main/cpp/subsystem/drive.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/cpp/subsystem/drive.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frc-2019-robot/src/main/cpp/subsystem/elevator.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/cpp/subsystem/elevator.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frc-2019-robot/src/main/cpp/subsystem/flipper.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/cpp/subsystem/flipper.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frc-2019-robot/src/main/cpp/subsystem/outrigger.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/cpp/subsystem/outrigger.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/command.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/command.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/lib/routine_manager.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/lib/routine_manager.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/robot.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/robot.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/subsystem/ball_intake.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/subsystem/ball_intake.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/subsystem/elevator.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/subsystem/elevator.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/subsystem/outrigger.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/subsystem/outrigger.hpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/subsystem/drive.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/../frc-2019-robot/src/main/include/subsystem/drive.hpp" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
     <ignored path="$PROJECT_DIR$/cmake-build-debug-cygwin/" />

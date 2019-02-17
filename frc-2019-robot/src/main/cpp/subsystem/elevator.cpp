@@ -37,6 +37,10 @@ namespace garage {
     }
 
     void Elevator::ExecuteCommand(Command& command) {
+        if (m_ElevatorMaster.GetSensorCollection().IsFwdLimitSwitchClosed())
+            m_ElevatorMaster.SetSelectedSensorPosition(0);
+        if (!m_IsLocked)
+            m_WantedPosition = command.elevatorPosition;
         m_ElevatorMaster.ConfigMotionAcceleration(static_cast<int>(m_Robot->GetNetworkTable()->GetNumber("Elevator/Acceleration", ELEVATOR_ACCELERATION)));
         m_ElevatorMaster.ConfigMotionCruiseVelocity(static_cast<int>(m_Robot->GetNetworkTable()->GetNumber("Elevator/Velocity", ELEVATOR_VELOCITY)));
         m_ElevatorMaster.Config_kF(0, m_Robot->GetNetworkTable()->GetNumber("Elevator/kF", ELEVATOR_F));
@@ -44,16 +48,24 @@ namespace garage {
         if (command.button)
             m_ElevatorMaster.SetSelectedSensorPosition(0);
         const int encoderPosition = m_ElevatorMaster.GetSelectedSensorPosition(0);
-        if (encoderPosition < ELEVATOR_MAX && encoderPosition > 1000) {
-            m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::MotionMagic, command.elevatorPosition);
+        if (encoderPosition < ELEVATOR_MAX + 1000) {
+            m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::MotionMagic, m_WantedPosition);
         } else {
             m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, 0.0);
         }
 //        m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, command.test);
-        m_Robot->GetNetworkTable()->PutNumber("Elevator/Elevator Encoder", m_ElevatorMaster.GetSelectedSensorPosition(0));
-        m_Robot->GetNetworkTable()->PutNumber("Elevator/Elevator Wanted Position", command.elevatorPosition);
-        m_Robot->GetNetworkTable()->PutNumber("Elevator/Elevator Output", m_ElevatorMaster.GetMotorOutputPercent());
-        m_Robot->GetNetworkTable()->PutNumber("Elevator/Elevator Master Amperage", m_ElevatorMaster.GetOutputCurrent());
+        m_Robot->GetNetworkTable()->PutNumber("Elevator/Encoder", m_ElevatorMaster.GetSelectedSensorPosition(0));
+        m_Robot->GetNetworkTable()->PutNumber("Elevator/Wanted Position", command.elevatorPosition);
+        m_Robot->GetNetworkTable()->PutNumber("Elevator/Output", m_ElevatorMaster.GetMotorOutputPercent());
+        m_Robot->GetNetworkTable()->PutNumber("Elevator/Master Amperage", m_ElevatorMaster.GetOutputCurrent());
         Subsystem::ExecuteCommand(command);
+    }
+
+    int Elevator::GetElevatorPosition() {
+        return m_ElevatorMaster.GetSelectedSensorPosition(0);
+    }
+
+    void Elevator::SetElevatorWantedPosition(int wantedPosition) {
+        m_WantedPosition = wantedPosition;
     }
 }

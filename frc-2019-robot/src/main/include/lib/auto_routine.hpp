@@ -7,6 +7,12 @@
 #include <vector>
 
 #define MAX_SPEED 15.0
+#define MAX_ACCELERATION 10.0
+#define MAX_JERK 60.0
+#define TIME_STEP 1.0 / 50.0
+#define WHEELBASE_DISTANCE 0.6731
+#define WHEEL_CIRCUMFERENCE 0.4787787204060999
+#define TICKS_PER_REVOLUTION 4096
 
 namespace garage {
     namespace lib {
@@ -28,23 +34,23 @@ namespace garage {
             void PrepareWaypoints() {
                 TrajectoryCandidate trajectoryCandidate;
                 pathfinder_prepare(m_Waypoints.data(), m_Waypoints.size(), FIT_HERMITE_QUINTIC, PATHFINDER_SAMPLES_HIGH,
-                                   0.001, MAX_SPEED, 10.0, 60.0, &trajectoryCandidate);
+                                   TIME_STEP, MAX_SPEED, MAX_ACCELERATION, MAX_JERK, &trajectoryCandidate);
                 const int length = trajectoryCandidate.length;
                 Segment trajectory{};
                 m_LeftTrajectory.reserve(length);
                 m_RightTrajectory.reserve(length);
                 pathfinder_generate(&trajectoryCandidate, &trajectory);
-                pathfinder_modify_tank(&trajectory, length, m_LeftTrajectory.data(), m_RightTrajectory.data(), 0.6731);
+                pathfinder_modify_tank(&trajectory, length, m_LeftTrajectory.data(), m_RightTrajectory.data(), WHEELBASE_DISTANCE);
             }
 
             void PrepareEncoder() {
                 m_LeftFollower = m_RightFollower = {};
-                m_LeftEncoderConfig = m_RightEncoderConfig = {0, 4096, 0.4787787204060999, 1.0, 0.0, 0.0,
+                m_LeftEncoderConfig = m_RightEncoderConfig = {0, TICKS_PER_REVOLUTION, WHEEL_CIRCUMFERENCE, 1.0, 0.0, 0.0,
                                                               1.0 / MAX_SPEED, 0.0};
             }
 
         public:
-            AutoRoutine() {
+            AutoRoutine(std::shared_ptr<Robot>& robot) : Routine(robot) {
                 GetWaypoints();
             }
 

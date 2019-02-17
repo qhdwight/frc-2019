@@ -5,7 +5,8 @@
 namespace garage {
     namespace lib {
         class ParallelRoutine : public Routine {
-
+        public:
+            using Routine::Routine;
         };
     }
 }

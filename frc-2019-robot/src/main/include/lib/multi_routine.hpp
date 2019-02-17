@@ -11,6 +11,8 @@ namespace garage {
         protected:
             std::vector<std::shared_ptr<Routine>> m_SubRoutines;
         public:
+            using Routine::Routine;
+
             void Begin() override;
 
             void Update() override;

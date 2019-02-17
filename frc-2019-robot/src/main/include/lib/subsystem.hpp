@@ -11,12 +11,17 @@ namespace garage {
         protected:
             std::shared_ptr<Robot> m_Robot;
             Command m_LastCommand;
+            bool m_IsLocked;
         public:
             Subsystem(std::shared_ptr<Robot>& robot);
 
             virtual void TeleopInit() {};
 
             virtual void ExecuteCommand(Command& command);
+
+            void Lock();
+
+            void Unlock();
         };
     }
 }

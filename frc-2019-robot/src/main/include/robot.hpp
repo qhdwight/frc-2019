@@ -17,17 +17,9 @@
 #include <networktables/NetworkTable.h>
 #include <networktables/NetworkTableInstance.h>
 
-#include <ctre/phoenix/motorcontrol/can/WPI_VictorSPX.h>
-
 #include <memory>
 
 namespace garage {
-    class Drive;
-    class Elevator;
-    class Flipper;
-    class HatchIntake;
-    class Outrigger;
-
     class Robot : public frc::TimedRobot {
     public:
         void RobotInit() override;
@@ -52,13 +44,17 @@ namespace garage {
 
         std::shared_ptr<NetworkTable> GetNetworkTable() const;
 
+        std::shared_ptr<Elevator> GetElevator();
+
     protected:
         nt::NetworkTableInstance m_NetworkTableInstance;
         std::shared_ptr<nt::NetworkTable> m_NetworkTable;
         frc::XboxController m_Controller{0};
         Command m_Command;
-//        std::shared_ptr<lib::RoutineManager> m_RoutineManager = std::make_shared<lib::RoutineManager>();
+        std::shared_ptr<lib::RoutineManager> m_RoutineManager;
         std::shared_ptr<Drive> m_Drive;
+
+    protected:
         std::shared_ptr<Flipper> m_Flipper;
         std::shared_ptr<Elevator> m_Elevator;
         std::shared_ptr<Outrigger> m_Outrigger;

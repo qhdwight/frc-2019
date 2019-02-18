@@ -8,6 +8,7 @@
 #include <subsystem/ball_intake.hpp>
 #include <subsystem/hatch_intake.hpp>
 
+#include <lib/logger.hpp>
 #include <lib/subsystem.hpp>
 #include <lib/routine_manager.hpp>
 
@@ -32,6 +33,7 @@ namespace garage {
         frc::XboxController m_Controller{0};
         Command m_Command;
         std::shared_ptr<lib::RoutineManager> m_RoutineManager;
+        std::shared_ptr<lib::Logger> m_Logger;
         std::shared_ptr<Drive> m_Drive;
         std::shared_ptr<Flipper> m_Flipper;
         std::shared_ptr<Elevator> m_Elevator;
@@ -62,6 +64,8 @@ namespace garage {
         void ExecuteCommand();
 
         std::shared_ptr<NetworkTable> GetNetworkTable() const;
+
+        std::shared_ptr<lib::Logger> GetLogger();
 
         std::shared_ptr<Elevator> GetElevator();
 

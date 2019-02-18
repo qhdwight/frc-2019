@@ -3,7 +3,7 @@
 #include <robot.hpp>
 
 namespace garage {
-    Elevator::Elevator(std::shared_ptr<Robot>& robot) : Subsystem(robot) {
+    Elevator::Elevator(std::shared_ptr<Robot>& robot) : Subsystem(robot, "Elevator") {
         m_ElevatorMaster.ConfigFactoryDefault();
         m_ElevatorSlaveOne.ConfigFactoryDefault();
         m_ElevatorSlaveTwo.ConfigFactoryDefault();
@@ -75,7 +75,7 @@ namespace garage {
         m_Robot->GetNetworkTable()->PutNumber("Elevator/Wanted Position", command.elevatorPosition);
         m_Robot->GetNetworkTable()->PutNumber("Elevator/Output", m_ElevatorMaster.GetMotorOutputPercent());
         m_Robot->GetNetworkTable()->PutNumber("Elevator/Master Amperage", m_ElevatorMaster.GetOutputCurrent());
-//        m_Robot->GetNetworkTable()->PutNumber("Elevator/Limit Switch", isLimitSwitch ? 1.0 : 0.0);
+        m_Robot->GetNetworkTable()->PutNumber("Elevator/Limit Switch", isLimitSwitch ? 1.0 : 0.0);
         Subsystem::ExecuteCommand(command);
     }
 

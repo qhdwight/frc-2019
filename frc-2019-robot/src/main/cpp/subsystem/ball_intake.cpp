@@ -3,7 +3,7 @@
 #include <robot.hpp>
 
 namespace garage {
-    BallIntake::BallIntake(std::shared_ptr<Robot>& robot) : Subsystem(robot) {
+    BallIntake::BallIntake(std::shared_ptr<Robot>& robot) : Subsystem(robot, "Ball Intake") {
         m_LeftIntake.ConfigFactoryDefault();
         m_RightIntake.ConfigFactoryDefault();
         m_LeftIntake.SetNeutralMode(ctre::phoenix::motorcontrol::NeutralMode::Brake);
@@ -26,6 +26,5 @@ namespace garage {
         }
         m_LeftIntake.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, ballIntake * multiplier);
         m_RightIntake.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, ballIntake * multiplier);
-        Subsystem::ExecuteCommand(command);
     }
 }

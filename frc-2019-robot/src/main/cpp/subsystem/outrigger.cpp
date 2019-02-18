@@ -2,7 +2,7 @@
 
 namespace garage {
 
-    Outrigger::Outrigger(std::shared_ptr<Robot>& robot) : Subsystem(robot) {
+    Outrigger::Outrigger(std::shared_ptr<Robot>& robot) : Subsystem(robot, "Outrigger") {
         m_OutriggerMaster.RestoreFactoryDefaults();
         m_OutriggerSlave.RestoreFactoryDefaults();
         m_OutriggerWheel.RestoreFactoryDefaults();
@@ -15,6 +15,5 @@ namespace garage {
 
     void Outrigger::ExecuteCommand(Command& command) {
         m_OutriggerWheel.Set(command.test);
-        Subsystem::ExecuteCommand(command);
     }
 }

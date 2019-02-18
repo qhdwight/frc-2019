@@ -5,7 +5,7 @@
 #include <robot.hpp>
 
 namespace garage {
-    HatchIntake::HatchIntake(std::shared_ptr<Robot>& robot) : Subsystem(robot) {
+    HatchIntake::HatchIntake(std::shared_ptr<Robot>& robot) : Subsystem(robot, "Hatch Intake") {
         m_Servo.SetRaw(HATCH_SERVO_LOWER);
         m_Robot->GetNetworkTable()->PutNumber("Lower PWM", HATCH_SERVO_LOWER);
         m_Robot->GetNetworkTable()->PutNumber("Upper PWM", HATCH_SERVO_UPPER);
@@ -23,6 +23,5 @@ namespace garage {
 //                output = math::map(command.flipper, -1.0, 1.0, lower, upper);
 //        m_Robot->GetNetworkTable()->PutNumber("Hatch Servo PWM", output);
 //        m_Servo.SetRaw(static_cast<uint16_t>(output));
-        Subsystem::ExecuteCommand(command);
     }
 }

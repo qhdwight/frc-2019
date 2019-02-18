@@ -7,19 +7,22 @@
 
 namespace garage {
     void Robot::RobotInit() {
+        const auto defaultLogLevel = lib::LogLevel::kInfo;
+        m_Logger = std::make_shared<lib::Logger>();
+        m_Logger->SetLogLevel(defaultLogLevel);
+        m_Logger->Log(lib::LogLevel::kInfo, "Robot initialized");
         m_Pointer = std::shared_ptr<Robot>(this, [](auto robot) {});
         m_NetworkTableInstance = nt::NetworkTableInstance::GetDefault();
         m_NetworkTable = m_NetworkTableInstance.GetTable("Garage Robotics");
         m_RoutineManager = std::make_shared<lib::RoutineManager>(m_Pointer);
-        m_NetworkTable->PutNumber("Log Level", static_cast<double>(lib::LogLevel::kFatal));
-        lib::setLogLevel(lib::LogLevel::kFatal);
-        m_NetworkTable->GetEntry("Log Level").AddListener([](const nt::EntryNotification& notification) {
+        m_NetworkTable->PutNumber("Log Level", static_cast<double>(defaultLogLevel));
+        m_NetworkTable->GetEntry("Log Level").AddListener([&](const nt::EntryNotification& notification) {
             auto logLevel = static_cast<lib::LogLevel>(std::round(notification.value->GetDouble()));
-            lib::setLogLevel(logLevel);
-            lib::log(lib::LogLevel::kInfo, "Updated log level to: " + std::to_string(logLevel));
+            m_Logger->SetLogLevel(logLevel);
+            m_Logger->Log(lib::LogLevel::kInfo, "Updated log level to: " + std::to_string(logLevel));
         }, 0x10);
 //        AddSubsystem(std::dynamic_pointer_cast<lib::Subsystem>(m_Elevator = std::make_shared<Elevator>(m_Pointer)));
-//        AddSubsystem(std::dynamic_pointer_cast<lib::Subsystem>(m_Drive = std::make_shared<Drive>(m_Pointer)));
+        AddSubsystem(std::dynamic_pointer_cast<lib::Subsystem>(m_Drive = std::make_shared<Drive>(m_Pointer)));
 //        AddSubsystem(std::dynamic_pointer_cast<lib::Subsystem>(m_Flipper = std::make_shared<Flipper>(m_Pointer)));
 //        AddSubsystem(std::dynamic_pointer_cast<lib::Subsystem>(m_BallIntake = std::make_shared<BallIntake>(m_Pointer)));
 //        AddSubsystem(std::dynamic_pointer_cast<lib::Subsystem>(m_HatchIntake = std::make_shared<HatchIntake>(m_Pointer)));
@@ -77,7 +80,7 @@ namespace garage {
 
     void Robot::ExecuteCommand() {
         for (const auto& subsystem : m_Subsystems)
-            subsystem->ExecuteCommand(m_Command);
+            subsystem->Update(m_Command);
         if (m_RoutineManager)
             m_RoutineManager->AddRoutinesFromCommand(m_Command);
     }
@@ -92,6 +95,10 @@ namespace garage {
 
     std::shared_ptr<Drive> Robot::GetDrive() {
         return m_Drive;
+    }
+
+    std::shared_ptr<lib::Logger> Robot::GetLogger() {
+        return m_Logger;
     }
 }
 

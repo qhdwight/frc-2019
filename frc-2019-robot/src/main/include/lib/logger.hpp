@@ -5,13 +5,15 @@
 namespace garage {
     namespace lib {
         enum LogLevel {
-            kSilent = 0, kFatal = 1, kError = 2, kWarning = 3, kInfo = 4, kDebug = 5, kVerbose = 6;
+            kSilent = 0, kFatal = 1, kError = 2, kWarning = 3, kInfo = 4, kDebug = 5, kVerbose = 6
         };
+        class Logger {
+        private:
+            LogLevel m_LogLevel;
+        public:
+            void SetLogLevel(LogLevel logLevel);
 
-        LogLevel m_LogLevel;
-
-        void setLogLevel(LogLevel logLevel);
-
-        void log(LogLevel logLevel, std::string log);
+            void Log(LogLevel logLevel, std::string log);
+        };
     }
 }

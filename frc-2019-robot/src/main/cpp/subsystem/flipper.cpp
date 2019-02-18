@@ -9,7 +9,7 @@ namespace garage {
     double kMaxVel = 1650, kMinVel = 0, kMaxAcc = 1100, kAllErr = 0;
 
 
-    Flipper::Flipper(std::shared_ptr<Robot>& robot) : Subsystem(robot) {
+    Flipper::Flipper(std::shared_ptr<Robot>& robot) : Subsystem(robot, "Flipper") {
         m_Flipper.RestoreFactoryDefaults();
         m_Flipper.SetIdleMode(rev::CANSparkMax::IdleMode::kBrake);
         m_FlipperController.SetP(kP);
@@ -76,6 +76,5 @@ namespace garage {
         else
             m_Flipper.Set(0.0);
 //        m_Flipper.Set(command.flipper * 0.25);
-        Subsystem::ExecuteCommand(command);
     }
 }

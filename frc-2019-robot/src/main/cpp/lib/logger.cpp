@@ -4,11 +4,11 @@
 
 namespace garage {
     namespace lib {
-        void setLogLevel(LogLevel logLevel) {
+        void Logger::SetLogLevel(LogLevel logLevel) {
             m_LogLevel = logLevel;
         }
 
-        void log(LogLevel logLevel, std::string log) {
+        void Logger::Log(LogLevel logLevel, std::string log) {
             if (logLevel <= m_LogLevel) {
                 wpi::outs() << log << '\n';
             }

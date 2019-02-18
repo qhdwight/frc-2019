@@ -6,7 +6,6 @@
 #include <hardware_map.hpp>
 
 #include <lib/subsystem.hpp>
-#include <lib/pose_estimator.hpp>
 
 #include <garage_math/garage_math.hpp>
 
@@ -18,6 +17,7 @@
 namespace garage {
     class Drive : public lib::Subsystem {
     private:
+        double m_LeftOutput, m_RightOutput;
         rev::CANSparkMax
                 m_RightMaster{DRIVE_RIGHT_MASTER, rev::CANSparkMax::MotorType::kBrushless},
                 m_LeftMaster{DRIVE_LEFT_MASTER, rev::CANSparkMax::MotorType::kBrushless},
@@ -25,7 +25,6 @@ namespace garage {
                 m_LeftSlave{DRIVE_LEFT_SLAVE, rev::CANSparkMax::MotorType::kBrushless};
         rev::CANEncoder m_LeftEncoder = m_LeftMaster.GetEncoder(), m_RightEncoder = m_RightMaster.GetEncoder();
         ctre::phoenix::sensors::PigeonIMU m_Pigeon{PIGEON_IMU};
-//        std::shared_ptr<lib::PoseEstimator> m_PoseEstimator;
     public:
         Drive(std::shared_ptr<Robot>& robot);
 
@@ -34,6 +33,12 @@ namespace garage {
         double InputFromCommand(double commandInput);
 
         void ExecuteCommand(Command& command) override;
+
+        double GetHeading();
+
+        void ResetHeadingAndEncoders();
+
+        void SetDriveOutput(double left, double right);
     };
 }
 

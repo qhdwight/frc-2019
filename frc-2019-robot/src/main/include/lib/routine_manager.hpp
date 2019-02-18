@@ -22,6 +22,8 @@ namespace garage {
             void AddRoutinesFromCommand(const Command& command);
 
             void Update();
+
+            void TerminateAllRoutines();
         };
     }
 }

@@ -25,5 +25,11 @@ namespace garage {
                 m_QueuedRoutines.pop();
             }
         }
+
+        void RoutineManager::TerminateAllRoutines() {
+            m_ActiveRoutine.reset();
+            while (!m_QueuedRoutines.empty())
+                m_QueuedRoutines.pop();
+        }
     }
 }

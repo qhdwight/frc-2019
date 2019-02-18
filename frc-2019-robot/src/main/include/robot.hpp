@@ -21,6 +21,25 @@
 
 namespace garage {
     class Robot : public frc::TimedRobot {
+    private:
+        std::shared_ptr<Robot> m_Pointer;
+
+        void UpdateCommand();
+
+    protected:
+        nt::NetworkTableInstance m_NetworkTableInstance;
+        std::shared_ptr<nt::NetworkTable> m_NetworkTable;
+        frc::XboxController m_Controller{0};
+        Command m_Command;
+        std::shared_ptr<lib::RoutineManager> m_RoutineManager;
+        std::shared_ptr<Drive> m_Drive;
+        std::shared_ptr<Flipper> m_Flipper;
+        std::shared_ptr<Elevator> m_Elevator;
+        std::shared_ptr<Outrigger> m_Outrigger;
+        std::shared_ptr<BallIntake> m_BallIntake;
+        std::shared_ptr<HatchIntake> m_HatchIntake;
+        std::vector<std::shared_ptr<lib::Subsystem>> m_Subsystems;
+
     public:
         void RobotInit() override;
 
@@ -46,23 +65,6 @@ namespace garage {
 
         std::shared_ptr<Elevator> GetElevator();
 
-    protected:
-        nt::NetworkTableInstance m_NetworkTableInstance;
-        std::shared_ptr<nt::NetworkTable> m_NetworkTable;
-        frc::XboxController m_Controller{0};
-        Command m_Command;
-        std::shared_ptr<lib::RoutineManager> m_RoutineManager;
-        std::shared_ptr<Drive> m_Drive;
-        std::shared_ptr<Flipper> m_Flipper;
-        std::shared_ptr<Elevator> m_Elevator;
-        std::shared_ptr<Outrigger> m_Outrigger;
-        std::shared_ptr<BallIntake> m_BallIntake;
-        std::shared_ptr<HatchIntake> m_HatchIntake;
-        std::vector<std::shared_ptr<lib::Subsystem>> m_Subsystems;
-
-    private:
-        std::shared_ptr<Robot> m_Pointer;
-
-        void UpdateCommand();
+        std::shared_ptr<Drive> GetDrive();
     };
 }

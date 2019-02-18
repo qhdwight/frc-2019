@@ -5,9 +5,11 @@
 namespace garage {
     namespace lib {
         class DriveForwardAutoRoutine : public AutoRoutine {
-        private:
+        protected:
+            void GetWaypoints() override;
+
         public:
-            using AutoRoutine::Routine;
+            using AutoRoutine::AutoRoutine;
         };
     }
 }

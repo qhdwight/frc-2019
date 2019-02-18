@@ -58,9 +58,9 @@ namespace garage {
     }
 
     void Elevator::ExecuteCommand(Command& command) {
-//        const bool isLimitSwitch = static_cast<const bool>(m_ElevatorMaster.GetSensorCollection().IsRevLimitSwitchClosed());
-//        if (isLimitSwitch)
-//            m_ElevatorMaster.SetSelectedSensorPosition(0);
+        const bool isLimitSwitch = static_cast<const bool>(m_ElevatorMaster.GetSensorCollection().IsRevLimitSwitchClosed());
+        if (isLimitSwitch)
+            m_ElevatorMaster.SetSelectedSensorPosition(0);
         if (!m_IsLocked)
             m_WantedPosition = command.elevatorPosition;
         if (command.button)
@@ -69,7 +69,7 @@ namespace garage {
         if (encoderPosition < ELEVATOR_MAX - 1000 && m_WantedPosition > 2000) {
             m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::MotionMagic, m_WantedPosition);
         } else {
-            m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, 0.0);
+            m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, 0.15);
         }
         m_Robot->GetNetworkTable()->PutNumber("Elevator/Encoder", m_ElevatorMaster.GetSelectedSensorPosition(0));
         m_Robot->GetNetworkTable()->PutNumber("Elevator/Wanted Position", command.elevatorPosition);

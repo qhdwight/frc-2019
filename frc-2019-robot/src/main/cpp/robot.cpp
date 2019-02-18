@@ -2,20 +2,27 @@
 
 #include <test/test_elevator_routine.hpp>
 
+#include <lib/logger.hpp>
 #include <lib/wait_routine.hpp>
 
 namespace garage {
     void Robot::RobotInit() {
-        // Robot is a stack object but I do not give a damn
         m_Pointer = std::shared_ptr<Robot>(this, [](auto robot) {});
         m_NetworkTableInstance = nt::NetworkTableInstance::GetDefault();
         m_NetworkTable = m_NetworkTableInstance.GetTable("Garage Robotics");
         m_RoutineManager = std::make_shared<lib::RoutineManager>(m_Pointer);
-        AddSubsystem(std::dynamic_pointer_cast<lib::Subsystem>(m_Elevator = std::make_shared<Elevator>(m_Pointer)));
-        AddSubsystem(std::dynamic_pointer_cast<lib::Subsystem>(m_Drive = std::make_shared<Drive>(m_Pointer)));
+        m_NetworkTable->PutNumber("Log Level", static_cast<double>(lib::LogLevel::kFatal));
+        lib::setLogLevel(lib::LogLevel::kFatal);
+        m_NetworkTable->GetEntry("Log Level").AddListener([](const nt::EntryNotification& notification) {
+            auto logLevel = static_cast<lib::LogLevel>(std::round(notification.value->GetDouble()));
+            lib::setLogLevel(logLevel);
+            lib::log(lib::LogLevel::kInfo, "Updated log level to: " + std::to_string(logLevel));
+        }, 0x10);
+//        AddSubsystem(std::dynamic_pointer_cast<lib::Subsystem>(m_Elevator = std::make_shared<Elevator>(m_Pointer)));
+//        AddSubsystem(std::dynamic_pointer_cast<lib::Subsystem>(m_Drive = std::make_shared<Drive>(m_Pointer)));
 //        AddSubsystem(std::dynamic_pointer_cast<lib::Subsystem>(m_Flipper = std::make_shared<Flipper>(m_Pointer)));
-        AddSubsystem(std::dynamic_pointer_cast<lib::Subsystem>(m_BallIntake = std::make_shared<BallIntake>(m_Pointer)));
-        AddSubsystem(std::dynamic_pointer_cast<lib::Subsystem>(m_HatchIntake = std::make_shared<HatchIntake>(m_Pointer)));
+//        AddSubsystem(std::dynamic_pointer_cast<lib::Subsystem>(m_BallIntake = std::make_shared<BallIntake>(m_Pointer)));
+//        AddSubsystem(std::dynamic_pointer_cast<lib::Subsystem>(m_HatchIntake = std::make_shared<HatchIntake>(m_Pointer)));
 //        AddSubsystem(std::dynamic_pointer_cast<lib::Subsystem>(m_Outrigger = std::make_shared<Outrigger>(m_Pointer)));
     }
 

@@ -6,16 +6,14 @@
 
 #include <lib/logger.hpp>
 
-#include <frc/smartdashboard/SmartDashboard.h>
-
 namespace garage {
-    double kP = 4e-5, kI = 1e-6, kD = 0, kIz = 0, kFF = 0.000156, kMaxOutput = 1, kMinOutput = -1;
-    double kMaxVel = 1650, kMinVel = 0, kMaxAcc = 1100, kAllErr = 0;
+    double kP = 3e-5, kI = 1e-6, kD = 0, kIz = 0, kFF = 0.000156, kMaxOutput = 1, kMinOutput = -1;
+    double kMaxVel = 1200, kMinVel = 0, kMaxAcc = 800, kAllErr = 0;
 
 
     Flipper::Flipper(std::shared_ptr<Robot>& robot) : Subsystem(robot, "Flipper") {
         m_Flipper.RestoreFactoryDefaults();
-        m_Flipper.SetIdleMode(rev::CANSparkMax::IdleMode::kCoast);
+        m_Flipper.SetIdleMode(rev::CANSparkMax::IdleMode::kBrake);
         m_FlipperController.SetP(kP);
         m_FlipperController.SetI(kI);
         m_FlipperController.SetD(kD);
@@ -26,6 +24,7 @@ namespace garage {
         m_FlipperController.SetSmartMotionMinOutputVelocity(kMinVel);
         m_FlipperController.SetSmartMotionMaxAccel(kMaxAcc);
         m_FlipperController.SetSmartMotionAllowedClosedLoopError(kAllErr);
+        m_LimitSwitch.EnableLimitSwitch(false);
 //        frc::SmartDashboard::PutNumber("P Gain", kP);
 //        frc::SmartDashboard::PutNumber("I Gain", kI);
 //        frc::SmartDashboard::PutNumber("D Gain", kD);
@@ -41,6 +40,7 @@ namespace garage {
     }
 
     void Flipper::TeleopInit() {
+
     }
 
     void Flipper::ExecuteCommand(Command& command) {
@@ -72,16 +72,23 @@ namespace garage {
 //        frc::SmartDashboard::PutNumber("Encoder", m_Encoder.GetPosition());
 //        frc::SmartDashboard::PutNumber("Current", m_Flipper.GetOutputCurrent());
 //        frc::SmartDashboard::PutNumber("Output", m_Flipper.GetAppliedOutput());
-        const double encoderPosition = m_Encoder.GetPosition();
+        const bool isLimitSwitchClosed = m_LimitSwitch.Get();
+        if (isLimitSwitchClosed) {
+            auto error = m_Encoder.SetPosition(0.0);
+            if (error != rev::CANError::kOK)
+                Log(lib::LogLevel::kError, "CAN Error: " + std::to_string(static_cast<int>(error)));
+        }
+        const auto encoderPosition = m_Encoder.GetPosition();
         const auto faults = m_Flipper.GetStickyFaults();
+        if (faults != 0)
+            Log(lib::LogLevel::kError, "Stick Fault Error: " + std::to_string(faults));
         m_Flipper.ClearFaults();
-        const double output = m_LastCommand.ballIntake * 0.25;
-        m_Flipper.Set(output);
-        LogSample(lib::LogLevel::kInfo, "Output: " + std::to_string(output) + ", Encoder position: " + std::to_string(encoderPosition) + ", Faults: " + std::to_string(faults));
-//        if (m_Encoder.GetPosition() > FLIPPER_LOWER || m_Encoder.GetPosition() < FLIPPER_LOWER)
-//            m_FlipperController.SetReference(frc::SmartDashboard::GetNumber("Set Point", command.flipper), rev::ControlType::kSmartMotion);
-//        else
-//            m_Flipper.Set(0.0);
-//        m_Flipper.Set(command.flipper * 0.25);
+//        const double output = math::threshold(m_LastCommand.ballIntake, 0.05) * 0.35;
+//        m_Flipper.Set(output);
+        LogSample(lib::LogLevel::kInfo, "Limit Switch: " + std::to_string(isLimitSwitchClosed) + ", Output: " + std::to_string(m_Flipper.GetAppliedOutput()) + ", Encoder position: " + std::to_string(encoderPosition) + ", Encoder Velocity: " + std::to_string(m_Encoder.GetVelocity()) + ", Faults: " + std::to_string(faults), 3);
+        if (m_Encoder.GetPosition() > FLIPPER_LOWER || m_Encoder.GetPosition() < FLIPPER_UPPER)
+            m_FlipperController.SetReference(20.0, rev::ControlType::kSmartMotion);
+        else
+            m_Flipper.Set(0.0);
     }
 }

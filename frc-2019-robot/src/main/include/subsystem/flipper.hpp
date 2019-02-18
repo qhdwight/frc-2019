@@ -12,7 +12,7 @@ namespace garage {
         rev::CANSparkMax m_Flipper{FLIPPER, rev::CANSparkMax::MotorType::kBrushless};
         rev::CANPIDController m_FlipperController = m_Flipper.GetPIDController();
         rev::CANEncoder m_Encoder = m_Flipper.GetEncoder();
-//        rev::CANDigitalInput m_LimitSwitch = m_Flipper.GetForwardLimitSwitch(rev::CANDigitalInput::LimitSwitchPolarity::kNormallyClosed);
+        rev::CANDigitalInput m_LimitSwitch = m_Flipper.GetForwardLimitSwitch(rev::CANDigitalInput::LimitSwitchPolarity::kNormallyClosed);
     public:
         Flipper(std::shared_ptr<Robot>& robot);
 

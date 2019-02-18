@@ -80,8 +80,7 @@ namespace garage {
         m_Robot->GetNetworkTable()->PutNumber("Elevator/Output", m_ElevatorMaster.GetMotorOutputPercent());
         m_Robot->GetNetworkTable()->PutNumber("Elevator/Master Amperage", m_ElevatorMaster.GetOutputCurrent());
         m_Robot->GetNetworkTable()->PutNumber("Elevator/Limit Switch", isLimitSwitch ? 1.0 : 0.0);
-        LogSample(lib::LogLevel::kInfo, "Theoretical out: " + std::to_string(output) + ", Pos:" + std::to_string(encoderPosition) + "Real out, " + std::to_string(m_ElevatorMaster.GetMotorOutputPercent()) + ", Curr: " + std::to_string(m_ElevatorMaster.GetOutputCurrent()) + ", Limit switch: " + std::to_string(isLimitSwitch));
-        Subsystem::ExecuteCommand(command);
+        LogSample(lib::LogLevel::kInfo, "Theoretical out: " + std::to_string(output) + ", Pos:" + std::to_string(encoderPosition) + ", Real out:" + std::to_string(m_ElevatorMaster.GetMotorOutputPercent()) + ", Current: " + std::to_string(m_ElevatorMaster.GetOutputCurrent()) + ", Limit switch: " + std::to_string(isLimitSwitch));
     }
 
     int Elevator::GetElevatorPosition() {

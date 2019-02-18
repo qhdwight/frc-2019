@@ -22,6 +22,10 @@ namespace garage {
     void Drive::TeleopInit() {
     }
 
+    void Drive::SpacedUpdate() {
+        Log(lib::LogLevel::kInfo, "Fwd: " + std::to_string(m_LastCommand.driveForward) + ", Trn: "  + std::to_string(m_LastCommand.driveTurn));
+    }
+
     double Drive::InputFromCommand(double commandInput) {
         return std::abs(commandInput) > JOYSTICK_THRESHOLD ? (commandInput - math::sign(commandInput) * JOYSTICK_THRESHOLD) : 0.0;
     }

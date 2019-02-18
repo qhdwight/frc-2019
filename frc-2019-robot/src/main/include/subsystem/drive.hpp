@@ -39,6 +39,8 @@ namespace garage {
         void ResetHeadingAndEncoders();
 
         void SetDriveOutput(double left, double right);
+
+        void SpacedUpdate() override;
     };
 }
 

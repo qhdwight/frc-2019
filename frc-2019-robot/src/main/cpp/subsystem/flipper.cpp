@@ -2,6 +2,10 @@
 
 #include <robot.hpp>
 
+#include <garage_math/garage_math.hpp>
+
+#include <lib/logger.hpp>
+
 #include <frc/smartdashboard/SmartDashboard.h>
 
 namespace garage {
@@ -11,7 +15,7 @@ namespace garage {
 
     Flipper::Flipper(std::shared_ptr<Robot>& robot) : Subsystem(robot, "Flipper") {
         m_Flipper.RestoreFactoryDefaults();
-        m_Flipper.SetIdleMode(rev::CANSparkMax::IdleMode::kBrake);
+        m_Flipper.SetIdleMode(rev::CANSparkMax::IdleMode::kCoast);
         m_FlipperController.SetP(kP);
         m_FlipperController.SetI(kI);
         m_FlipperController.SetD(kD);
@@ -37,7 +41,6 @@ namespace garage {
     }
 
     void Flipper::TeleopInit() {
-        m_Encoder.SetPosition(0.0);
     }
 
     void Flipper::ExecuteCommand(Command& command) {
@@ -69,12 +72,16 @@ namespace garage {
 //        frc::SmartDashboard::PutNumber("Encoder", m_Encoder.GetPosition());
 //        frc::SmartDashboard::PutNumber("Current", m_Flipper.GetOutputCurrent());
 //        frc::SmartDashboard::PutNumber("Output", m_Flipper.GetAppliedOutput());
-        frc::SmartDashboard::PutNumber("Set Point", command.flipper);
-        frc::SmartDashboard::PutNumber("Encoder", m_Encoder.GetPosition());
-        if (m_Encoder.GetPosition() > FLIPPER_LOWER || m_Encoder.GetPosition() < FLIPPER_LOWER)
-            m_FlipperController.SetReference(frc::SmartDashboard::GetNumber("Set Point", command.flipper), rev::ControlType::kSmartMotion);
-        else
-            m_Flipper.Set(0.0);
+        const double encoderPosition = m_Encoder.GetPosition();
+        const auto faults = m_Flipper.GetStickyFaults();
+        m_Flipper.ClearFaults();
+        const double output = m_LastCommand.ballIntake * 0.25;
+        m_Flipper.Set(output);
+        LogSample(lib::LogLevel::kInfo, "Output: " + std::to_string(output) + ", Encoder position: " + std::to_string(encoderPosition) + ", Faults: " + std::to_string(faults));
+//        if (m_Encoder.GetPosition() > FLIPPER_LOWER || m_Encoder.GetPosition() < FLIPPER_LOWER)
+//            m_FlipperController.SetReference(frc::SmartDashboard::GetNumber("Set Point", command.flipper), rev::ControlType::kSmartMotion);
+//        else
+//            m_Flipper.Set(0.0);
 //        m_Flipper.Set(command.flipper * 0.25);
     }
 }

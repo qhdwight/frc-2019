@@ -45,7 +45,6 @@ namespace garage {
         }
 
         void Subsystem::SpacedUpdate() {
-            Log(lib::LogLevel::kInfo, "Fwd: " + std::to_string(m_LastCommand.driveForward) + ", Trn: "  + std::to_string(m_LastCommand.driveTurn));
         }
 
         void Subsystem::Log(lib::LogLevel logLevel, std::string log) {

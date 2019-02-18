@@ -74,13 +74,13 @@ namespace garage {
 //            m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, 0.15);
 //        }
         const double output = math::threshold(command.driveForward, 0.05) * 0.25;
-        LogSample(lib::LogLevel::kInfo, std::to_string(output));
         m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, output);
         m_Robot->GetNetworkTable()->PutNumber("Elevator/Encoder", encoderPosition);
         m_Robot->GetNetworkTable()->PutNumber("Elevator/Wanted Position", command.elevatorPosition);
         m_Robot->GetNetworkTable()->PutNumber("Elevator/Output", m_ElevatorMaster.GetMotorOutputPercent());
         m_Robot->GetNetworkTable()->PutNumber("Elevator/Master Amperage", m_ElevatorMaster.GetOutputCurrent());
         m_Robot->GetNetworkTable()->PutNumber("Elevator/Limit Switch", isLimitSwitch ? 1.0 : 0.0);
+        LogSample(lib::LogLevel::kInfo, "Theoretical out: " + std::to_string(output) + ", Pos:" + std::to_string(encoderPosition) + "Real out, " + std::to_string(m_ElevatorMaster.GetMotorOutputPercent()) + ", Curr: " + std::to_string(m_ElevatorMaster.GetOutputCurrent()) + ", Limit switch: " + std::to_string(isLimitSwitch));
         Subsystem::ExecuteCommand(command);
     }
 

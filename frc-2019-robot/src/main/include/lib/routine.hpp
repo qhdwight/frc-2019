@@ -8,12 +8,13 @@ namespace garage {
         class Routine {
         protected:
             std::shared_ptr<Robot> m_Robot;
+            std::string m_Name;
         public:
-            Routine(std::shared_ptr<Robot>& robot);
+            Routine(std::shared_ptr<Robot>& robot, std::string name);
 
-            virtual void Begin() {}
+            virtual void Begin();
 
-            virtual void Terminate() {}
+            virtual void Terminate();
 
             virtual bool CheckFinished() { return true; }
 

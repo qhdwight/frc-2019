@@ -32,6 +32,7 @@ namespace garage {
             m_LeftOutput = forwardInput + turnInput * (1 - math::abs(forwardInput) * 0.5) * 0.25;
             m_RightOutput = forwardInput - turnInput * (1 - math::abs(forwardInput) * 0.5) * 0.25;
         }
+        LogSample(lib::LogLevel::kInfo, std::to_string(m_IsLocked) + ", " + std::to_string(m_LeftOutput) + ", " + std::to_string(m_RightOutput));
         m_LeftMaster.Set(m_LeftOutput);
         m_RightMaster.Set(m_RightOutput);
         m_Robot->GetNetworkTable()->PutNumber("Drive/Gyro", m_Pigeon.GetFusedHeading());

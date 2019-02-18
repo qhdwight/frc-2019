@@ -30,7 +30,7 @@ namespace garage {
             void PrepareEncoder();
 
         public:
-            AutoRoutine(std::shared_ptr<Robot>& robot);
+            AutoRoutine(std::shared_ptr<Robot>& robot, std::string name);
 
             void Begin() override;
 

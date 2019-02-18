@@ -8,7 +8,7 @@ namespace garage {
         protected:
             unsigned int m_CurrentRoutineIndex;
         public:
-            using MultiRoutine::Routine;
+            using MultiRoutine::MultiRoutine;
 
             void Update() override;
 

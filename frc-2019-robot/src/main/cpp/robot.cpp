@@ -4,6 +4,7 @@
 
 #include <lib/logger.hpp>
 #include <lib/wait_routine.hpp>
+#include <lib/sequential_routine.hpp>
 
 namespace garage {
     void Robot::RobotInit() {
@@ -21,8 +22,8 @@ namespace garage {
             m_Logger->SetLogLevel(logLevel);
             m_Logger->Log(lib::LogLevel::kInfo, "Updated log level to: " + std::to_string(logLevel));
         }, 0x10);
-//        AddSubsystem(std::dynamic_pointer_cast<lib::Subsystem>(m_Elevator = std::make_shared<Elevator>(m_Pointer)));
-        AddSubsystem(std::dynamic_pointer_cast<lib::Subsystem>(m_Drive = std::make_shared<Drive>(m_Pointer)));
+        AddSubsystem(std::dynamic_pointer_cast<lib::Subsystem>(m_Elevator = std::make_shared<Elevator>(m_Pointer)));
+//        AddSubsystem(std::dynamic_pointer_cast<lib::Subsystem>(m_Drive = std::make_shared<Drive>(m_Pointer)));
 //        AddSubsystem(std::dynamic_pointer_cast<lib::Subsystem>(m_Flipper = std::make_shared<Flipper>(m_Pointer)));
 //        AddSubsystem(std::dynamic_pointer_cast<lib::Subsystem>(m_BallIntake = std::make_shared<BallIntake>(m_Pointer)));
 //        AddSubsystem(std::dynamic_pointer_cast<lib::Subsystem>(m_HatchIntake = std::make_shared<HatchIntake>(m_Pointer)));
@@ -44,12 +45,18 @@ namespace garage {
     void Robot::AutonomousPeriodic() {}
 
     void Robot::TeleopInit() {
+//        auto r1 = std::dynamic_pointer_cast<lib::Routine>(std::make_shared<lib::WaitRoutine>(m_Pointer, "Wait One", 2.0));
+//        auto r2 = std::dynamic_pointer_cast<lib::Routine>(std::make_shared<lib::WaitRoutine>(m_Pointer, "Wait Two", 4.0));
+//        std::vector<std::shared_ptr<lib::Routine>> routines {r1, r2};
+//        auto seq = std::dynamic_pointer_cast<lib::Routine>(std::make_shared<lib::SequentialRoutine>(m_Pointer, "All", std::move(routines)));
+//        m_RoutineManager->AddRoutine(seq);
         m_Command = {};
         for (const auto& subsystem : m_Subsystems)
             subsystem->TeleopInit();
     }
 
     void Robot::TeleopPeriodic() {
+        m_RoutineManager->Update();
         UpdateCommand();
         ExecuteCommand();
     }
@@ -68,9 +75,9 @@ namespace garage {
         m_Command.test = m_Controller.GetY(frc::GenericHID::JoystickHand::kLeftHand);
         m_Command.routines.clear();
         if (m_Controller.GetAButtonPressed()) {
-            m_Command.routines.push_back(std::make_shared<test::TestElevatorRoutine>(m_Pointer, 100000.0));
-            m_Command.routines.push_back(std::make_shared<lib::WaitRoutine>(m_Pointer, 0.2));
-            m_Command.routines.push_back(std::make_shared<test::TestElevatorRoutine>(m_Pointer, 0.0));
+            m_Command.routines.push_back(std::make_shared<test::TestElevatorRoutine>(m_Pointer, "Elevator Up", 100000.0));
+            m_Command.routines.push_back(std::make_shared<lib::WaitRoutine>(m_Pointer, "Elevator Wait", 0.2));
+            m_Command.routines.push_back(std::make_shared<test::TestElevatorRoutine>(m_Pointer, "Elevator Down", 0.0));
         }
         if (m_Controller.GetBButtonPressed()) {
             if (m_RoutineManager)

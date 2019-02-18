@@ -19,7 +19,7 @@
 namespace garage {
     class Elevator : public lib::Subsystem {
     private:
-        int m_WantedPosition;
+        int m_WantedPosition = ELEVATOR_MIN;
         ctre::phoenix::motorcontrol::can::TalonSRX m_ElevatorMaster{ELEVATOR_MASTER};
         ctre::phoenix::motorcontrol::can::VictorSPX m_ElevatorSlaveOne{ELEVATOR_SLAVE_ONE}, m_ElevatorSlaveTwo{
                 ELEVATOR_SLAVE_TWO}, m_ElevatorSlaveThree{ELEVATOR_SLAVE_THREE};

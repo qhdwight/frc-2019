@@ -11,12 +11,14 @@
 namespace garage {
     class HatchIntake : public lib::Subsystem {
     private:
-        bool m_IntakeOpen;
-        uint16_t m_ServoOutput;
+        bool m_IntakeOpen = false;
+        uint16_t m_ServoOutput = 0;
         frc::Servo m_Servo {HATCH_SERVO};
     public:
         HatchIntake(std::shared_ptr<Robot>& robot);
 
         void ExecuteCommand(Command& command) override;
+
+        void TeleopInit() override;
     };
 }

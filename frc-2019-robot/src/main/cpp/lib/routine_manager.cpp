@@ -6,9 +6,9 @@ namespace garage {
 
         }
 
-        void RoutineManager::AddRoutinesFromCommand(const Command& command) {
+        void RoutineManager::AddRoutinesFromCommand(Command& command) {
             for (auto& routine : command.routines)
-                m_QueuedRoutines.push(routine);
+                AddRoutine(routine);
         }
 
         void RoutineManager::Update() {
@@ -30,6 +30,10 @@ namespace garage {
             m_ActiveRoutine.reset();
             while (!m_QueuedRoutines.empty())
                 m_QueuedRoutines.pop();
+        }
+
+        void RoutineManager::AddRoutine(std::shared_ptr<Routine>& routine) {
+            m_QueuedRoutines.push(routine);
         }
     }
 }

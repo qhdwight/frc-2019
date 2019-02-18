@@ -2,6 +2,8 @@
 
 #include <robot.hpp>
 
+#include <garage_math/garage_math.hpp>
+
 namespace garage {
     Elevator::Elevator(std::shared_ptr<Robot>& robot) : Subsystem(robot, "Elevator") {
         m_ElevatorMaster.ConfigFactoryDefault();
@@ -25,16 +27,16 @@ namespace garage {
         m_ElevatorSlaveOne.SetInverted(ctre::phoenix::motorcontrol::InvertType::FollowMaster);
         m_ElevatorSlaveTwo.SetInverted(ctre::phoenix::motorcontrol::InvertType::FollowMaster);
         m_ElevatorSlaveThree.SetInverted(ctre::phoenix::motorcontrol::InvertType::FollowMaster);
-        m_Robot->GetNetworkTable()->PutNumber("Elevator/Acceleration", ELEVATOR_ACCELERATION);
-        m_Robot->GetNetworkTable()->PutNumber("Elevator/Velocity", ELEVATOR_VELOCITY);
-        m_Robot->GetNetworkTable()->PutNumber("Elevator/kP", ELEVATOR_P);
-        m_Robot->GetNetworkTable()->PutNumber("Elevator/kD", ELEVATOR_D);
-        m_Robot->GetNetworkTable()->PutNumber("Elevator/kF", ELEVATOR_F);
-        m_ElevatorMaster.ConfigMotionAcceleration(ELEVATOR_ACCELERATION);
-        m_ElevatorMaster.ConfigMotionCruiseVelocity(ELEVATOR_VELOCITY);
-        m_ElevatorMaster.Config_kF(0, ELEVATOR_F);
-        m_ElevatorMaster.Config_kP(0, ELEVATOR_P);
-        m_ElevatorMaster.Config_kD(0, ELEVATOR_D);
+//        m_Robot->GetNetworkTable()->PutNumber("Elevator/Acceleration", ELEVATOR_ACCELERATION);
+//        m_Robot->GetNetworkTable()->PutNumber("Elevator/Velocity", ELEVATOR_VELOCITY);
+//        m_Robot->GetNetworkTable()->PutNumber("Elevator/kP", ELEVATOR_P);
+//        m_Robot->GetNetworkTable()->PutNumber("Elevator/kD", ELEVATOR_D);
+//        m_Robot->GetNetworkTable()->PutNumber("Elevator/kF", ELEVATOR_F);
+        m_ElevatorMaster.ConfigMotionAcceleration(ELEVATOR_ACCELERATION, 100);
+        m_ElevatorMaster.ConfigMotionCruiseVelocity(ELEVATOR_VELOCITY, 100);
+        m_ElevatorMaster.Config_kF(0, ELEVATOR_F, 100);
+        m_ElevatorMaster.Config_kP(0, ELEVATOR_P, 100);
+        m_ElevatorMaster.Config_kD(0, ELEVATOR_D, 100);
 //        m_Robot->GetNetworkTable()->GetEntry("Elevator/Acceleration").AddListener([&](const nt::EntryNotification& notification) {
 //            m_ElevatorMaster.ConfigMotionAcceleration(static_cast<int>(notification.value->GetDouble()));
 //        }, 0xFF);
@@ -66,12 +68,15 @@ namespace garage {
         if (command.button)
             m_ElevatorMaster.SetSelectedSensorPosition(0);
         const int encoderPosition = m_ElevatorMaster.GetSelectedSensorPosition(0);
-        if (encoderPosition < ELEVATOR_MAX - 1000 && m_WantedPosition > 2000) {
-            m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::MotionMagic, m_WantedPosition);
-        } else {
-            m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, 0.15);
-        }
-        m_Robot->GetNetworkTable()->PutNumber("Elevator/Encoder", m_ElevatorMaster.GetSelectedSensorPosition(0));
+//        if (encoderPosition < ELEVATOR_MAX - 1000 && m_WantedPosition > 2000) {
+//            m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::MotionMagic, m_WantedPosition);
+//        } else {
+//            m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, 0.15);
+//        }
+        const double output = math::threshold(command.driveForward, 0.05) * 0.25;
+        LogSample(lib::LogLevel::kInfo, std::to_string(output));
+        m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, output);
+        m_Robot->GetNetworkTable()->PutNumber("Elevator/Encoder", encoderPosition);
         m_Robot->GetNetworkTable()->PutNumber("Elevator/Wanted Position", command.elevatorPosition);
         m_Robot->GetNetworkTable()->PutNumber("Elevator/Output", m_ElevatorMaster.GetMotorOutputPercent());
         m_Robot->GetNetworkTable()->PutNumber("Elevator/Master Amperage", m_ElevatorMaster.GetOutputCurrent());

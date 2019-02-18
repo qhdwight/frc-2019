@@ -1,5 +1,7 @@
 #include <utility>
 
+#include <utility>
+
 #include <robot.hpp>
 
 #include <lib/subsystem.hpp>
@@ -43,11 +45,16 @@ namespace garage {
         }
 
         void Subsystem::SpacedUpdate() {
-            Log(lib::LogLevel::kInfo, std::to_string(m_LastCommand.driveForward) + ", " + std::to_string(m_LastCommand.driveTurn));
+            Log(lib::LogLevel::kInfo, "Fwd: " + std::to_string(m_LastCommand.driveForward) + ", Trn: "  + std::to_string(m_LastCommand.driveTurn));
         }
 
         void Subsystem::Log(lib::LogLevel logLevel, std::string log) {
             m_Robot->GetLogger()->Log(logLevel, "[" + m_SubsystemName + "]: " + log);
+        }
+
+        void Subsystem::LogSample(lib::LogLevel logLevel, std::string log, int frequency) {
+            if (m_SequenceNumber % frequency == 0)
+                Log(logLevel, std::move(log));
         }
     }
 }

@@ -6,7 +6,8 @@
 
 namespace garage {
     namespace test {
-        TestElevatorRoutine::TestElevatorRoutine(std::shared_ptr<Robot>& robot, int position) : Routine(robot), m_Position(position) {
+        TestElevatorRoutine::TestElevatorRoutine(std::shared_ptr<Robot>& robot, std::string name, int position)
+            : Routine(robot, std::move(name)), m_Position(position) {
 
         }
 

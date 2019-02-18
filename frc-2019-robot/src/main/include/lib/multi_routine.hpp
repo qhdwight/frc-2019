@@ -11,7 +11,7 @@ namespace garage {
         protected:
             std::vector<std::shared_ptr<Routine>> m_SubRoutines;
         public:
-            using Routine::Routine;
+            MultiRoutine(std::shared_ptr<Robot>, std::string name, std::vector<std::shared_ptr<Routine>>&& routines);
 
             void Begin() override;
 

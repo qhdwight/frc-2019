@@ -8,9 +8,9 @@
 namespace garage {
     struct Command {
     public:
-        double driveForward, driveTurn, flipper, ballIntake, test;
+        double driveForward, driveTurn, flipper, ballIntake, test, driveForwardFine, driveTurnFine;
         int elevatorPosition;
-        bool button, hatchIntakeDown;
+        bool killSwitch, hatchIntakeDown;
         std::vector<std::shared_ptr<lib::Routine>> routines;
     };
 }

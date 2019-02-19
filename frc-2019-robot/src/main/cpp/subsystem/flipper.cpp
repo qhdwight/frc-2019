@@ -7,13 +7,14 @@
 #include <lib/logger.hpp>
 
 namespace garage {
-    double kP = 3e-5, kI = 1e-6, kD = 0, kIz = 0, kFF = 0.000156, kMaxOutput = 1, kMinOutput = -1;
-    double kMaxVel = 1200, kMinVel = 0, kMaxAcc = 800, kAllErr = 0;
-
+    double kP = 4e-5, kI = 1e-7, kD = 5e-4, kIz = 3.0, kFF = 0.000156, kMaxOutput = 1, kMinOutput = -1;
+    double kMaxVel = 4400, kMinVel = 0, kMaxAcc = 2300, kAllErr = 0.1;
 
     Flipper::Flipper(std::shared_ptr<Robot>& robot) : Subsystem(robot, "Flipper") {
         m_Flipper.RestoreFactoryDefaults();
         m_Flipper.SetIdleMode(rev::CANSparkMax::IdleMode::kBrake);
+        m_Flipper.SetOpenLoopRampRate(0.2);
+        m_Flipper.SetClosedLoopRampRate(0.2);
         m_FlipperController.SetP(kP);
         m_FlipperController.SetI(kI);
         m_FlipperController.SetD(kD);
@@ -72,23 +73,48 @@ namespace garage {
 //        frc::SmartDashboard::PutNumber("Encoder", m_Encoder.GetPosition());
 //        frc::SmartDashboard::PutNumber("Current", m_Flipper.GetOutputCurrent());
 //        frc::SmartDashboard::PutNumber("Output", m_Flipper.GetAppliedOutput());
+
         const bool isLimitSwitchClosed = m_LimitSwitch.Get();
-        if (isLimitSwitchClosed) {
+        if (isLimitSwitchClosed && m_FirstLimitSwitchHit) {
             auto error = m_Encoder.SetPosition(0.0);
-            if (error != rev::CANError::kOK)
+            if (error == rev::CANError::kOK) {
+                Log(lib::LogLevel::kInfo, "Limit switch hit and encoder reset");
+                m_FirstLimitSwitchHit = false;
+            } else {
                 Log(lib::LogLevel::kError, "CAN Error: " + std::to_string(static_cast<int>(error)));
+            }
+        }
+        if (!isLimitSwitchClosed) {
+            m_FirstLimitSwitchHit = true;
         }
         const auto encoderPosition = m_Encoder.GetPosition();
         const auto faults = m_Flipper.GetStickyFaults();
-        if (faults != 0)
-            Log(lib::LogLevel::kError, "Stick Fault Error: " + std::to_string(faults));
         m_Flipper.ClearFaults();
+        double setPoint = command.flipper;
+        const bool inMiddle = encoderPosition > FLIPPER_LOWER && encoderPosition < FLIPPER_UPPER;
+        bool wantingToGoOtherWay = false;
+        if (encoderPosition < FLIPPER_LOWER && setPoint > FLIPPER_LOWER) wantingToGoOtherWay = true;
+        if (encoderPosition > FLIPPER_UPPER && setPoint < FLIPPER_UPPER) wantingToGoOtherWay = true;
+        if (inMiddle || wantingToGoOtherWay) {
+            setPoint = math::clamp(setPoint, FLIPPER_LOWER, FLIPPER_UPPER);
+            if (setPoint != m_LastSetPoint) {
+                auto error = m_FlipperController.SetReference(setPoint, rev::ControlType::kSmartMotion);
+                if (error == rev::CANError::kOK) {
+                    Log(lib::LogLevel::kInfo, "Setting set point to: " + std::to_string(setPoint));
+                    m_LastSetPoint = setPoint;
+                } else {
+                    Log(lib::LogLevel::kError, "CAN Error: " + std::to_string(static_cast<int>(error)));
+                }
+            }
+        } else {
+            LogSample(lib::LogLevel::kInfo, "Not doing anything");
+            m_Flipper.Set(0.0);
+        }
+        if (faults != 0)
+            LogSample(lib::LogLevel::kError, "Stick Fault Error: " + std::to_string(faults));
+        LogSample(lib::LogLevel::kInfo, "Wanted Position: " + std::to_string(setPoint) + ", Output: " + std::to_string(m_Flipper.GetAppliedOutput()) + ", Limit Switch: " + std::to_string(isLimitSwitchClosed) + ", Encoder position: " + std::to_string(encoderPosition) + ", Encoder Velocity: " + std::to_string(m_Encoder.GetVelocity()) + ", Faults: " + std::to_string(faults));
+
 //        const double output = math::threshold(m_LastCommand.ballIntake, 0.05) * 0.35;
 //        m_Flipper.Set(output);
-        LogSample(lib::LogLevel::kInfo, "Limit Switch: " + std::to_string(isLimitSwitchClosed) + ", Output: " + std::to_string(m_Flipper.GetAppliedOutput()) + ", Encoder position: " + std::to_string(encoderPosition) + ", Encoder Velocity: " + std::to_string(m_Encoder.GetVelocity()) + ", Faults: " + std::to_string(faults), 3);
-        if (m_Encoder.GetPosition() > FLIPPER_LOWER || m_Encoder.GetPosition() < FLIPPER_UPPER)
-            m_FlipperController.SetReference(20.0, rev::ControlType::kSmartMotion);
-        else
-            m_Flipper.Set(0.0);
     }
 }

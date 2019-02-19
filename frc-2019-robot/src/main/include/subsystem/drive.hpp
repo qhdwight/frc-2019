@@ -1,6 +1,6 @@
 #pragma once
 
-#define JOYSTICK_THRESHOLD 0.05
+#define JOYSTICK_THRESHOLD 0.06
 
 #include <command.hpp>
 #include <hardware_map.hpp>

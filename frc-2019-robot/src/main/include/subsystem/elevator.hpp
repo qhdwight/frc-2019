@@ -11,20 +11,34 @@
 #define ELEVATOR_MAX 300000
 #define ELEVATOR_VELOCITY 10000
 #define ELEVATOR_ACCELERATION 5000
-#define ELEVATOR_P 0.00001
+#define ELEVATOR_P 0.01
 #define ELEVATOR_I 0.0
 #define ELEVATOR_D ELEVATOR_P * 13.0
 #define ELEVATOR_F 1023.0 / ELEVATOR_VELOCITY
-#define ELEVATOR_MIN_SETPOINT_HEIGHT 3000.0
+#define ELEVATOR_MIN_CLOSED_LOOP_HEIGHT 5000.0
+
+#define ELEVATOR_OPEN_LOOP_RAMP 0.4
+
+#define SAFE_ELEVATOR_DOWN_STRONG 0.11
+#define SAFE_ELEVATOR_DOWN_WEAK 0.09
+
+#define KILL_ELEVATOR_POSITION_STRONG 11000
+#define KILL_ELEVATOR_POSITION_WEAK 30000
+
+#define ELEVATOR_UP_OUTPUT 0.6
+#define ELEVATOR_DOWN_OUTPUT 0.08
+
+#define SET_POINT_SLOT_INDEX 0
+#define HYBRID_SLOT_INDEX 1
 
 namespace garage {
-    enum ElevatorControlMode {
-        MANUAL, SETPOINT, HYBRID
+    enum class ElevatorControlMode {
+        k_Manual, k_SetPoint, k_Hybrid, k_Idle, k_Killed
     };
     class Elevator : public lib::Subsystem {
     private:
-        ElevatorControlMode m_ControlMode = ElevatorControlMode::MANUAL;
-        bool m_KillActivated = false, m_FirstLimitSwitchHit = true;
+        ElevatorControlMode m_DefaultControlMode = ElevatorControlMode::k_Manual, m_ControlMode = m_DefaultControlMode;
+        bool m_FirstLimitSwitchHit = true;
         int m_WantedSetPoint = ELEVATOR_MIN, m_LastSetPoint = m_WantedSetPoint;
         ctre::phoenix::motorcontrol::can::TalonSRX m_ElevatorMaster{ELEVATOR_MASTER};
         ctre::phoenix::motorcontrol::can::VictorSPX m_ElevatorSlaveOne{ELEVATOR_SLAVE_ONE}, m_ElevatorSlaveTwo{

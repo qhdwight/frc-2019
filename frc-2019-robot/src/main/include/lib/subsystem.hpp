@@ -8,7 +8,7 @@
 #include <string>
 
 #define SPACED_UPDATE_INTERVAL 100
-#define DEFAULT_FREQUENCY 50
+#define DEFAULT_FREQUENCY 10
 
 namespace garage {
     class Robot;

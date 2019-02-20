@@ -9,6 +9,7 @@
 namespace garage {
     class Outrigger : public lib::Subsystem {
     private:
+        double m_Output = 0.0;
         rev::CANSparkMax
                 m_OutriggerMaster{OUTRIGGER_ARM_MASTER, rev::CANSparkMax::MotorType::kBrushless},
                 m_OutriggerSlave{OUTRIGGER_ARM_SLAVE, rev::CANSparkMax::MotorType::kBrushless},
@@ -19,5 +20,7 @@ namespace garage {
         Outrigger(std::shared_ptr<Robot>& robot);
 
         void ExecuteCommand(Command& command) override;
+
+        void SetOutput(double output);
     };
 }

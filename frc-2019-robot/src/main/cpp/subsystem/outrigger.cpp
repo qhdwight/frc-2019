@@ -14,6 +14,13 @@ namespace garage {
     }
 
     void Outrigger::ExecuteCommand(Command& command) {
-        m_OutriggerWheel.Set(command.test);
+        if (!m_IsLocked) {
+            m_Output = command.test;
+        }
+        m_OutriggerWheel.Set(m_Output);
+    }
+
+    void Outrigger::SetOutput(double output) {
+        m_Output = output;
     }
 }

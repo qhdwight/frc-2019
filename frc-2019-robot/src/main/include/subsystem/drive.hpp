@@ -36,7 +36,9 @@ namespace garage {
 
         double GetHeading();
 
-        void ResetHeadingAndEncoders();
+        double GetTilt();
+
+        void ResetGyroAndEncoders();
 
         void SetDriveOutput(double left, double right);
 

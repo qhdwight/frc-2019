@@ -19,7 +19,7 @@ namespace garage {
             m_ServoOutput = static_cast<uint16_t>(m_IntakeOpen ? HATCH_SERVO_LOWER : HATCH_SERVO_UPPER);
             m_IntakeOpen = !m_IntakeOpen;
         }
-        LogSample(lib::LogLevel::kInfo, std::to_string(m_ServoOutput));
+        LogSample(lib::LogLevel::k_Info, std::to_string(m_ServoOutput));
         m_Servo.SetRaw(m_ServoOutput);
 //        const double
 //                lower = m_Robot->GetNetworkTable()->GetNumber("Lower PWM", HATCH_SERVO_LOWER),

@@ -20,10 +20,11 @@ namespace garage {
     }
 
     void Drive::TeleopInit() {
+        ResetGyroAndEncoders();
     }
 
     void Drive::SpacedUpdate() {
-        Log(lib::LogLevel::kInfo, "Fwd: " + std::to_string(m_LastCommand.driveForward) + ", Trn: "  + std::to_string(m_LastCommand.driveTurn));
+        Log(lib::LogLevel::k_Info, "Fwd: " + std::to_string(m_LastCommand.driveForward) + ", Trn: "  + std::to_string(m_LastCommand.driveTurn));
     }
 
     double Drive::InputFromCommand(double commandInput) {
@@ -46,7 +47,7 @@ namespace garage {
                 m_RightOutput = (forwardInputFine - turnInputFine) * 0.05;
             }
         }
-        LogSample(lib::LogLevel::kInfo, std::to_string(m_IsLocked) + ", " + std::to_string(m_LeftOutput) + ", " + std::to_string(m_RightOutput));
+        LogSample(lib::LogLevel::k_Info, std::to_string(m_IsLocked) + ", " + std::to_string(m_LeftOutput) + ", " + std::to_string(m_RightOutput));
         m_LeftMaster.Set(m_LeftOutput);
         m_RightMaster.Set(m_RightOutput);
 //        m_Robot->GetNetworkTable()->PutNumber("Drive/Gyro", m_Pigeon.GetFusedHeading());
@@ -62,7 +63,7 @@ namespace garage {
         return m_Pigeon.GetFusedHeading();
     }
 
-    void Drive::ResetHeadingAndEncoders() {
+    void Drive::ResetGyroAndEncoders() {
         m_Pigeon.SetFusedHeading(0.0);
         m_LeftEncoder.SetPosition(0.0);
         m_RightEncoder.SetPosition(0.0);
@@ -71,5 +72,11 @@ namespace garage {
     void Drive::SetDriveOutput(double left, double right) {
         m_LeftOutput = left;
         m_RightOutput = right;
+    }
+
+    double Drive::GetTilt() {
+        double angles[3];
+        m_Pigeon.GetYawPitchRoll(angles);
+        return angles[1];
     }
 }

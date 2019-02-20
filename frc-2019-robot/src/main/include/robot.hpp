@@ -70,5 +70,7 @@ namespace garage {
         std::shared_ptr<Elevator> GetElevator();
 
         std::shared_ptr<Drive> GetDrive();
+
+        std::shared_ptr<Outrigger> GetOutrigger();
     };
 }

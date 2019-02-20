@@ -6,8 +6,10 @@ namespace garage {
             if (m_CurrentRoutineIndex < m_SubRoutines.size()) {
                 auto& routine = m_SubRoutines[m_CurrentRoutineIndex];
                 routine->Update();
-                if (routine->CheckFinished())
+                if (routine->CheckFinished()) {
+                    routine->Terminate();
                     m_CurrentRoutineIndex++;
+                }
             }
         }
 

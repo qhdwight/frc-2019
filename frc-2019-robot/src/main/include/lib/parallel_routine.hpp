@@ -1,12 +1,20 @@
 #pragma once
 
-#include <lib/routine.hpp>
+#include <lib/multi_routine.hpp>
 
 namespace garage {
     namespace lib {
-        class ParallelRoutine : public Routine {
+        class ParallelRoutine : public MultiRoutine {
         public:
-            using Routine::Routine;
+            using MultiRoutine::MultiRoutine;
+
+            void Begin() override;
+
+            void Update() override;
+
+            bool CheckFinished() override;
+
+            void Terminate() override;
         };
     }
 }

@@ -11,7 +11,7 @@
 namespace garage {
     namespace lib {
         Subsystem::Subsystem(std::shared_ptr<Robot>& robot, std::string subsystemName) : m_Robot(robot), m_SubsystemName(std::move(subsystemName)) {
-            Log(lib::LogLevel::kInfo, "Subsystem Initialized");
+            Log(lib::LogLevel::k_Info, "Subsystem Initialized");
         }
 
         void Subsystem::ExecuteCommand(Command& command) {
@@ -48,7 +48,7 @@ namespace garage {
         }
 
         void Subsystem::Log(lib::LogLevel logLevel, std::string log) {
-            m_Robot->GetLogger()->Log(logLevel, "[" + m_SubsystemName + "]: " + log);
+            m_Robot->GetLogger()->Log(logLevel, m_Robot->GetLogger()->Format("[%s] %s", m_SubsystemName.c_str(), log.c_str()));
         }
 
         void Subsystem::LogSample(lib::LogLevel logLevel, std::string log, int frequency) {

@@ -28,7 +28,7 @@ namespace garage {
 
             virtual void Update(Command& command);
 
-            virtual void SpacedUpdate();
+            virtual void SpacedUpdate(Command& command) {};
 
             virtual void AdvanceSequence();
 

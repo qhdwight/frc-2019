@@ -23,8 +23,8 @@ namespace garage {
         ResetGyroAndEncoders();
     }
 
-    void Drive::SpacedUpdate() {
-        Log(lib::LogLevel::k_Info, "Fwd: " + std::to_string(m_LastCommand.driveForward) + ", Trn: "  + std::to_string(m_LastCommand.driveTurn));
+    void Drive::SpacedUpdate(Command& command) {
+        Log(lib::LogLevel::k_Info, m_Robot->GetLogger()->Format("Forward: %f, Turn: %f", command.driveForward, command.driveTurn));
     }
 
     double Drive::InputFromCommand(double commandInput) {

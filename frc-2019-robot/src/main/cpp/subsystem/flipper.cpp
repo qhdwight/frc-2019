@@ -37,7 +37,7 @@ namespace garage {
                 Log(lib::LogLevel::k_Info, "Limit switch hit and encoder reset");
                 m_FirstLimitSwitchHit = false;
             } else {
-                Log(lib::LogLevel::k_Error, "CAN Error: " + std::to_string(static_cast<int>(error)));
+                Log(lib::LogLevel::k_Error, m_Robot->GetLogger()->Format("CAN Error: %d", static_cast<int>(error)));
             }
         }
         if (!isLimitSwitchClosed) {
@@ -56,10 +56,10 @@ namespace garage {
             if (setPoint != m_LastSetPoint) {
                 auto error = m_FlipperController.SetReference(setPoint, rev::ControlType::kSmartMotion);
                 if (error == rev::CANError::kOK) {
-                    Log(lib::LogLevel::k_Info, "Setting set point to: " + std::to_string(setPoint));
+                    Log(lib::LogLevel::k_Info, m_Robot->GetLogger()->Format("Setting set point to: %d", setPoint));
                     m_LastSetPoint = setPoint;
                 } else {
-                    Log(lib::LogLevel::k_Error, "CAN Error: " + std::to_string(static_cast<int>(error)));
+                    Log(lib::LogLevel::k_Error, m_Robot->GetLogger()->Format("CAN Error: %d", static_cast<int>(error)));
                 }
             }
         } else {
@@ -67,8 +67,10 @@ namespace garage {
             m_Flipper.Set(0.0);
         }
         if (faults != 0)
-            LogSample(lib::LogLevel::k_Error, "Stick Fault Error: " + std::to_string(faults));
-        LogSample(lib::LogLevel::k_Info, "Wanted Position: " + std::to_string(setPoint) + ", Output: " + std::to_string(m_Flipper.GetAppliedOutput()) + ", Limit Switch: " + std::to_string(isLimitSwitchClosed) + ", Encoder position: " + std::to_string(encoderPosition) + ", Encoder Velocity: " + std::to_string(m_Encoder.GetVelocity()) + ", Faults: " + std::to_string(faults));
+            LogSample(lib::LogLevel::k_Error, m_Robot->GetLogger()->Format("Stick Fault Error: %d", faults));
+        LogSample(lib::LogLevel::k_Info, m_Robot->GetLogger()->Format(
+                "Wanted Position: %d, Output: %f, Encoder Position: %f, Encoder Velocity: %f, Limit Switch: %d, Faults: %d",
+                setPoint, m_Flipper.GetAppliedOutput(), isLimitSwitchClosed, encoderPosition, m_Encoder.GetVelocity()));
 
 //        const double output = math::threshold(m_LastCommand.ballIntake, 0.05) * 0.35;
 //        m_Flipper.Set(output);

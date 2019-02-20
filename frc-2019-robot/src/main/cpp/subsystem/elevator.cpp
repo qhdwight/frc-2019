@@ -17,6 +17,7 @@ namespace garage {
         m_ElevatorSlaveTwo.SetNeutralMode(ctre::phoenix::motorcontrol::NeutralMode::Brake);
         m_ElevatorSlaveThree.SetNeutralMode(ctre::phoenix::motorcontrol::NeutralMode::Brake);
         m_ElevatorMaster.ConfigOpenloopRamp(ELEVATOR_OPEN_LOOP_RAMP, CONFIG_TIMEOUT);
+        m_ElevatorMaster.ConfigClosedloopRamp(0.2, CONFIG_TIMEOUT);
         // Current limiting
 //        m_ElevatorMaster.EnableCurrentLimit(true);
 //        m_ElevatorMaster.ConfigPeakCurrentLimit(300, CONFIG_TIMEOUT);
@@ -70,7 +71,7 @@ namespace garage {
                 Log(lib::LogLevel::k_Info, "Limit switch hit and encoder reset");
                 m_FirstLimitSwitchHit = false;
             } else {
-                Log(lib::LogLevel::k_Error, "CTRE Error: " + std::to_string(static_cast<int>(error)));
+                Log(lib::LogLevel::k_Error, m_Robot->GetLogger()->Format("CTRE Error: %d", static_cast<int>(error)));
             }
         }
         const int encoderPosition = m_ElevatorMaster.GetSelectedSensorPosition(0);
@@ -143,12 +144,10 @@ namespace garage {
                 }
             }
         }
-//        LogSample(lib::LogLevel::k_Info, m_Robot->GetLogger()->Format(""))
-        LogSample(lib::LogLevel::k_Info,
-                  "Wanted Position: " + std::to_string(m_WantedSetPoint) + ", Control Mode: " + std::to_string(static_cast<int>(m_ControlMode)) +
-                  ", Encoder: " + std::to_string(encoderPosition) + ", Pos:" + std::to_string(encoderPosition) +
-                  ", Real out:" + std::to_string(m_ElevatorMaster.GetMotorOutputPercent()) +
-                  ", Current: " + std::to_string(m_ElevatorMaster.GetOutputCurrent()) + ", Limit switch: " + std::to_string(isLimitSwitchDown), 5);
+        LogSample(lib::LogLevel::k_Info, m_Robot->GetLogger()->Format(
+                "Control Mode: %d, Wanted Set Point: %d, Encoder: %d, Real Output: %f, Current: %f, Limit Switch: %s",
+                m_ControlMode, m_WantedSetPoint, encoderPosition, m_ElevatorMaster.GetMotorOutputPercent(), m_ElevatorMaster.GetOutputCurrent(),
+                isLimitSwitchDown ? "true" : "false"));
     }
 
     int Elevator::GetElevatorPosition() {

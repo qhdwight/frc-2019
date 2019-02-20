@@ -34,6 +34,8 @@ namespace garage {
 
         void ExecuteCommand(Command& command) override;
 
+        void SpacedUpdate(Command& command) override;
+
         double GetHeading();
 
         double GetTilt();
@@ -41,8 +43,6 @@ namespace garage {
         void ResetGyroAndEncoders();
 
         void SetDriveOutput(double left, double right);
-
-        void SpacedUpdate() override;
     };
 }
 

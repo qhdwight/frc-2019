@@ -20,7 +20,7 @@ namespace garage {
         m_NetworkTable->GetEntry("Log Level").AddListener([&](const nt::EntryNotification& notification) {
             auto logLevel = static_cast<lib::LogLevel>(std::round(notification.value->GetDouble()));
             m_Logger->SetLogLevel(logLevel);
-            m_Logger->Log(lib::LogLevel::k_Info, "Updated log level to: " + std::to_string(static_cast<int>(logLevel)));
+            m_Logger->Log(lib::LogLevel::k_Info, m_Logger->Format("Updated log level to: %d", static_cast<int>(logLevel)));
         }, NT_NOTIFY_UPDATE);
 //        AddSubsystem(std::dynamic_pointer_cast<lib::Subsystem>(m_Elevator = std::make_shared<Elevator>(m_Pointer)));
 //        AddSubsystem(std::dynamic_pointer_cast<lib::Subsystem>(m_Drive = std::make_shared<Drive>(m_Pointer)));

@@ -28,7 +28,7 @@ namespace garage {
         void Subsystem::Update(Command& command) {
             AdvanceSequence();
             if (m_SequenceNumber % SPACED_UPDATE_INTERVAL == 0)
-                SpacedUpdate();
+                SpacedUpdate(command);
             ExecuteCommand(command);
             SetLastCommand(command);
         }
@@ -42,9 +42,6 @@ namespace garage {
 
         void Subsystem::SetLastCommand(Command& command) {
             m_LastCommand = command;
-        }
-
-        void Subsystem::SpacedUpdate() {
         }
 
         void Subsystem::Log(lib::LogLevel logLevel, std::string log) {

@@ -14,7 +14,7 @@ namespace garage {
             Log(lib::LogLevel::k_Info, "Subsystem Initialized");
         }
 
-        void Subsystem::ExecuteCommand(Command& command) {
+        void Subsystem::ProcessCommand(Command& command) {
         }
 
         void Subsystem::Lock() {
@@ -25,11 +25,13 @@ namespace garage {
             m_IsLocked = false;
         }
 
-        void Subsystem::Update(Command& command) {
+        void Subsystem::Periodic(Command& command) {
             AdvanceSequence();
             if (m_SequenceNumber % SPACED_UPDATE_INTERVAL == 0)
                 SpacedUpdate(command);
-            ExecuteCommand(command);
+            if (!m_IsLocked)
+                ProcessCommand(command);
+            Update();
             SetLastCommand(command);
         }
 
@@ -51,6 +53,10 @@ namespace garage {
         void Subsystem::LogSample(lib::LogLevel logLevel, std::string log, int frequency) {
             if (m_SequenceNumber % frequency == 0)
                 Log(logLevel, std::move(log));
+        }
+
+        bool Subsystem::IsLocked() {
+            return m_IsLocked;
         }
     }
 }

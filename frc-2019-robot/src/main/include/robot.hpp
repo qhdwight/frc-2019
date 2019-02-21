@@ -61,8 +61,6 @@ namespace garage {
 
         void AddSubsystem(std::shared_ptr<lib::Subsystem> subsystem);
 
-        void ExecuteCommand();
-
         std::shared_ptr<NetworkTable> GetNetworkTable() const;
 
         std::shared_ptr<lib::Logger> GetLogger();

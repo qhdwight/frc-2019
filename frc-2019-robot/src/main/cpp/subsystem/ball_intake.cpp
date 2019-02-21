@@ -10,24 +10,27 @@ namespace garage {
         m_RightIntake.SetNeutralMode(ctre::phoenix::motorcontrol::NeutralMode::Brake);
     }
 
-    void BallIntake::ExecuteCommand(Command& command) {
+    void BallIntake::ProcessCommand(Command& command) {
 //        m_Robot->GetNetworkTable()->PutNumber("Ball Intake/Current", m_RightIntake.GetOutputCurrent());
-        const double ballIntake = command.ballIntake;
-        const bool intaking = ballIntake < 0.0;
-        double multiplier, openLoopRamp;
-        if (intaking) {
-            multiplier = 0.25;
-            openLoopRamp = 0.2;
+        m_Output = math::threshold(command.ballIntake, 0.05);
+    }
+
+    void BallIntake::Update() {
+        const auto isIntaking = m_Output < 0.0;
+        double outputProportion, openLoopRamp;
+        if (isIntaking) {
+            outputProportion = OUTPUT_PROPORTION_INTAKING;
+            openLoopRamp = RAMP_INTAKING;
         } else {
-            multiplier = 0.8;
-            openLoopRamp = 0.05;
+            outputProportion = OUTPUT_PROPORTION_EXPELLING;
+            openLoopRamp = RAMP_EXPELLING;
         }
         if (openLoopRamp != m_LastOpenLoopRamp) {
             m_LeftIntake.ConfigOpenloopRamp(openLoopRamp);
             m_RightIntake.ConfigOpenloopRamp(openLoopRamp);
             m_LastOpenLoopRamp = openLoopRamp;
         }
-        m_LeftIntake.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, ballIntake * multiplier);
-        m_RightIntake.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, ballIntake * multiplier);
+        m_LeftIntake.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, m_Output * outputProportion);
+        m_RightIntake.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, m_Output * outputProportion);
     }
 }

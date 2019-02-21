@@ -29,24 +29,31 @@
 #define ELEVATOR_DOWN_OUTPUT 0.08
 
 #define SET_POINT_SLOT_INDEX 0
-#define HYBRID_SLOT_INDEX 1
 
 namespace garage {
     enum class ElevatorControlMode {
-        k_Manual, k_SetPoint, k_Hybrid, k_Idle, k_Killed
+        k_Manual, k_SetPoint, k_Hybrid, k_Idle, k_SoftLand
     };
+
     class Elevator : public lib::Subsystem {
     private:
         ElevatorControlMode m_DefaultControlMode = ElevatorControlMode::k_Manual, m_ControlMode = m_DefaultControlMode;
-        bool m_FirstLimitSwitchHit = true;
-        int m_WantedSetPoint = ELEVATOR_MIN, m_LastSetPoint = m_WantedSetPoint;
+        bool m_IsLimitSwitchDown = true, m_FirstLimitSwitchHit = true;
+        double m_Output = 0.0;
+        int m_EncoderPosition, m_WantedSetPoint = ELEVATOR_MIN, m_LastSetPoint = m_WantedSetPoint;
         ctre::phoenix::motorcontrol::can::TalonSRX m_ElevatorMaster{ELEVATOR_MASTER};
         ctre::phoenix::motorcontrol::can::VictorSPX m_ElevatorSlaveOne{ELEVATOR_SLAVE_ONE}, m_ElevatorSlaveTwo{
                 ELEVATOR_SLAVE_TWO}, m_ElevatorSlaveThree{ELEVATOR_SLAVE_THREE};
+
+    protected:
+        void ProcessCommand(Command& command) override;
+
+        void Update() override;
+
+        void SpacedUpdate(Command& command) override;
+
     public:
         Elevator(std::shared_ptr<Robot>& robot);
-
-        void ExecuteCommand(Command& command) override;
 
         void TeleopInit() override;
 

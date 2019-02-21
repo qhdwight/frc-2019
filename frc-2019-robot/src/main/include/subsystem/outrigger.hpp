@@ -16,10 +16,14 @@ namespace garage {
                 m_OutriggerWheel{OUTRIGGER_WHEEL, rev::CANSparkMax::MotorType::kBrushless};
         rev::CANPIDController m_Controller = m_OutriggerMaster.GetPIDController();
         rev::CANEncoder m_Encoder = m_OutriggerMaster.GetEncoder();
+
+    protected:
+        void ProcessCommand(Command& command) override;
+
+        void Update() override;
+
     public:
         Outrigger(std::shared_ptr<Robot>& robot);
-
-        void ExecuteCommand(Command& command) override;
 
         void SetOutput(double output);
     };

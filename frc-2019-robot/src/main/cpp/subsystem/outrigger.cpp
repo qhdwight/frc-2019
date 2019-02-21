@@ -1,5 +1,7 @@
 #include <subsystem/outrigger.hpp>
 
+#include <garage_math/garage_math.hpp>
+
 namespace garage {
 
     Outrigger::Outrigger(std::shared_ptr<Robot>& robot) : Subsystem(robot, "Outrigger") {
@@ -13,10 +15,11 @@ namespace garage {
         m_OutriggerSlave.Follow(m_OutriggerMaster, true);
     }
 
-    void Outrigger::ExecuteCommand(Command& command) {
-        if (!m_IsLocked) {
-            m_Output = command.test;
-        }
+    void Outrigger::ProcessCommand(Command& command) {
+        m_Output = math::threshold(command.test, 0.05);
+    }
+
+    void Outrigger::Update() {
         m_OutriggerWheel.Set(m_Output);
     }
 

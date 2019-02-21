@@ -23,33 +23,24 @@ namespace garage {
         ResetGyroAndEncoders();
     }
 
-    void Drive::SpacedUpdate(Command& command) {
-        Log(lib::LogLevel::k_Info, m_Robot->GetLogger()->Format("Forward: %f, Turn: %f", command.driveForward, command.driveTurn));
-    }
-
     double Drive::InputFromCommand(double commandInput) {
         const double absoluteCommand = std::abs(commandInput), sign = math::sign(commandInput);
         return absoluteCommand > JOYSTICK_THRESHOLD ? sign * std::abs(std::pow(commandInput, 2.0)) : 0.0;
     }
 
-    void Drive::ExecuteCommand(Command& command) {
-        if (!m_IsLocked) {
-            const double
+    void Drive::ProcessCommand(Command& command) {
+        const double
                 forwardInput = InputFromCommand(command.driveForward),
                 turnInput = InputFromCommand(command.driveTurn),
                 forwardInputFine = math::threshold(command.driveForwardFine, JOYSTICK_THRESHOLD),
                 turnInputFine = math::threshold(command.driveTurnFine, JOYSTICK_THRESHOLD);
-            if (std::abs(forwardInput) > JOYSTICK_THRESHOLD || std::abs(turnInput) > JOYSTICK_THRESHOLD) {
-                m_LeftOutput = forwardInput + turnInput * (1 - math::abs(forwardInput) * 0.5) * 0.25;
-                m_RightOutput = forwardInput - turnInput * (1 - math::abs(forwardInput) * 0.5) * 0.25;
-            } else {
-                m_LeftOutput = (forwardInputFine + turnInputFine) * 0.05;
-                m_RightOutput = (forwardInputFine - turnInputFine) * 0.05;
-            }
+        if (std::abs(forwardInput) > JOYSTICK_THRESHOLD || std::abs(turnInput) > JOYSTICK_THRESHOLD) {
+            m_LeftOutput = forwardInput + turnInput * (1 - math::abs(forwardInput) * 0.5) * 0.25;
+            m_RightOutput = forwardInput - turnInput * (1 - math::abs(forwardInput) * 0.5) * 0.25;
+        } else {
+            m_LeftOutput = (forwardInputFine + turnInputFine) * 0.05;
+            m_RightOutput = (forwardInputFine - turnInputFine) * 0.05;
         }
-        LogSample(lib::LogLevel::k_Info, std::to_string(m_IsLocked) + ", " + std::to_string(m_LeftOutput) + ", " + std::to_string(m_RightOutput));
-        m_LeftMaster.Set(m_LeftOutput);
-        m_RightMaster.Set(m_RightOutput);
 //        m_Robot->GetNetworkTable()->PutNumber("Drive/Gyro", m_Pigeon.GetFusedHeading());
 //        m_Robot->GetNetworkTable()->PutNumber("Drive/Left Output", m_LeftOutput);
 //        m_Robot->GetNetworkTable()->PutNumber("Drive/Right Output", m_RightOutput);
@@ -57,6 +48,18 @@ namespace garage {
 //        m_Robot->GetNetworkTable()->PutNumber("Drive/Left Amperage", m_LeftMaster.GetOutputCurrent());
 //        m_Robot->GetNetworkTable()->PutNumber("Drive/Right Encoder", m_RightEncoder.GetPosition());
 //        m_Robot->GetNetworkTable()->PutNumber("Drive/Right Amperage", m_RightMaster.GetOutputCurrent());
+    }
+
+    void Drive::SpacedUpdate(Command& command) {
+        LogSample(lib::LogLevel::k_Info, m_Robot->GetLogger()->Format(
+                "Left Output: %f, Right Output: %f, Left Current: %f, Right Current: %f",
+                m_LeftMaster.GetAppliedOutput(), m_RightMaster.GetAppliedOutput(),
+                m_LeftMaster.GetOutputCurrent(), m_RightMaster.GetOutputCurrent()));
+    }
+
+    void Drive::Update() {
+        m_LeftMaster.Set(m_LeftOutput);
+        m_RightMaster.Set(m_RightOutput);
     }
 
     double Drive::GetHeading() {

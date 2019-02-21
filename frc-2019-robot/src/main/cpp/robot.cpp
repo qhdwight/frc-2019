@@ -45,11 +45,11 @@ namespace garage {
     void Robot::AutonomousPeriodic() {}
 
     void Robot::TeleopInit() {
-        auto r1 = std::dynamic_pointer_cast<lib::Routine>(std::make_shared<lib::WaitRoutine>(m_Pointer, "Wait One", 2.0));
-        auto r2 = std::dynamic_pointer_cast<lib::Routine>(std::make_shared<lib::WaitRoutine>(m_Pointer, "Wait Two", 4.0));
-        std::vector<std::shared_ptr<lib::Routine>> routines {r1, r2};
-        auto seq = std::dynamic_pointer_cast<lib::Routine>(std::make_shared<lib::SequentialRoutine>(m_Pointer, "All", std::move(routines)));
-        m_RoutineManager->AddRoutine(seq);
+//        auto r1 = std::dynamic_pointer_cast<lib::Routine>(std::make_shared<lib::WaitRoutine>(m_Pointer, "Wait One", 2.0));
+//        auto r2 = std::dynamic_pointer_cast<lib::Routine>(std::make_shared<lib::WaitRoutine>(m_Pointer, "Wait Two", 4.0));
+//        std::vector<std::shared_ptr<lib::Routine>> routines{r1, r2};
+//        auto seq = std::dynamic_pointer_cast<lib::Routine>(std::make_shared<lib::SequentialRoutine>(m_Pointer, "All", std::move(routines)));
+//        m_RoutineManager->AddRoutine(seq);
         m_Command = {};
         for (const auto& subsystem : m_Subsystems)
             subsystem->TeleopInit();
@@ -58,7 +58,10 @@ namespace garage {
     void Robot::TeleopPeriodic() {
         m_RoutineManager->Update();
         UpdateCommand();
-        ExecuteCommand();
+        for (const auto& subsystem : m_Subsystems)
+            subsystem->Periodic(m_Command);
+        if (m_RoutineManager)
+            m_RoutineManager->AddRoutinesFromCommand(m_Command);
     }
 
     void Robot::UpdateCommand() {
@@ -69,21 +72,17 @@ namespace garage {
         m_Command.ballIntake = m_Controller.GetTriggerAxis(frc::GenericHID::JoystickHand::kRightHand) -
                                m_Controller.GetTriggerAxis(frc::GenericHID::JoystickHand::kLeftHand);
         m_Command.hatchIntakeDown = m_Controller.GetYButtonPressed();
-        m_Command.flipper += math::threshold((m_Controller.GetBumper(frc::GenericHID::JoystickHand::kRightHand) ? 1.0 : 0.0) + (m_Controller.GetBumper(
-                frc::GenericHID::JoystickHand::kLeftHand) ? -1.0 : 0.0), 0.1) * 0.5;
-        m_Command.flipper = math::clamp(m_Command.flipper, 0.0, 40.0);
-//        m_Command.flipper = math::threshold((m_Controller.GetBumper(frc::GenericHID::JoystickHand::kRightHand) ? 1.0 : 0.0) + (m_Controller.GetBumper(
-//                frc::GenericHID::JoystickHand::kLeftHand) ? -1.0 : 0.0), 0.1);
+        m_Command.flipper = math::axis<double>(
+                m_Controller.GetBumper(frc::GenericHID::JoystickHand::kRightHand),
+                m_Controller.GetBumper(frc::GenericHID::JoystickHand::kLeftHand));
         const int pov = m_Controller.GetPOV();
         const bool
                 up = pov == 0,
                 down = pov == 180;
         const double input = (up ? 1.0 : 0.0) + (down ? -1.0 : 0.0);
         m_Command.elevatorInput = input;
-        m_Command.elevatorSetPoint += static_cast<int>(input * 3000.0);
-        m_Command.elevatorSetPoint = math::clamp(m_Command.elevatorSetPoint, ELEVATOR_MIN, ELEVATOR_MAX);
-        if (pov == 90) m_Command.elevatorSetPoint = 20000;
-        if (pov == 270) m_Command.elevatorSetPoint = 185000;
+//        if (pov == 90) m_Command.elevatorSetPoint = 20000;
+//        if (pov == 270) m_Command.elevatorSetPoint = 185000;
         m_Command.test = m_Controller.GetY(frc::GenericHID::JoystickHand::kLeftHand);
         m_Command.routines.clear();
 //        if (m_Controller.GetAButtonPressed()) {
@@ -96,13 +95,6 @@ namespace garage {
 //            if (m_RoutineManager)
 //                m_RoutineManager->TerminateAllRoutines();
 //        }
-    }
-
-    void Robot::ExecuteCommand() {
-        for (const auto& subsystem : m_Subsystems)
-            subsystem->Update(m_Command);
-        if (m_RoutineManager)
-            m_RoutineManager->AddRoutinesFromCommand(m_Command);
     }
 
     std::shared_ptr<NetworkTable> Robot::GetNetworkTable() const {

@@ -21,20 +21,22 @@ namespace garage {
             unsigned long m_SequenceNumber = 0;
             std::string m_SubsystemName;
 
+            virtual void AdvanceSequence();
+
+            virtual void SpacedUpdate(Command& command) {};
+
+            virtual void ProcessCommand(Command& command);
+
+            virtual void SetLastCommand(Command& command);
+
+            virtual void Update() {};
+
         public:
             Subsystem(std::shared_ptr<Robot>& robot, std::string subsystemName);
 
             virtual void TeleopInit() {};
 
-            virtual void Update(Command& command);
-
-            virtual void SpacedUpdate(Command& command) {};
-
-            virtual void AdvanceSequence();
-
-            virtual void ExecuteCommand(Command& command);
-
-            virtual void SetLastCommand(Command& command);
+            void Periodic(Command& command);
 
             void Log(lib::LogLevel logLevel, std::string log);
 
@@ -43,6 +45,8 @@ namespace garage {
             void Lock();
 
             void Unlock();
+
+            bool IsLocked();
         };
     }
 }

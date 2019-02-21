@@ -29,9 +29,14 @@ namespace garage {
 
     }
 
-    void Flipper::ExecuteCommand(Command& command) {
-        const bool isLimitSwitchClosed = m_LimitSwitch.Get();
-        if (isLimitSwitchClosed && m_FirstLimitSwitchHit) {
+    void Flipper::ProcessCommand(Command& command) {
+        m_SetPoint += math::threshold(command.flipper, 0.05);
+        m_SetPoint = math::clamp(m_SetPoint, 0.0, 40.0);
+    }
+
+    void Flipper::Update() {
+        m_IsLimitSwitchDown = m_LimitSwitch.Get();
+        if (m_IsLimitSwitchDown && m_FirstLimitSwitchHit) {
             auto error = m_Encoder.SetPosition(0.0);
             if (error == rev::CANError::kOK) {
                 Log(lib::LogLevel::k_Info, "Limit switch hit and encoder reset");
@@ -40,24 +45,24 @@ namespace garage {
                 Log(lib::LogLevel::k_Error, m_Robot->GetLogger()->Format("CAN Error: %d", static_cast<int>(error)));
             }
         }
-        if (!isLimitSwitchClosed) {
+        if (!m_IsLimitSwitchDown) {
             m_FirstLimitSwitchHit = true;
         }
-        const auto encoderPosition = m_Encoder.GetPosition();
+        m_EncoderPosition = m_Encoder.GetPosition();
         const auto faults = m_Flipper.GetStickyFaults();
         m_Flipper.ClearFaults();
-        double setPoint = command.flipper;
-        const bool inMiddle = encoderPosition > FLIPPER_LOWER && encoderPosition < FLIPPER_UPPER;
+        const bool inMiddle = m_EncoderPosition > FLIPPER_SET_POINT_LOWER && m_EncoderPosition < FLIPPER_SET_POINT_UPPER;
         bool wantingToGoOtherWay = false;
-        if (encoderPosition < FLIPPER_LOWER && setPoint > FLIPPER_LOWER) wantingToGoOtherWay = true;
-        if (encoderPosition > FLIPPER_UPPER && setPoint < FLIPPER_UPPER) wantingToGoOtherWay = true;
+        if ((m_EncoderPosition < FLIPPER_SET_POINT_LOWER && m_SetPoint > FLIPPER_SET_POINT_LOWER) ||
+            (m_EncoderPosition > FLIPPER_SET_POINT_UPPER && m_SetPoint < FLIPPER_SET_POINT_UPPER))
+            wantingToGoOtherWay = true;
         if (inMiddle || wantingToGoOtherWay) {
-            setPoint = math::clamp(setPoint, FLIPPER_LOWER, FLIPPER_UPPER);
-            if (setPoint != m_LastSetPoint) {
-                auto error = m_FlipperController.SetReference(setPoint, rev::ControlType::kSmartMotion);
+            const double clampedSetPoint = math::clamp(m_SetPoint, FLIPPER_SET_POINT_LOWER, FLIPPER_SET_POINT_UPPER);
+            if (clampedSetPoint != m_LastSetPoint) {
+                auto error = m_FlipperController.SetReference(clampedSetPoint, rev::ControlType::kSmartMotion);
                 if (error == rev::CANError::kOK) {
-                    Log(lib::LogLevel::k_Info, m_Robot->GetLogger()->Format("Setting set point to: %d", setPoint));
-                    m_LastSetPoint = setPoint;
+                    Log(lib::LogLevel::k_Info, m_Robot->GetLogger()->Format("Setting set point to: %d", clampedSetPoint));
+                    m_LastSetPoint = clampedSetPoint;
                 } else {
                     Log(lib::LogLevel::k_Error, m_Robot->GetLogger()->Format("CAN Error: %d", static_cast<int>(error)));
                 }
@@ -67,12 +72,14 @@ namespace garage {
             m_Flipper.Set(0.0);
         }
         if (faults != 0)
-            LogSample(lib::LogLevel::k_Error, m_Robot->GetLogger()->Format("Stick Fault Error: %d", faults));
-        LogSample(lib::LogLevel::k_Info, m_Robot->GetLogger()->Format(
-                "Wanted Position: %d, Output: %f, Encoder Position: %f, Encoder Velocity: %f, Limit Switch: %d, Faults: %d",
-                setPoint, m_Flipper.GetAppliedOutput(), isLimitSwitchClosed, encoderPosition, m_Encoder.GetVelocity()));
-
+            Log(lib::LogLevel::k_Error, m_Robot->GetLogger()->Format("Stick Fault Error: %d", faults));
 //        const double output = math::threshold(m_LastCommand.ballIntake, 0.05) * 0.35;
 //        m_Flipper.Set(output);
+    }
+
+    void Flipper::SpacedUpdate(Command& command) {
+        LogSample(lib::LogLevel::k_Info, m_Robot->GetLogger()->Format(
+                "Wanted Position: %d, Output: %f, Encoder Position: %f, Encoder Velocity: %f, Limit Switch: %d, Faults: %d",
+                m_SetPoint, m_Flipper.GetAppliedOutput(), m_IsLimitSwitchDown, m_EncoderPosition, m_Encoder.GetVelocity()));
     }
 }

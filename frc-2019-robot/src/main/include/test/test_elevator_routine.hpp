@@ -8,7 +8,7 @@ namespace garage {
         private:
             int m_Position;
         public:
-            TestElevatorRoutine(std::shared_ptr<Robot>& robot, std::string name, int position);
+            TestElevatorRoutine(std::shared_ptr<Robot>& robot, const std::string& name, int position);
 
             void Begin() override;
 

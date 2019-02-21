@@ -1,5 +1,7 @@
 #include <robot.hpp>
 
+#include <routine/climb_hab_routine.hpp>
+
 #include <test/test_elevator_routine.hpp>
 
 #include <lib/logger.hpp>
@@ -76,10 +78,9 @@ namespace garage {
                 m_Controller.GetBumper(frc::GenericHID::JoystickHand::kRightHand),
                 m_Controller.GetBumper(frc::GenericHID::JoystickHand::kLeftHand));
         const int pov = m_Controller.GetPOV();
-        const bool
-                up = pov == 0,
+        const bool up = pov == 0,
                 down = pov == 180;
-        const double input = (up ? 1.0 : 0.0) + (down ? -1.0 : 0.0);
+        const auto input = math::axis<double>(up, down);
         m_Command.elevatorInput = input;
 //        if (pov == 90) m_Command.elevatorSetPoint = 20000;
 //        if (pov == 270) m_Command.elevatorSetPoint = 185000;
@@ -90,7 +91,7 @@ namespace garage {
 //            m_Command.routines.push_back(std::make_shared<lib::WaitRoutine>(m_Pointer, "Elevator Wait", 0.2));
 //            m_Command.routines.push_back(std::make_shared<test::TestElevatorRoutine>(m_Pointer, "Elevator Down", 0.0));
 //        }
-        m_Command.killSwitch = m_Controller.GetBButtonPressed();
+        m_Command.elevatorSoftLand = m_Controller.GetBButtonPressed();
 //        if (m_Controller.GetBButtonPressed()) {
 //            if (m_RoutineManager)
 //                m_RoutineManager->TerminateAllRoutines();

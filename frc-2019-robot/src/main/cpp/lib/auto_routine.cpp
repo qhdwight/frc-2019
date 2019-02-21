@@ -4,7 +4,7 @@
 
 namespace garage {
     namespace lib {
-        AutoRoutine::AutoRoutine(std::shared_ptr<Robot>& robot, std::string name) : Routine(robot, std::move(name)) {
+        AutoRoutine::AutoRoutine(std::shared_ptr<Robot>& robot, const std::string& name) : Routine(robot, name) {
             GetWaypoints();
             PrepareWaypoints();
             PrepareEncoder();

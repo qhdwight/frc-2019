@@ -10,7 +10,7 @@ namespace garage {
         protected:
             double m_StartTime, m_EndTime, m_Duration;
         public:
-            WaitRoutine(std::shared_ptr<Robot>& robot, std::string name, double duration);
+            WaitRoutine(std::shared_ptr<Robot>& robot, const std::string& name, double duration);
 
             void Begin() override;
 

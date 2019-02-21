@@ -10,7 +10,7 @@
 
 namespace garage {
     namespace lib {
-        Subsystem::Subsystem(std::shared_ptr<Robot>& robot, std::string subsystemName) : m_Robot(robot), m_SubsystemName(std::move(subsystemName)) {
+        Subsystem::Subsystem(std::shared_ptr<Robot>& robot, const std::string& subsystemName) : m_Robot(robot), m_SubsystemName(subsystemName) {
             Log(lib::LogLevel::k_Info, "Subsystem Initialized");
         }
 

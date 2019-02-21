@@ -32,7 +32,7 @@ namespace garage {
             virtual void Update() {};
 
         public:
-            Subsystem(std::shared_ptr<Robot>& robot, std::string subsystemName);
+            Subsystem(std::shared_ptr<Robot>& robot, const std::string& subsystemName);
 
             virtual void TeleopInit() {};
 

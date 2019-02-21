@@ -11,9 +11,9 @@ namespace garage {
         protected:
             std::vector<std::shared_ptr<Routine>> m_SubRoutines;
         public:
-            MultiRoutine(std::shared_ptr<Robot> robot, std::string name, std::vector<std::shared_ptr<Routine>>&& routines);
+            MultiRoutine(std::shared_ptr<Robot> robot, const std::string& name, std::vector<std::shared_ptr<Routine>>&& routines);
 
-            MultiRoutine(std::shared_ptr<Robot> robot, std::string name, std::vector<std::shared_ptr<Routine>>& routines);
+            MultiRoutine(std::shared_ptr<Robot> robot, const std::string& name, std::vector<std::shared_ptr<Routine>>& routines);
         };
     }
 }

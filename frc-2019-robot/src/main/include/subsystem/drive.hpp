@@ -36,7 +36,6 @@ namespace garage {
         void Update() override;
 
     public:
-
         Drive(std::shared_ptr<Robot>& robot);
 
         void TeleopInit() override;

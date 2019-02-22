@@ -4,11 +4,11 @@
 
 namespace garage {
     namespace test {
-        class TestElevatorRoutine : public lib::Routine {
+        class SetElevatorPositionRoutine : public lib::Routine {
         private:
             int m_Position;
         public:
-            TestElevatorRoutine(std::shared_ptr<Robot>& robot, const std::string& name, int position);
+            SetElevatorPositionRoutine(std::shared_ptr<Robot>& robot, const std::string& name, int position);
 
             void Begin() override;
 

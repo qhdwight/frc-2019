@@ -107,7 +107,7 @@ namespace garage {
                 break;
             }
             case ElevatorControlMode::k_Manual: {
-                m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, math::threshold(m_Input, 0.1) * 0.5);
+                m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, m_Input * 0.5);
                 break;
             }
             case ElevatorControlMode::k_SoftLand: {
@@ -153,11 +153,10 @@ namespace garage {
                     /* We are a negligible amount above the bottom */
                     // Test if our input is different from the last one so we avoid flooding the controller with requests
                     const bool inputDifferent = math::abs(m_LastCommand.elevatorInput - m_Input) > 0.5;
-                    if (m_Input == 0.0) {
+                    if (m_Input == 0.0 || (m_EncoderPosition > ELEVATOR_MAX && m_Input >= 0.0)) {
                         // When our input is zero we want to hold the current position with a closed loop velocity control
-                        if (inputDifferent) {
+                        if (inputDifferent)
                             m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::Velocity, 0.0);
-                        }
                     } else {
                         // If our input is either up or down set to corresponding open loop pre-determined output
                         if (inputDifferent)

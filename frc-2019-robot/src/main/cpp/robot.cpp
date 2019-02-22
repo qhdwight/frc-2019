@@ -1,8 +1,7 @@
 #include <robot.hpp>
 
 #include <routine/climb_hab_routine.hpp>
-
-#include <test/test_elevator_routine.hpp>
+#include <routine/set_elevator_position_routine.hpp>
 
 #include <lib/logger.hpp>
 #include <lib/wait_routine.hpp>
@@ -87,9 +86,9 @@ namespace garage {
         m_Command.test = m_Controller.GetY(frc::GenericHID::JoystickHand::kLeftHand);
         m_Command.routines.clear();
 //        if (m_Controller.GetAButtonPressed()) {
-//            m_Command.routines.push_back(std::make_shared<test::TestElevatorRoutine>(m_Pointer, "Elevator Up", 100000.0));
+//            m_Command.routines.push_back(std::make_shared<test::SetElevatorPositionRoutine>(m_Pointer, "Elevator Up", 100000.0));
 //            m_Command.routines.push_back(std::make_shared<lib::WaitRoutine>(m_Pointer, "Elevator Wait", 0.2));
-//            m_Command.routines.push_back(std::make_shared<test::TestElevatorRoutine>(m_Pointer, "Elevator Down", 0.0));
+//            m_Command.routines.push_back(std::make_shared<test::SetElevatorPositionRoutine>(m_Pointer, "Elevator Down", 0.0));
 //        }
         m_Command.elevatorSoftLand = m_Controller.GetBButtonPressed();
 //        if (m_Controller.GetBButtonPressed()) {

@@ -9,6 +9,9 @@
 #define FLIPPER_SET_POINT_LOWER 3.0
 #define FLIPPER_SET_POINT_UPPER 38.0
 
+#define FLIPPER_LOWER 0.0
+#define FLIPPER_UPPER 40.0
+
 #define FLIPPER_P 4e-5
 #define FLIPPER_I 1e-7
 #define FLIPPER_D 7e-4

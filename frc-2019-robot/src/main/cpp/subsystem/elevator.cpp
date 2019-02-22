@@ -37,7 +37,7 @@ namespace garage {
         m_ElevatorMaster.Config_kD(SET_POINT_SLOT_INDEX, ELEVATOR_D, CONFIG_TIMEOUT);
         m_ElevatorMaster.Config_kI(SET_POINT_SLOT_INDEX, ELEVATOR_I, CONFIG_TIMEOUT);
         m_ElevatorMaster.Config_IntegralZone(SET_POINT_SLOT_INDEX, ELEVATOR_I_ZONE, CONFIG_TIMEOUT);
-        m_ElevatorMaster.ConfigAllowableClosedloopError(SET_POINT_SLOT_INDEX, 2000);
+        m_ElevatorMaster.ConfigAllowableClosedloopError(SET_POINT_SLOT_INDEX, ELEVATOR_ALLOWABLE_CLOSED_LOOP_ERROR, CONFIG_TIMEOUT);
         // Network table values
         m_Robot->GetNetworkTable()->PutNumber("Elevator/Acceleration", ELEVATOR_ACCELERATION);
         m_Robot->GetNetworkTable()->PutNumber("Elevator/Velocity", ELEVATOR_VELOCITY);
@@ -86,7 +86,9 @@ namespace garage {
     }
 
     void Elevator::Update() {
-        // TODO add brownout detection and smart current monitoring
+        // TODO add brownout detection and smart current monitoring, check sticky faults
+//        m_ElevatorMaster.GetStickyFaults(m_StickyFaults);
+//        m_ElevatorMaster.ClearStickyFaults();
         // Reset encoder with limit switch
         m_IsLimitSwitchDown = static_cast<const bool>(m_ElevatorMaster.GetSensorCollection().IsRevLimitSwitchClosed());
         if (m_IsLimitSwitchDown && m_FirstLimitSwitchHit) {
@@ -175,7 +177,7 @@ namespace garage {
     }
 
     int Elevator::GetElevatorPosition() {
-        return m_ElevatorMaster.GetSelectedSensorPosition(0);
+        return m_EncoderPosition;
     }
 
     void Elevator::SetElevatorWantedPosition(int wantedPosition) {
@@ -188,5 +190,17 @@ namespace garage {
                 "Control Mode: %d, Wanted Set Point: %d, Encoder: %d, Real Output: %f, Current: %f, Limit Switch: %s",
                 m_ControlMode, m_WantedSetPoint, m_EncoderPosition, m_ElevatorMaster.GetMotorOutputPercent(), m_ElevatorMaster.GetOutputCurrent(),
                 m_IsLimitSwitchDown ? "true" : "false"));
+    }
+
+    bool Elevator::WithinPosition(int targetPosition) {
+        return math::withinRange(m_EncoderPosition, targetPosition, ELEVATOR_ALLOWABLE_CLOSED_LOOP_ERROR / 2);
+    }
+
+    bool Elevator::ShouldUnlock(Command& command) {
+        return math::abs(command.elevatorInput) > DEFAULT_INPUT_THRESHOLD;
+    }
+
+    void Elevator::OnUnlock() {
+        m_ControlMode = m_DefaultControlMode;
     }
 }

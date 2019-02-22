@@ -7,21 +7,21 @@
 namespace garage {
     namespace test {
         SetElevatorPositionRoutine::SetElevatorPositionRoutine(std::shared_ptr<Robot>& robot, const std::string& name, int position)
-            : Routine(robot, name), m_Position(position) {
+            : Routine(robot, name), m_Position(position), m_Elevator(robot->GetElevator()) {
 
         }
 
         void SetElevatorPositionRoutine::Begin() {
-            m_Robot->GetElevator()->Lock();
-            m_Robot->GetElevator()->SetElevatorWantedPosition(m_Position);
+            m_Elevator->Lock();
+            m_Elevator->SetElevatorWantedPosition(m_Position);
         }
 
         void SetElevatorPositionRoutine::Terminate() {
-            m_Robot->GetElevator()->Unlock();
+            m_Elevator->Unlock();
         }
 
         bool SetElevatorPositionRoutine::CheckFinished() {
-            return math::withinRange(m_Robot->GetElevator()->GetElevatorPosition(), m_Position, 1000);
+            return m_Elevator->WithinPosition(m_Position);
         }
     }
 }

@@ -18,14 +18,18 @@ namespace garage {
         }
 
         void Subsystem::Lock() {
+            OnLock();
             m_IsLocked = true;
         }
 
         void Subsystem::Unlock() {
+            OnUnlock();
             m_IsLocked = false;
         }
 
         void Subsystem::Periodic(Command& command) {
+            if (ShouldUnlock(command))
+                Unlock();
             AdvanceSequence();
             if (m_SequenceNumber % SPACED_UPDATE_INTERVAL == 0)
                 SpacedUpdate(command);
@@ -57,6 +61,10 @@ namespace garage {
 
         bool Subsystem::IsLocked() {
             return m_IsLocked;
+        }
+
+        bool Subsystem::ShouldUnlock(Command& command) {
+            return true;
         }
     }
 }

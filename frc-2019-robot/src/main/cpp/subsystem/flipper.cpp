@@ -11,7 +11,6 @@ namespace garage {
         m_Flipper.RestoreFactoryDefaults();
         m_Flipper.SetIdleMode(rev::CANSparkMax::IdleMode::kBrake);
         m_Flipper.SetOpenLoopRampRate(0.2);
-        m_Flipper.SetClosedLoopRampRate(0.2);
         m_FlipperController.SetP(FLIPPER_P);
         m_FlipperController.SetI(FLIPPER_I);
         m_FlipperController.SetD(FLIPPER_D);
@@ -30,8 +29,8 @@ namespace garage {
     }
 
     void Flipper::ProcessCommand(Command& command) {
-        m_SetPoint += math::threshold(command.flipper, 0.05);
-        m_SetPoint = math::clamp(m_SetPoint, 0.0, 40.0);
+        m_SetPoint += math::threshold(command.flipper, DEFAULT_INPUT_THRESHOLD);
+        m_SetPoint = math::clamp(m_SetPoint, FLIPPER_LOWER, FLIPPER_UPPER);
     }
 
     void Flipper::Update() {
@@ -73,7 +72,7 @@ namespace garage {
         }
         if (faults != 0)
             Log(lib::LogLevel::k_Error, m_Robot->GetLogger()->Format("Stick Fault Error: %d", faults));
-//        const double output = math::threshold(m_LastCommand.ballIntake, 0.05) * 0.35;
+//        const double output = math::threshold(m_LastCommand.ballIntake, DEFAULT_INPUT_THRESHOLD) * 0.35;
 //        m_Flipper.Set(output);
     }
 

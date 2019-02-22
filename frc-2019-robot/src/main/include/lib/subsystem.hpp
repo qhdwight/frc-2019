@@ -10,6 +10,8 @@
 #define SPACED_UPDATE_INTERVAL 100
 #define DEFAULT_FREQUENCY 10
 
+#define DEFAULT_INPUT_THRESHOLD 0.075
+
 namespace garage {
     class Robot;
     namespace lib {
@@ -25,11 +27,17 @@ namespace garage {
 
             virtual void SpacedUpdate(Command& command) {};
 
+            virtual bool ShouldUnlock(Command& command);
+
             virtual void ProcessCommand(Command& command);
 
             virtual void SetLastCommand(Command& command);
 
             virtual void Update() {};
+
+            virtual void OnLock() {};
+
+            virtual void OnUnlock() {};
 
         public:
             Subsystem(std::shared_ptr<Robot>& robot, const std::string& subsystemName);

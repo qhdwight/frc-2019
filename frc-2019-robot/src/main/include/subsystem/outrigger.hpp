@@ -18,7 +18,7 @@ namespace garage {
         rev::CANEncoder m_Encoder = m_OutriggerMaster.GetEncoder();
 
     protected:
-        void ProcessCommand(Command& command) override;
+        void UpdateUnlocked(Command& command) override;
 
         void Update() override;
 

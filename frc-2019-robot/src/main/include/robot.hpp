@@ -61,6 +61,8 @@ namespace garage {
 
         void AddSubsystem(std::shared_ptr<lib::Subsystem> subsystem);
 
+        Command GetLatestCommand();
+
         std::shared_ptr<NetworkTable> GetNetworkTable() const;
 
         std::shared_ptr<lib::Logger> GetLogger();
@@ -70,5 +72,9 @@ namespace garage {
         std::shared_ptr<Drive> GetDrive();
 
         std::shared_ptr<Outrigger> GetOutrigger();
+
+        std::shared_ptr<BallIntake> GetBallIntake();
+
+        std::shared_ptr<Flipper> GetFlipper();
     };
 }

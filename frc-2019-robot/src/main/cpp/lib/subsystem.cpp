@@ -14,9 +14,6 @@ namespace garage {
             Log(lib::LogLevel::k_Info, "Subsystem Initialized");
         }
 
-        void Subsystem::ProcessCommand(Command& command) {
-        }
-
         void Subsystem::Lock() {
             OnLock();
             m_IsLocked = true;
@@ -27,15 +24,18 @@ namespace garage {
             m_IsLocked = false;
         }
 
-        void Subsystem::Periodic(Command& command) {
+        void Subsystem::Periodic() {
+            auto command = m_Robot->GetLatestCommand();
             if (ShouldUnlock(command))
                 Unlock();
             AdvanceSequence();
             if (m_SequenceNumber % SPACED_UPDATE_INTERVAL == 0)
                 SpacedUpdate(command);
-            if (!m_IsLocked)
-                ProcessCommand(command);
-            Update();
+            if (m_IsLocked)
+                UpdateLocked();
+            else
+                UpdateUnlocked(command);
+            PostUpdate();
             SetLastCommand(command);
         }
 

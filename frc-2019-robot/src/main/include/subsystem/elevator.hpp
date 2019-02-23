@@ -53,7 +53,7 @@ namespace garage {
     protected:
         bool ShouldUnlock(Command& command) override;
 
-        void ProcessCommand(Command& command) override;
+        void UpdateUnlocked(Command& command) override;
 
         void Update() override;
 

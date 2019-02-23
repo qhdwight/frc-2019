@@ -21,7 +21,7 @@ namespace garage {
         m_NetworkTable->GetEntry("Log Level").AddListener([&](const nt::EntryNotification& notification) {
             auto logLevel = static_cast<lib::LogLevel>(std::round(notification.value->GetDouble()));
             m_Logger->SetLogLevel(logLevel);
-            m_Logger->Log(lib::LogLevel::k_Info, m_Logger->Format("Updated log level to: %d", static_cast<int>(logLevel)));
+            m_Logger->Log(lib::LogLevel::k_Info, m_Logger->Format("Updated log level to: %d", logLevel));
         }, NT_NOTIFY_UPDATE);
 //        AddSubsystem(std::dynamic_pointer_cast<lib::Subsystem>(m_Elevator = std::make_shared<Elevator>(m_Pointer)));
 //        AddSubsystem(std::dynamic_pointer_cast<lib::Subsystem>(m_Drive = std::make_shared<Drive>(m_Pointer)));
@@ -60,7 +60,7 @@ namespace garage {
         m_RoutineManager->Update();
         UpdateCommand();
         for (const auto& subsystem : m_Subsystems)
-            subsystem->Periodic(m_Command);
+            subsystem->Periodic();
         if (m_RoutineManager)
             m_RoutineManager->AddRoutinesFromCommand(m_Command);
     }
@@ -97,6 +97,10 @@ namespace garage {
 //        }
     }
 
+    Command Robot::GetLatestCommand() {
+        return m_Command;
+    }
+
     std::shared_ptr<NetworkTable> Robot::GetNetworkTable() const {
         return m_NetworkTable;
     }
@@ -115,6 +119,14 @@ namespace garage {
 
     std::shared_ptr<lib::Logger> Robot::GetLogger() {
         return m_Logger;
+    }
+
+    std::shared_ptr<BallIntake> Robot::GetBallIntake() {
+        return m_BallIntake;
+    }
+
+    std::shared_ptr<Flipper> Robot::GetFlipper() {
+        return m_Flipper;
     }
 }
 

@@ -29,11 +29,13 @@ namespace garage {
 
             virtual bool ShouldUnlock(Command& command);
 
-            virtual void ProcessCommand(Command& command);
+            virtual void UpdateUnlocked(Command& command) {}
 
-            virtual void SetLastCommand(Command& command);
+            virtual void UpdateLocked() {}
 
             virtual void Update() {};
+
+            virtual void SetLastCommand(Command& command);
 
             virtual void OnLock() {};
 
@@ -44,7 +46,7 @@ namespace garage {
 
             virtual void TeleopInit() {};
 
-            void Periodic(Command& command);
+            void Periodic();
 
             void Log(lib::LogLevel logLevel, std::string log);
 

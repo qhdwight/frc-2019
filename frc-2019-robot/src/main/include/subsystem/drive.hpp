@@ -31,7 +31,7 @@ namespace garage {
 
         void SpacedUpdate(Command& command) override;
 
-        void ProcessCommand(Command& command) override;
+        void UpdateUnlocked(Command& command) override;
 
         void Update() override;
 

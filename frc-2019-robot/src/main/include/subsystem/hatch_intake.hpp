@@ -16,7 +16,7 @@ namespace garage {
         frc::Servo m_Servo{HATCH_SERVO};
 
     protected:
-        void ProcessCommand(Command& command) override;
+        void UpdateUnlocked(Command& command) override;
 
         void Update() override;
 

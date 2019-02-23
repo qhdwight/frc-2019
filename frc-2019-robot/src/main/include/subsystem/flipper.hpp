@@ -21,7 +21,21 @@
 #define FLIPPER_ACCELERATION 2300.0
 #define FLIPPER_ALLOWABLE_ERROR 0.05
 
+#define
+
 namespace garage {
+    class FlipperController {
+
+    };
+
+    class ManualFlipperController : FlipperController {
+
+    };
+
+    class SetPointFlipperController : FlipperController {
+
+    };
+
     enum class FlipperControlMode {
         k_Manual, k_SetPoint
     };
@@ -33,11 +47,12 @@ namespace garage {
         rev::CANPIDController m_FlipperController = m_Flipper.GetPIDController();
         rev::CANEncoder m_Encoder = m_Flipper.GetEncoder();
         rev::CANDigitalInput m_LimitSwitch = m_Flipper.GetForwardLimitSwitch(rev::CANDigitalInput::LimitSwitchPolarity::kNormallyClosed);
-        bool m_IsLimitSwitchDown = true, m_FirstLimitSwitchHit = true;
-        double m_EncoderPosition = 0.0, m_SetPoint = 0.0, m_LastSetPoint = 0.0;
+        bool m_IsLimitSwitchDown = true;
+        double m_EncoderPosition = 0.0;
+        FlipperController m_ControlMode;
 
     protected:
-        void ProcessCommand(Command& command) override;
+        void UpdateUnlocked(Command& command) override;
 
         void Update() override;
 
@@ -47,5 +62,9 @@ namespace garage {
         Flipper(std::shared_ptr<Robot>& robot);
 
         void TeleopInit() override;
+
+        void SetRawOutput(double output);
+
+        void SetSetPoint(double setPoint);
     };
 }

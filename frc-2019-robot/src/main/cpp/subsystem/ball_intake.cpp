@@ -10,27 +10,62 @@ namespace garage {
         m_RightIntake.SetNeutralMode(ctre::phoenix::motorcontrol::NeutralMode::Brake);
     }
 
-    void BallIntake::ProcessCommand(Command& command) {
+    void BallIntake::UpdateUnlocked(Command& command) {
 //        m_Robot->GetNetworkTable()->PutNumber("Ball Intake/Current", m_RightIntake.GetOutputCurrent());
-        m_Output = math::threshold(command.ballIntake, 0.05);
+        double input = command.ballIntake, absoluteInput = math::abs(input);
+        if (absoluteInput > 0.5) input = math::sign(input) * 1.0;
+        IntakeMode intakeMode;
+        if (input > JOYSTICK_THRESHOLD) intakeMode = IntakeMode::k_Expelling;
+        else if (input < -JOYSTICK_THRESHOLD) intakeMode = IntakeMode::k_Intaking;
+        else intakeMode = IntakeMode::k_Idle;
+        SetMode(intakeMode, absoluteInput);
     }
 
-    void BallIntake::Update() {
-        const auto isIntaking = m_Output < 0.0;
-        double outputProportion, openLoopRamp;
-        if (isIntaking) {
-            outputProportion = OUTPUT_PROPORTION_INTAKING;
-            openLoopRamp = RAMP_INTAKING;
-        } else {
-            outputProportion = OUTPUT_PROPORTION_EXPELLING;
-            openLoopRamp = RAMP_EXPELLING;
+    bool BallIntake::GetHasBall() {
+        static int s_HasBallCount = 0;
+        if (m_RightIntake.GetOutputCurrent() > HAS_BALL_STALL_CURRENT)
+            s_HasBallCount++;
+        else if (s_HasBallCount > 0)
+            s_HasBallCount = 0;
+        return s_HasBallCount > HAS_BALL_COUNTS_REQUIRED;
+    }
+
+    void BallIntake::SetOutput(double output) {
+        static double s_LastOutput = 0.0;
+        if (s_LastOutput != output) {
+            m_RightIntake.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, output);
+            m_LeftIntake.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, output);
+            s_LastOutput = output;
         }
-        if (openLoopRamp != m_LastOpenLoopRamp) {
-            m_LeftIntake.ConfigOpenloopRamp(openLoopRamp);
-            m_RightIntake.ConfigOpenloopRamp(openLoopRamp);
-            m_LastOpenLoopRamp = openLoopRamp;
+    }
+
+    void BallIntake::ConfigOpenLoopRamp(double ramp) {
+        static double s_LastRamp = 0.0;
+        if (s_LastRamp != ramp) {
+            auto leftError = m_LeftIntake.ConfigOpenloopRamp(ramp), rightError = m_RightIntake.ConfigOpenloopRamp(ramp);
+            if (leftError == ctre::phoenix::OK && rightError == ctre::phoenix::OK)
+                s_LastRamp = ramp;
+            else
+                Log(lib::LogLevel::k_Error, m_Robot->GetLogger()->Format("Left Error: %d, Right Error: %d", leftError, rightError));
         }
-        m_LeftIntake.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, m_Output * outputProportion);
-        m_RightIntake.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, m_Output * outputProportion);
+    }
+
+    void BallIntake::SetMode(IntakeMode intakeMode, double strength) {
+        switch (intakeMode) {
+            case IntakeMode::k_Idle: {
+                SetOutput(0.0);
+                break;
+            }
+            case IntakeMode::k_Intaking: {
+                SetOutput(OUTPUT_PROPORTION_INTAKING * strength);
+                ConfigOpenLoopRamp(RAMP_INTAKING);
+                break;
+            }
+            case IntakeMode::k_Expelling: {
+                SetOutput(OUTPUT_PROPORTION_EXPELLING * strength);
+                ConfigOpenLoopRamp(RAMP_EXPELLING);
+                break;
+            }
+        }
     }
 }

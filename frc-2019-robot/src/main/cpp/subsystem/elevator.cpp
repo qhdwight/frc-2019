@@ -73,7 +73,7 @@ namespace garage {
         m_ControlMode = m_DefaultControlMode;
     }
 
-    void Elevator::ProcessCommand(Command& command) {
+    void Elevator::UpdateUnlocked(Command& command) {
         m_Input = math::threshold(m_ControlMode == ElevatorControlMode::k_Manual ? command.driveForwardFine : command.elevatorInput, 0.05);
         if (command.elevatorSoftLand) {
             m_ControlMode = ElevatorControlMode::k_SoftLand;
@@ -90,7 +90,7 @@ namespace garage {
 //        m_ElevatorMaster.GetStickyFaults(m_StickyFaults);
 //        m_ElevatorMaster.ClearStickyFaults();
         // Reset encoder with limit switch
-        m_IsLimitSwitchDown = static_cast<const bool>(m_ElevatorMaster.GetSensorCollection().IsRevLimitSwitchClosed());
+        m_IsLimitSwitchDown = static_cast<bool>(m_ElevatorMaster.GetSensorCollection().IsRevLimitSwitchClosed());
         if (m_IsLimitSwitchDown && m_FirstLimitSwitchHit) {
             /* This is the first update frame that our limit switch has been set to the down position */
             // We want to reset to encoder back to zero because we know we are at
@@ -100,7 +100,7 @@ namespace garage {
                 Log(lib::LogLevel::k_Info, "Limit switch hit and encoder reset");
                 m_FirstLimitSwitchHit = false;
             } else {
-                Log(lib::LogLevel::k_Error, m_Robot->GetLogger()->Format("CTRE Error: %d", static_cast<int>(error)));
+                Log(lib::LogLevel::k_Error, m_Robot->GetLogger()->Format("CTRE Error: %d", error));
             }
         }
         m_EncoderPosition = m_ElevatorMaster.GetSelectedSensorPosition(0);

@@ -28,27 +28,27 @@ namespace garage {
 
     }
 
-    void Flipper::ProcessCommand(Command& command) {
+    void Flipper::UpdateUnlocked(Command& command) {
         m_SetPoint += math::threshold(command.flipper, DEFAULT_INPUT_THRESHOLD);
         m_SetPoint = math::clamp(m_SetPoint, FLIPPER_LOWER, FLIPPER_UPPER);
     }
 
     void Flipper::Update() {
         m_IsLimitSwitchDown = m_LimitSwitch.Get();
-        if (m_IsLimitSwitchDown && m_FirstLimitSwitchHit) {
+        static bool s_FirstLimitSwitchHit = true;
+        if (m_IsLimitSwitchDown && s_FirstLimitSwitchHit) {
             auto error = m_Encoder.SetPosition(0.0);
             if (error == rev::CANError::kOK) {
                 Log(lib::LogLevel::k_Info, "Limit switch hit and encoder reset");
-                m_FirstLimitSwitchHit = false;
+                s_FirstLimitSwitchHit = false;
             } else {
-                Log(lib::LogLevel::k_Error, m_Robot->GetLogger()->Format("CAN Error: %d", static_cast<int>(error)));
+                Log(lib::LogLevel::k_Error, m_Robot->GetLogger()->Format("CAN Error: %d", error));
             }
         }
-        if (!m_IsLimitSwitchDown) {
-            m_FirstLimitSwitchHit = true;
-        }
+        if (!m_IsLimitSwitchDown)
+            s_FirstLimitSwitchHit = true;
         m_EncoderPosition = m_Encoder.GetPosition();
-        const auto faults = m_Flipper.GetStickyFaults();
+        const uint16_t faults = m_Flipper.GetStickyFaults();
         m_Flipper.ClearFaults();
         const bool inMiddle = m_EncoderPosition > FLIPPER_SET_POINT_LOWER && m_EncoderPosition < FLIPPER_SET_POINT_UPPER;
         bool wantingToGoOtherWay = false;
@@ -63,7 +63,7 @@ namespace garage {
                     Log(lib::LogLevel::k_Info, m_Robot->GetLogger()->Format("Setting set point to: %d", clampedSetPoint));
                     m_LastSetPoint = clampedSetPoint;
                 } else {
-                    Log(lib::LogLevel::k_Error, m_Robot->GetLogger()->Format("CAN Error: %d", static_cast<int>(error)));
+                    Log(lib::LogLevel::k_Error, m_Robot->GetLogger()->Format("CAN Error: %d", error));
                 }
             }
         } else {
@@ -77,8 +77,37 @@ namespace garage {
     }
 
     void Flipper::SpacedUpdate(Command& command) {
-        LogSample(lib::LogLevel::k_Info, m_Robot->GetLogger()->Format(
+        Log(lib::LogLevel::k_Info, m_Robot->GetLogger()->Format(
                 "Wanted Position: %d, Output: %f, Encoder Position: %f, Encoder Velocity: %f, Limit Switch: %d, Faults: %d",
                 m_SetPoint, m_Flipper.GetAppliedOutput(), m_IsLimitSwitchDown, m_EncoderPosition, m_Encoder.GetVelocity()));
+    }
+
+    void Flipper::SetRawOutput(double output) {
+
+    }
+
+    void Flipper::SetSetPoint(double setPoint) {
+
+    }
+
+    void Flipper::SetOutput(FlipperControlMode flipperControlMode, double output, bool forceSet) {
+        switch (flipperControlMode) {
+            case FlipperControlMode::k_Manual: {
+                static double s_LastOutput = 0.0;
+                if (forceSet || output != s_LastOutput) {
+                    m_Flipper.Set(output);
+                    s_LastOutput = output;
+                }
+                break;
+            }
+            case FlipperControlMode::k_SetPoint: {
+                static double s_LastWantedPosition = 0.0;
+                if (forceSet || output != s_LastWantedPosition) {
+                    m_FlipperController.SetReference(output, rev::ControlType::kSmartMotion);
+                    s_LastWantedPosition = output;
+                }
+                break;
+            }
+        }
     }
 }

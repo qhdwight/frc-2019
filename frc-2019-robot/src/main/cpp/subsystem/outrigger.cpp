@@ -15,7 +15,7 @@ namespace garage {
         m_OutriggerSlave.Follow(m_OutriggerMaster, true);
     }
 
-    void Outrigger::ProcessCommand(Command& command) {
+    void Outrigger::UpdateUnlocked(Command& command) {
         m_Output = math::threshold(command.test, 0.05);
     }
 

@@ -28,7 +28,7 @@ namespace garage {
         return absoluteCommand > JOYSTICK_THRESHOLD ? sign * std::abs(std::pow(commandInput, 2.0)) : 0.0;
     }
 
-    void Drive::ProcessCommand(Command& command) {
+    void Drive::UpdateUnlocked(Command& command) {
         const double
                 forwardInput = InputFromCommand(command.driveForward),
                 turnInput = InputFromCommand(command.driveTurn),

@@ -146,8 +146,11 @@ namespace garage {
 
     bool Elevator::SetController(std::shared_ptr<ElevatorController> controller) {
         bool different = controller != m_Controller;
-        if (different)
+        if (different) {
+            if (m_Controller) m_Controller->OnDisable();
             m_Controller = controller;
+            controller->OnEnable();
+        }
         return different;
     }
 

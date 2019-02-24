@@ -1,11 +1,8 @@
-#include <utility>
-
-#include <utility>
+#include <lib/subsystem.hpp>
 
 #include <robot.hpp>
 
-#include <lib/subsystem.hpp>
-
+#include <utility>
 #include <limits>
 
 namespace garage {
@@ -58,10 +55,6 @@ namespace garage {
         void Subsystem::LogSample(lib::LogLevel logLevel, std::string log, int frequency) {
             if (m_SequenceNumber % frequency == 0)
                 Log(logLevel, std::move(log));
-        }
-
-        bool Subsystem::IsLocked() {
-            return m_IsLocked;
         }
 
         bool Subsystem::ShouldUnlock(Command& command) {

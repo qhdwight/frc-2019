@@ -42,7 +42,7 @@ namespace garage {
 
     class RawElevatorController : public ElevatorController {
     public:
-        using SubsystemController::SubsystemController;
+        RawElevatorController(std::shared_ptr<Elevator>& subsystem) : ElevatorController(subsystem, "Raw Controller") {};
 
         void Control(Command& command) override;
     };
@@ -52,7 +52,7 @@ namespace garage {
         int m_WantedSetPoint = 0, m_LastSetPointSet = 0;
 
     public:
-        using SubsystemController::SubsystemController;
+        SetPointElevatorController(std::shared_ptr<Elevator>& subsystem) : ElevatorController(subsystem, "Set Point Controller") {};
 
         void Control(Command& command) override;
 
@@ -63,14 +63,14 @@ namespace garage {
 
     class HybridElevatorController : public ElevatorController {
     public:
-        using SubsystemController::SubsystemController;
+        HybridElevatorController(std::shared_ptr<Elevator>& subsystem) : ElevatorController(subsystem, "Hybrid Controller") {};
 
         void Control(Command& command) override;
     };
 
     class SoftLandElevatorController : public ElevatorController {
     public:
-        using SubsystemController::SubsystemController;
+        SoftLandElevatorController(std::shared_ptr<Elevator>& subsystem) : ElevatorController(subsystem, "Soft Land Controller") {};
 
         void Control(Command& command) override;
     };

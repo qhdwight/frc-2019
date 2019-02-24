@@ -15,7 +15,14 @@
 namespace garage {
     class Robot;
     namespace lib {
+        template<typename TSubsystem>
+        class SubsystemController;
+
         class Subsystem : public std::enable_shared_from_this<Subsystem> {
+        private:
+            template<typename TSubsystem>
+            friend SubsystemController;
+
         protected:
             std::shared_ptr<Robot> m_Robot;
             Command m_LastCommand = {};
@@ -56,7 +63,9 @@ namespace garage {
 
             void Unlock();
 
-            bool IsLocked();
+            bool IsLocked() {
+                return m_IsLocked;
+            }
         };
     }
 }

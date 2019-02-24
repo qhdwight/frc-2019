@@ -185,7 +185,7 @@ namespace garage {
             if (m_Subsystem->m_EncoderPosition < ELEVATOR_MAX) {
                 // In middle zone
                 m_Subsystem->LogSample(lib::LogLevel::k_Info, "Theoretically Okay and Working");
-                if (m_WantedSetPoint != m_LastSetPointSet) {
+                if (!m_LastSetPointSet || m_WantedSetPoint != m_LastSetPointSet) {
                     m_Subsystem->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::MotionMagic, m_WantedSetPoint,
                                                       ctre::phoenix::motorcontrol::DemandType::DemandType_ArbitraryFeedForward, ELEVATOR_FF);
                     m_LastSetPointSet = m_WantedSetPoint;
@@ -206,7 +206,7 @@ namespace garage {
 
     void SetPointElevatorController::Reset() {
         m_WantedSetPoint = 0;
-        m_LastSetPointSet = 0;
+        m_LastSetPointSet.reset();
     }
 
     void HybridElevatorController::ProcessCommand(Command& command) {

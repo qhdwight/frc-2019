@@ -8,6 +8,8 @@
 #include <ctre/phoenix/motorcontrol/can/TalonSRX.h>
 #include <ctre/phoenix/motorcontrol/can/VictorSPX.h>
 
+#include <wpi/optional.h>
+
 #define ELEVATOR_MIN 0
 #define ELEVATOR_MAX 300000
 // Units in encoder ticks per 100 ms
@@ -59,7 +61,8 @@ namespace garage {
 
     class SetPointElevatorController : public ElevatorController {
     protected:
-        int m_WantedSetPoint = 0, m_LastSetPointSet = 0;
+        int m_WantedSetPoint = 0;
+        wpi::optional<int> m_LastSetPointSet;
 
     public:
         SetPointElevatorController(std::shared_ptr<Elevator>& subsystem) : ElevatorController(subsystem, "Set Point Controller") {};

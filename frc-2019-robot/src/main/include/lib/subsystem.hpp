@@ -48,9 +48,9 @@ namespace garage {
 
             void Periodic();
 
-            void Log(lib::LogLevel logLevel, const std::string& log);
+            void Log(lib::LogLevel logLevel, std::string log);
 
-            void LogSample(lib::LogLevel logLevel, const std::string& log, int frequency = DEFAULT_FREQUENCY);
+            void LogSample(lib::LogLevel logLevel, std::string log, int frequency = DEFAULT_FREQUENCY);
 
             void Lock();
 

@@ -24,7 +24,7 @@ namespace garage {
 
             void Log(LogLevel logLevel, const std::string& log) {
                 auto subsystem = std::dynamic_pointer_cast<Subsystem>(m_Subsystem);
-                subsystem->Log(logLevel, subsystem->GetLogger()->Format(" [%s] %s", m_Name, log));
+                subsystem->Log(logLevel, subsystem->GetLogger()->Format(" [%s] %s", m_Name.c_str(), log.c_str()));
             }
 
             virtual void OnEnable() {

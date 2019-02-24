@@ -48,13 +48,13 @@ namespace garage {
             m_LastCommand = command;
         }
 
-        void Subsystem::Log(lib::LogLevel logLevel, const std::string& log) {
-            m_Robot->GetLogger()->Log(logLevel, m_Robot->GetLogger()->Format("[%s] %s", m_SubsystemName, log));
+        void Subsystem::Log(lib::LogLevel logLevel, std::string log) {
+            m_Robot->GetLogger()->Log(logLevel, m_Robot->GetLogger()->Format("[%s] %s", m_SubsystemName.c_str(), log.c_str()));
         }
 
-        void Subsystem::LogSample(lib::LogLevel logLevel, const std::string& log, int frequency) {
+        void Subsystem::LogSample(lib::LogLevel logLevel, std::string log, int frequency) {
             if (m_SequenceNumber % frequency == 0)
-                Log(logLevel, log);
+                Log(logLevel, std::move(log));
         }
 
         bool Subsystem::ShouldUnlock(Command& command) {

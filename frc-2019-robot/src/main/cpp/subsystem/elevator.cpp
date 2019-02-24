@@ -22,6 +22,7 @@ namespace garage {
 //        m_ElevatorMaster.EnableCurrentLimit(true);
 //        m_ElevatorMaster.ConfigPeakCurrentLimit(300, CONFIG_TIMEOUT);
 //        m_ElevatorMaster.ConfigContinuousCurrentLimit(100, CONFIG_TIMEOUT);
+        m_ElevatorMaster.EnableVoltageCompensation(true);
         // Configure following and inversion
         m_ElevatorSlaveOne.Follow(m_ElevatorMaster);
         m_ElevatorSlaveTwo.Follow(m_ElevatorMaster);
@@ -75,11 +76,12 @@ namespace garage {
         m_SetPointController = std::make_shared<SetPointElevatorController>(elevator);
         m_HybridController = std::make_shared<HybridElevatorController>(elevator);
         m_SoftLandController = std::make_shared<SoftLandElevatorController>(elevator);
-        SetController(m_SetPointController);
+        SetElevatorWantedSetPoint(0);
     }
 
     void Elevator::TeleopInit() {
-
+        if (m_Controller)
+            m_Controller->Reset();
     }
 
     void Elevator::UpdateUnlocked(Command& command) {
@@ -97,22 +99,21 @@ namespace garage {
 //        m_ElevatorMaster.GetStickyFaults(m_StickyFaults);
 //        m_ElevatorMaster.ClearStickyFaults();
         // Reset encoder with limit switch
-        static bool s_FirstLimitSwitchDown = true;
         m_IsLimitSwitchDown = static_cast<bool>(m_ElevatorMaster.GetSensorCollection().IsRevLimitSwitchClosed());
-        if (m_IsLimitSwitchDown && s_FirstLimitSwitchDown) {
+        if (m_IsLimitSwitchDown && m_FirstLimitSwitchDown) {
             /* This is the first update frame that our limit switch has been set to the down position */
             // We want to reset to encoder back to zero because we know we are at
             // the lowest position possible and the encoder has probably drifted over time
-            auto error = m_ElevatorMaster.SetSelectedSensorPosition(SET_POINT_SLOT_INDEX);
+            auto error = m_ElevatorMaster.SetSelectedSensorPosition(0, SET_POINT_SLOT_INDEX);
             if (error == ctre::phoenix::ErrorCode::OKAY) {
                 Log(lib::LogLevel::k_Info, "Limit switch hit and encoder reset");
-                s_FirstLimitSwitchDown = false;
+                m_FirstLimitSwitchDown = false;
             } else {
                 Log(lib::LogLevel::k_Error, m_Robot->GetLogger()->Format("CTRE Error: %d", error));
             }
         }
         if (!m_IsLimitSwitchDown)
-            s_FirstLimitSwitchDown = true;
+            m_FirstLimitSwitchDown = true;
         m_EncoderPosition = m_ElevatorMaster.GetSelectedSensorPosition(SET_POINT_SLOT_INDEX);
         m_EncoderVelocity = m_ElevatorMaster.GetSelectedSensorVelocity(SET_POINT_SLOT_INDEX);
         if (m_Controller) {
@@ -185,7 +186,8 @@ namespace garage {
                 // In middle zone
                 m_Subsystem->LogSample(lib::LogLevel::k_Info, "Theoretically Okay and Working");
                 if (m_WantedSetPoint != m_LastSetPointSet) {
-                    m_Subsystem->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::MotionMagic, m_WantedSetPoint);
+                    m_Subsystem->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::MotionMagic, m_WantedSetPoint,
+                                                      ctre::phoenix::motorcontrol::DemandType::DemandType_ArbitraryFeedForward, ELEVATOR_FF);
                     m_LastSetPointSet = m_WantedSetPoint;
                 }
             } else {
@@ -200,6 +202,11 @@ namespace garage {
             m_Subsystem->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput,
                                               m_Subsystem->m_IsLimitSwitchDown ? 0.0 : SAFE_ELEVATOR_DOWN_STRONG);
         }
+    }
+
+    void SetPointElevatorController::Reset() {
+        m_WantedSetPoint = 0;
+        m_LastSetPointSet = 0;
     }
 
     void HybridElevatorController::ProcessCommand(Command& command) {

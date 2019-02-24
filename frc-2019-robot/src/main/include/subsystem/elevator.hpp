@@ -21,6 +21,7 @@
 #define ELEVATOR_D 0.0
 //#define ELEVATOR_D ELEVATOR_P * 6.0
 #define ELEVATOR_F 1023.0 / ELEVATOR_VELOCITY
+#define ELEVATOR_FF 0.7
 
 #define ELEVATOR_ALLOWABLE_CLOSED_LOOP_ERROR 0
 
@@ -67,6 +68,8 @@ namespace garage {
 
         void Control() override;
 
+        void Reset() override;
+
         void SetWantedSetPoint(int wantedSetPoint) {
             m_WantedSetPoint = wantedSetPoint;
         }
@@ -91,8 +94,16 @@ namespace garage {
     };
 
     class Elevator : public lib::Subsystem {
-    private:
-        bool m_IsLimitSwitchDown = true;
+        friend class RawElevatorController;
+
+        friend class SetPointElevatorController;
+
+        friend class HybridElevatorController;
+
+        friend class SoftLandElevatorController;
+
+    protected:
+        bool m_IsLimitSwitchDown = true, m_FirstLimitSwitchDown = true;
         int m_EncoderPosition, m_EncoderVelocity;
         ctre::phoenix::motorcontrol::StickyFaults m_StickyFaults;
         ctre::phoenix::motorcontrol::can::TalonSRX m_ElevatorMaster{ELEVATOR_MASTER};
@@ -104,15 +115,6 @@ namespace garage {
         std::shared_ptr<HybridElevatorController> m_HybridController;
         std::shared_ptr<SoftLandElevatorController> m_SoftLandController;
 
-        friend class RawElevatorController;
-
-        friend class SetPointElevatorController;
-
-        friend class HybridElevatorController;
-
-        friend class SoftLandElevatorController;
-
-    protected:
         bool ShouldUnlock(Command& command) override;
 
         void UpdateUnlocked(Command& command) override;

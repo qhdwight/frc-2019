@@ -6,7 +6,7 @@
 
 namespace garage {
     namespace lib {
-        std::string Logger::Format(std::string format, ...) {
+        std::string Logger::Format(const std::string& format, ...) {
             va_list arguments;
             va_start(arguments, format);
             auto length = static_cast<size_t>(std::vsnprintf(nullptr, 0, format.c_str(), arguments));

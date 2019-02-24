@@ -12,7 +12,7 @@ namespace garage {
         private:
             LogLevel m_LogLevel;
         public:
-            std::string Format(std::string format, ...);
+            std::string Format(const std::string& format, ...);
 
             void SetLogLevel(LogLevel logLevel);
 

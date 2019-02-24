@@ -12,7 +12,7 @@ namespace garage {
 
     void SetElevatorPositionRoutine::Begin() {
         m_Elevator->Lock();
-        m_Elevator->SetElevatorWantedPosition(m_Position);
+        m_Elevator->SetElevatorWantedSetPoint(m_Position);
     }
 
     void SetElevatorPositionRoutine::Terminate() {

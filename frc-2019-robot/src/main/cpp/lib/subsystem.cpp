@@ -10,7 +10,8 @@
 
 namespace garage {
     namespace lib {
-        Subsystem::Subsystem(std::shared_ptr<Robot>& robot, const std::string& subsystemName) : m_Robot(robot), m_SubsystemName(subsystemName) {
+        Subsystem::Subsystem(std::shared_ptr<Robot>& robot, const std::string& subsystemName)
+                : m_Robot(robot), m_SubsystemName(subsystemName), std::enable_shared_from_this<Subsystem>() {
             Log(lib::LogLevel::k_Info, "Subsystem Initialized");
         }
 
@@ -31,11 +32,11 @@ namespace garage {
             AdvanceSequence();
             if (m_SequenceNumber % SPACED_UPDATE_INTERVAL == 0)
                 SpacedUpdate(command);
+            Update();
             if (m_IsLocked)
                 UpdateLocked();
             else
                 UpdateUnlocked(command);
-            PostUpdate();
             SetLastCommand(command);
         }
 

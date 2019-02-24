@@ -9,7 +9,7 @@
 #include <memory>
 
 namespace garage {
-    class IntakeBallThenStowRoutine : lib::Routine {
+    class IntakeBallThenStowRoutine : public lib::Routine {
     private:
         std::shared_ptr<BallIntake> m_BallIntake;
 
@@ -19,7 +19,7 @@ namespace garage {
         IntakeBallThenStowRoutine(std::shared_ptr<Robot>& robot);
     };
 
-    class StowRoutine : lib::Routine {
+    class StowRoutine : public lib::Routine {
     private:
         std::shared_ptr<Flipper> m_Flipper;
 

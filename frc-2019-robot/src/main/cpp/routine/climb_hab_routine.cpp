@@ -37,7 +37,7 @@ namespace garage {
 
     void ElevatorRaiseRoutine::Update() {
         Routine::Update();
-        m_Robot->GetElevator()->SetElevatorWantedPosition(150000);
+        m_Robot->GetElevator()->SetElevatorWantedSetPoint(150000);
     }
 
     void ElevatorRaiseRoutine::Terminate() {

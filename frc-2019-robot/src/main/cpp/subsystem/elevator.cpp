@@ -38,7 +38,7 @@ namespace garage {
         m_ElevatorMaster.Config_kI(SET_POINT_SLOT_INDEX, ELEVATOR_I, CONFIG_TIMEOUT);
         m_ElevatorMaster.Config_IntegralZone(SET_POINT_SLOT_INDEX, ELEVATOR_I_ZONE, CONFIG_TIMEOUT);
         m_ElevatorMaster.ConfigAllowableClosedloopError(SET_POINT_SLOT_INDEX, ELEVATOR_ALLOWABLE_CLOSED_LOOP_ERROR, CONFIG_TIMEOUT);
-        // Network table values
+        // Setup network table
         m_Robot->GetNetworkTable()->PutNumber("Elevator/Acceleration", ELEVATOR_ACCELERATION);
         m_Robot->GetNetworkTable()->PutNumber("Elevator/Velocity", ELEVATOR_VELOCITY);
         m_Robot->GetNetworkTable()->PutNumber("Elevator/P", ELEVATOR_P);
@@ -67,21 +67,29 @@ namespace garage {
         m_Robot->GetNetworkTable()->GetEntry("Elevator/I Zone").AddListener([&](const nt::EntryNotification& notification) {
             m_ElevatorMaster.Config_IntegralZone(SET_POINT_SLOT_INDEX, static_cast<int>(notification.value->GetDouble()), CONFIG_TIMEOUT);
         }, NT_NOTIFY_UPDATE);
+        // Setup controllers
+        auto elevator = std::dynamic_pointer_cast<Elevator>(shared_from_this());
+        m_RawController = std::make_shared<RawElevatorController>(elevator);
+        m_SetPointController = std::make_shared<SetPointElevatorController>(elevator);
+        m_HybridController = std::make_shared<HybridElevatorController>(elevator);
+        m_SoftLandController = std::make_shared<SoftLandElevatorController>(elevator);
+        SetController(m_RawController);
     }
 
     void Elevator::TeleopInit() {
-        m_ControlMode = m_DefaultControlMode;
+
     }
 
     void Elevator::UpdateUnlocked(Command& command) {
-        m_Input = math::threshold(m_ControlMode == ElevatorControlMode::k_Manual ? command.driveForwardFine : command.elevatorInput, 0.05);
         if (command.elevatorSoftLand) {
-            m_ControlMode = ElevatorControlMode::k_SoftLand;
-            m_WantedSetPoint = ELEVATOR_MIN;
-        } else if (m_Input != 0.0) {
-            m_ControlMode = m_DefaultControlMode;
-            m_WantedSetPoint += static_cast<int>(m_Input * 3000.0);
-            m_WantedSetPoint = math::clamp(m_WantedSetPoint, ELEVATOR_MIN, ELEVATOR_MAX);
+            SetController(m_SoftLandController);
+        } else if (math::abs(command.elevatorInput) > JOYSTICK_THRESHOLD) {
+            SetController(m_RawController);
+        }
+        if (m_Controller) {
+            m_Controller->Control(command);
+        } else {
+            LogSample(lib::LogLevel::k_Warning, "No controller detected");
         }
     }
 
@@ -90,105 +98,37 @@ namespace garage {
 //        m_ElevatorMaster.GetStickyFaults(m_StickyFaults);
 //        m_ElevatorMaster.ClearStickyFaults();
         // Reset encoder with limit switch
+        static bool s_FirstLimitSwitchDown = true;
         m_IsLimitSwitchDown = static_cast<bool>(m_ElevatorMaster.GetSensorCollection().IsRevLimitSwitchClosed());
-        if (m_IsLimitSwitchDown && m_FirstLimitSwitchHit) {
+        if (m_IsLimitSwitchDown && s_FirstLimitSwitchDown) {
             /* This is the first update frame that our limit switch has been set to the down position */
             // We want to reset to encoder back to zero because we know we are at
             // the lowest position possible and the encoder has probably drifted over time
-            auto error = m_ElevatorMaster.SetSelectedSensorPosition(0);
+            auto error = m_ElevatorMaster.SetSelectedSensorPosition(SET_POINT_SLOT_INDEX);
             if (error == ctre::phoenix::ErrorCode::OKAY) {
                 Log(lib::LogLevel::k_Info, "Limit switch hit and encoder reset");
-                m_FirstLimitSwitchHit = false;
+                s_FirstLimitSwitchDown = false;
             } else {
                 Log(lib::LogLevel::k_Error, m_Robot->GetLogger()->Format("CTRE Error: %d", error));
             }
         }
-        m_EncoderPosition = m_ElevatorMaster.GetSelectedSensorPosition(0);
-        switch (m_ControlMode) {
-            case ElevatorControlMode::k_Idle: {
-                break;
-            }
-            case ElevatorControlMode::k_Manual: {
-                m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, m_Input * 0.5);
-                break;
-            }
-            case ElevatorControlMode::k_SoftLand: {
-                if (m_EncoderPosition > SOFT_LAND_ELEVATOR_POSITION_WEAK) {
-                    m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, SAFE_ELEVATOR_DOWN_WEAK);
-                } else if (m_EncoderPosition > SOFT_LAND_ELEVATOR_POSITION_STRONG) {
-                    m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, SAFE_ELEVATOR_DOWN_STRONG);
-                }
-                break;
-            }
-            case ElevatorControlMode::k_SetPoint: {
-//                m_Robot->GetNetworkTable()->PutNumber("Elevator/Encoder", encoderPosition);
-//                m_Robot->GetNetworkTable()->PutNumber("Elevator/Wanted Position", command.elevatorPosition);
-//                m_Robot->GetNetworkTable()->PutNumber("Elevator/Output", m_ElevatorMaster.GetMotorOutputPercent());
-//                m_Robot->GetNetworkTable()->PutNumber("Elevator/Master Amperage", m_ElevatorMaster.GetOutputCurrent());
-//                m_Robot->GetNetworkTable()->PutNumber("Elevator/Limit Switch", isLimitSwitch ? 1.0 : 0.0);
-                if (m_WantedSetPoint > ELEVATOR_MIN_CLOSED_LOOP_HEIGHT) {
-                    // Our set point is above a negligible amount
-                    if (m_EncoderPosition < ELEVATOR_MAX) {
-                        // In middle zone
-                        LogSample(lib::LogLevel::k_Info, "Theoretically Okay and Working");
-                        if (m_WantedSetPoint != m_LastSetPoint) {
-                            m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::MotionMagic, m_WantedSetPoint);
-                            m_LastSetPoint = m_WantedSetPoint;
-                        }
-                    } else {
-                        // Too high and we must kill the elevator
-                        Log(lib::LogLevel::k_Error, "Too High");
-                        m_ControlMode = ElevatorControlMode::k_SoftLand;
-                    }
-                } else {
-                    // We want to go a negligible amount, not worth using a closed loop near the bottom
-                    LogSample(lib::LogLevel::k_Info, "Not High Enough");
-                    // Set the elevator to coast output or zero if we are hitting the limit switch
-                    m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput,
-                                         m_IsLimitSwitchDown ? 0.0 : SAFE_ELEVATOR_DOWN_STRONG);
-                }
-                break;
-            }
-            case ElevatorControlMode::k_Hybrid: {
-                // TODO add too high checking
-                if (m_EncoderPosition > ELEVATOR_MIN_CLOSED_LOOP_HEIGHT) {
-                    /* We are a negligible amount above the bottom */
-                    // Test if our input is different from the last one so we avoid flooding the controller with requests
-                    const bool inputDifferent = math::abs(m_LastCommand.elevatorInput - m_Input) > 0.5;
-                    if (m_Input == 0.0 || (m_EncoderPosition > ELEVATOR_MAX && m_Input >= 0.0)) {
-                        // When our input is zero we want to hold the current position with a closed loop velocity control
-                        if (inputDifferent)
-                            m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::Velocity, 0.0);
-                    } else {
-                        // If our input is either up or down set to corresponding open loop pre-determined output
-                        if (inputDifferent)
-                            m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput,
-                                                 m_Input > 0.0 ? ELEVATOR_UP_OUTPUT : ELEVATOR_DOWN_OUTPUT);
-                    }
-                    break;
-                } else {
-                    // Coast the elevator down so it does not slam at this height
-                    LogSample(lib::LogLevel::k_Info, "Not High Enough");
-                    m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput,
-                                         m_IsLimitSwitchDown ? 0.0 : SAFE_ELEVATOR_DOWN_STRONG);
-                }
-            }
-        }
+        m_EncoderPosition = m_ElevatorMaster.GetSelectedSensorPosition(SET_POINT_SLOT_INDEX);
+        m_EncoderVelocity = m_ElevatorMaster.GetSelectedSensorVelocity(SET_POINT_SLOT_INDEX);
     }
 
     int Elevator::GetElevatorPosition() {
         return m_EncoderPosition;
     }
 
-    void Elevator::SetElevatorWantedPosition(int wantedPosition) {
-        m_ControlMode = ElevatorControlMode::k_SetPoint;
-        m_WantedSetPoint = wantedPosition;
+    void Elevator::SetElevatorWantedSetPoint(int wantedSetPoint) {
+        SetController(m_SetPointController);
+        m_SetPointController->SetWantedSetPoint(wantedSetPoint);
     }
 
     void Elevator::SpacedUpdate(Command& command) {
         Log(lib::LogLevel::k_Info, m_Robot->GetLogger()->Format(
-                "Control Mode: %d, Wanted Set Point: %d, Encoder: %d, Real Output: %f, Current: %f, Limit Switch: %s",
-                m_ControlMode, m_WantedSetPoint, m_EncoderPosition, m_ElevatorMaster.GetMotorOutputPercent(), m_ElevatorMaster.GetOutputCurrent(),
+                "Output: %f, Current: %f, Encoder Position: %d, Encoder Velocity: %d, Limit Switch: %s",
+                m_ElevatorMaster.GetMotorOutputPercent(), m_ElevatorMaster.GetOutputCurrent(), m_EncoderPosition, m_EncoderVelocity,
                 m_IsLimitSwitchDown ? "true" : "false"));
     }
 
@@ -201,6 +141,78 @@ namespace garage {
     }
 
     void Elevator::OnUnlock() {
-        m_ControlMode = m_DefaultControlMode;
+
+    }
+
+    bool Elevator::SetController(std::shared_ptr<ElevatorController> controller) {
+        bool different = controller != m_Controller;
+        if (different)
+            m_Controller = controller;
+        return different;
+    }
+
+    void RawElevatorController::Control(Command& command) {
+        const double input = math::threshold(command.elevatorInput, JOYSTICK_THRESHOLD);;
+        m_Subsystem->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, input * 0.5);
+    }
+
+    void SetPointElevatorController::Control(Command& command) {
+        const double input = math::threshold(command.elevatorInput, JOYSTICK_THRESHOLD);
+        m_WantedSetPoint += static_cast<int>(input * 3000.0);
+        m_WantedSetPoint = math::clamp(m_WantedSetPoint, ELEVATOR_MIN, ELEVATOR_MAX);
+        if (m_WantedSetPoint > ELEVATOR_MIN_CLOSED_LOOP_HEIGHT) {
+            // Our set point is above a negligible amount
+            if (m_Subsystem->m_EncoderPosition < ELEVATOR_MAX) {
+                // In middle zone
+                m_Subsystem->LogSample(lib::LogLevel::k_Info, "Theoretically Okay and Working");
+                if (m_WantedSetPoint != m_LastSetPointSet) {
+                    m_Subsystem->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::MotionMagic, m_WantedSetPoint);
+                    m_LastSetPointSet = m_WantedSetPoint;
+                }
+            } else {
+                // Too high and we must kill the elevator
+                m_Subsystem->Log(lib::LogLevel::k_Error, "Too High");
+                m_Subsystem->SetController(m_Subsystem->m_SoftLandController);
+            }
+        } else {
+            // We want to go a negligible amount, not worth using a closed loop near the bottom
+            m_Subsystem->LogSample(lib::LogLevel::k_Info, "Not High Enough");
+            // Set the elevator to coast output or zero if we are hitting the limit switch
+            m_Subsystem->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput,
+                                              m_Subsystem->m_IsLimitSwitchDown ? 0.0 : SAFE_ELEVATOR_DOWN_STRONG);
+        }
+    }
+
+    void HybridElevatorController::Control(Command& command) {
+        // TODO add too high checking
+        const double input = math::threshold(command.elevatorInput, JOYSTICK_THRESHOLD);
+        if (m_Subsystem->m_EncoderPosition > ELEVATOR_MIN_CLOSED_LOOP_HEIGHT) {
+            /* We are a negligible amount above the bottom */
+            // Test if our input is different from the last one so we avoid flooding the controller with requests
+            const bool inputDifferent = math::abs(m_Subsystem->m_LastCommand.elevatorInput - input) > 0.5;
+            if (input == 0.0 || (m_Subsystem->m_EncoderPosition > ELEVATOR_MAX && input >= 0.0)) {
+                // When our input is zero we want to hold the current position with a closed loop velocity control
+                if (inputDifferent)
+                    m_Subsystem->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::Velocity, 0.0);
+            } else {
+                // If our input is either up or down set to corresponding open loop pre-determined output
+                if (inputDifferent)
+                    m_Subsystem->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput,
+                                                      input > 0.0 ? ELEVATOR_UP_OUTPUT : ELEVATOR_DOWN_OUTPUT);
+            }
+        } else {
+            // Coast the elevator down so it does not slam at this height
+            m_Subsystem->LogSample(lib::LogLevel::k_Info, "Not High Enough");
+            m_Subsystem->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput,
+                                              m_Subsystem->m_IsLimitSwitchDown ? 0.0 : SAFE_ELEVATOR_DOWN_STRONG);
+        }
+    }
+
+    void SoftLandElevatorController::Control(Command& command) {
+        if (m_Subsystem->m_EncoderPosition > SOFT_LAND_ELEVATOR_POSITION_WEAK) {
+            m_Subsystem->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, SAFE_ELEVATOR_DOWN_WEAK);
+        } else if (m_Subsystem->m_EncoderPosition > SOFT_LAND_ELEVATOR_POSITION_STRONG) {
+            m_Subsystem->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, SAFE_ELEVATOR_DOWN_STRONG);
+        }
     }
 }

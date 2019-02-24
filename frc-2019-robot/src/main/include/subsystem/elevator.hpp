@@ -3,6 +3,7 @@
 #include <hardware_map.hpp>
 
 #include <lib/subsystem.hpp>
+#include <lib/subsystem_controller.hpp>
 
 #include <ctre/phoenix/motorcontrol/can/TalonSRX.h>
 #include <ctre/phoenix/motorcontrol/can/VictorSPX.h>
@@ -35,20 +36,66 @@
 #define SET_POINT_SLOT_INDEX 0
 
 namespace garage {
-    enum class ElevatorControlMode {
-        k_Manual, k_SetPoint, k_Hybrid, k_Idle, k_SoftLand
+    class Elevator;
+
+    using ElevatorController = lib::SubsystemController<Elevator>;
+
+    class RawElevatorController : public ElevatorController {
+    public:
+        using SubsystemController::SubsystemController;
+
+        void Control(Command& command) override;
+    };
+
+    class SetPointElevatorController : public ElevatorController {
+    protected:
+        int m_WantedSetPoint = 0, m_LastSetPointSet = 0;
+
+    public:
+        using SubsystemController::SubsystemController;
+
+        void Control(Command& command) override;
+
+        void SetWantedSetPoint(int wantedSetPoint) {
+            m_WantedSetPoint = wantedSetPoint;
+        }
+    };
+
+    class HybridElevatorController : public ElevatorController {
+    public:
+        using SubsystemController::SubsystemController;
+
+        void Control(Command& command) override;
+    };
+
+    class SoftLandElevatorController : public ElevatorController {
+    public:
+        using SubsystemController::SubsystemController;
+
+        void Control(Command& command) override;
     };
 
     class Elevator : public lib::Subsystem {
     private:
-        ElevatorControlMode m_DefaultControlMode = ElevatorControlMode::k_Manual, m_ControlMode = m_DefaultControlMode;
-        bool m_IsLimitSwitchDown = true, m_FirstLimitSwitchHit = true;
-        double m_Input = 0.0;
-        int m_EncoderPosition, m_WantedSetPoint = ELEVATOR_MIN, m_LastSetPoint = m_WantedSetPoint;
+        bool m_IsLimitSwitchDown = true;
+        int m_EncoderPosition, m_EncoderVelocity;
         ctre::phoenix::motorcontrol::StickyFaults m_StickyFaults;
         ctre::phoenix::motorcontrol::can::TalonSRX m_ElevatorMaster{ELEVATOR_MASTER};
         ctre::phoenix::motorcontrol::can::VictorSPX m_ElevatorSlaveOne{ELEVATOR_SLAVE_ONE}, m_ElevatorSlaveTwo{
                 ELEVATOR_SLAVE_TWO}, m_ElevatorSlaveThree{ELEVATOR_SLAVE_THREE};
+        std::shared_ptr<ElevatorController> m_Controller;
+        std::shared_ptr<RawElevatorController> m_RawController;
+        std::shared_ptr<SetPointElevatorController> m_SetPointController;
+        std::shared_ptr<HybridElevatorController> m_HybridController;
+        std::shared_ptr<SoftLandElevatorController> m_SoftLandController;
+
+        friend class RawElevatorController;
+
+        friend class SetPointElevatorController;
+
+        friend class HybridElevatorController;
+
+        friend class SoftLandElevatorController;
 
     protected:
         bool ShouldUnlock(Command& command) override;
@@ -61,6 +108,8 @@ namespace garage {
 
         void OnUnlock() override;
 
+        bool SetController(std::shared_ptr<ElevatorController> controller);
+
     public:
         Elevator(std::shared_ptr<Robot>& robot);
 
@@ -70,6 +119,6 @@ namespace garage {
 
         int GetElevatorPosition();
 
-        void SetElevatorWantedPosition(int wantedPosition);
+        void SetElevatorWantedSetPoint(int wantedSetPoint);
     };
 }

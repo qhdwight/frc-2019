@@ -1,5 +1,7 @@
 #include <lib/routine_manager.hpp>
 
+#include <robot.hpp>
+
 namespace garage {
     namespace lib {
         RoutineManager::RoutineManager(std::shared_ptr<Robot>& robot) : m_Robot(robot) {

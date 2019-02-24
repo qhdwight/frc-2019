@@ -11,11 +11,13 @@ namespace garage {
     }
 
     void SetElevatorPositionRoutine::Begin() {
+        lib::Routine::Begin();
         m_Elevator->Lock();
-        m_Elevator->SetElevatorWantedSetPoint(m_Position);
+        m_Robot->GetElevator()->SetElevatorWantedSetPoint(m_Position);
     }
 
     void SetElevatorPositionRoutine::Terminate() {
+        lib::Routine::Terminate();
         m_Elevator->Unlock();
     }
 

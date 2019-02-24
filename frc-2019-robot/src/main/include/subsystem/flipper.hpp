@@ -28,10 +28,16 @@ namespace garage {
     using FlipperController = lib::SubsystemController<Flipper>;
 
     class RawFlipperController : public FlipperController {
-    public:
-        using SubsystemController::SubsystemController;
+    private:
+        double m_Input = 0.0;
 
-        void Control(Command& command) override;
+    public:
+        RawFlipperController(std::shared_ptr<Flipper>& subsystem)
+                : SubsystemController(subsystem, "Raw Controller") {};
+
+        void ProcessCommand(Command& command) override;
+
+        void Control() override;
     };
 
     class SetPointFlipperController : public FlipperController {
@@ -39,9 +45,12 @@ namespace garage {
         double m_SetPoint = 0.0;
 
     public:
-        using SubsystemController::SubsystemController;
+        SetPointFlipperController(std::shared_ptr<Flipper>& subsystem)
+                : SubsystemController(subsystem, "Set Point Controller") {};
 
-        void Control(Command& command) override;
+        void ProcessCommand(Command& command) override;
+
+        void Control() override;
     };
 
     class Flipper : public lib::Subsystem {

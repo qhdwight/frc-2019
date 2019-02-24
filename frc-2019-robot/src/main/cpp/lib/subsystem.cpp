@@ -8,7 +8,7 @@
 namespace garage {
     namespace lib {
         Subsystem::Subsystem(std::shared_ptr<Robot>& robot, const std::string& subsystemName)
-                : m_Robot(robot), m_SubsystemName(subsystemName), std::enable_shared_from_this<Subsystem>() {
+                : m_Robot(robot), m_SubsystemName(subsystemName) {
             Log(lib::LogLevel::k_Info, "Subsystem Initialized");
         }
 
@@ -59,6 +59,10 @@ namespace garage {
 
         bool Subsystem::ShouldUnlock(Command& command) {
             return true;
+        }
+
+        std::shared_ptr<Logger> Subsystem::GetLogger() {
+            return m_Robot->GetLogger();
         }
     }
 }

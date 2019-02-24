@@ -10,16 +10,21 @@
 
 #define ELEVATOR_MIN 0
 #define ELEVATOR_MAX 300000
+// Units in encoder ticks per 100 ms
 #define ELEVATOR_VELOCITY 10000
+// Units in encoder ticks per 100 ms per 100 ms
 #define ELEVATOR_ACCELERATION 5000
-#define ELEVATOR_P 0.005
+// Gains
+#define ELEVATOR_P 0.01
 #define ELEVATOR_I 0
-#define ELEVATOR_I_ZONE 1000
-#define ELEVATOR_D ELEVATOR_P * 13.0
+#define ELEVATOR_I_ZONE 0
+#define ELEVATOR_D 0.0
+//#define ELEVATOR_D ELEVATOR_P * 6.0
 #define ELEVATOR_F 1023.0 / ELEVATOR_VELOCITY
-#define ELEVATOR_ALLOWABLE_CLOSED_LOOP_ERROR 2000
 
-#define ELEVATOR_MIN_CLOSED_LOOP_HEIGHT 5000.0
+#define ELEVATOR_ALLOWABLE_CLOSED_LOOP_ERROR 0
+
+#define ELEVATOR_MIN_CLOSED_LOOP_HEIGHT 2500.0
 
 #define ELEVATOR_OPEN_LOOP_RAMP 0.4
 #define ELEVATOR_CLOSED_LOOP_RAMP 0.0
@@ -41,10 +46,14 @@ namespace garage {
     using ElevatorController = lib::SubsystemController<Elevator>;
 
     class RawElevatorController : public ElevatorController {
+    protected:
+        double m_Input = 0.0;
     public:
         RawElevatorController(std::shared_ptr<Elevator>& subsystem) : ElevatorController(subsystem, "Raw Controller") {};
 
-        void Control(Command& command) override;
+        void ProcessCommand(Command& command) override;
+
+        void Control() override;
     };
 
     class SetPointElevatorController : public ElevatorController {
@@ -54,7 +63,9 @@ namespace garage {
     public:
         SetPointElevatorController(std::shared_ptr<Elevator>& subsystem) : ElevatorController(subsystem, "Set Point Controller") {};
 
-        void Control(Command& command) override;
+        void ProcessCommand(Command& command) override;
+
+        void Control() override;
 
         void SetWantedSetPoint(int wantedSetPoint) {
             m_WantedSetPoint = wantedSetPoint;
@@ -62,17 +73,21 @@ namespace garage {
     };
 
     class HybridElevatorController : public ElevatorController {
+    protected:
+        double m_Input = 0.0;
     public:
         HybridElevatorController(std::shared_ptr<Elevator>& subsystem) : ElevatorController(subsystem, "Hybrid Controller") {};
 
-        void Control(Command& command) override;
+        void ProcessCommand(Command& command) override;
+
+        void Control() override;
     };
 
     class SoftLandElevatorController : public ElevatorController {
     public:
         SoftLandElevatorController(std::shared_ptr<Elevator>& subsystem) : ElevatorController(subsystem, "Soft Land Controller") {};
 
-        void Control(Command& command) override;
+        void Control() override;
     };
 
     class Elevator : public lib::Subsystem {

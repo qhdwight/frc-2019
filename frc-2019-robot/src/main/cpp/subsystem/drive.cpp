@@ -35,8 +35,8 @@ namespace garage {
                 forwardInputFine = math::threshold(command.driveForwardFine, JOYSTICK_THRESHOLD),
                 turnInputFine = math::threshold(command.driveTurnFine, JOYSTICK_THRESHOLD);
         if (std::abs(forwardInput) > JOYSTICK_THRESHOLD || std::abs(turnInput) > JOYSTICK_THRESHOLD) {
-            m_LeftOutput = forwardInput + turnInput * (1 - math::abs(forwardInput) * 0.5) * 0.25;
-            m_RightOutput = forwardInput - turnInput * (1 - math::abs(forwardInput) * 0.5) * 0.25;
+            m_LeftOutput = forwardInput + turnInput * (1 - math::absolute(forwardInput) * 0.5) * 0.25;
+            m_RightOutput = forwardInput - turnInput * (1 - math::absolute(forwardInput) * 0.5) * 0.25;
         } else {
             m_LeftOutput = (forwardInputFine + turnInputFine) * 0.05;
             m_RightOutput = (forwardInputFine - turnInputFine) * 0.05;

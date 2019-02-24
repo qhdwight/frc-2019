@@ -23,7 +23,7 @@ namespace garage {
             m_Logger->SetLogLevel(logLevel);
             m_Logger->Log(lib::LogLevel::k_Info, m_Logger->Format("Updated log level to: %d", logLevel));
         }, NT_NOTIFY_UPDATE);
-//        AddSubsystem(std::dynamic_pointer_cast<lib::Subsystem>(m_Elevator = std::make_shared<Elevator>(m_Pointer)));
+        AddSubsystem(std::dynamic_pointer_cast<lib::Subsystem>(m_Elevator = std::make_shared<Elevator>(m_Pointer)));
 //        AddSubsystem(std::dynamic_pointer_cast<lib::Subsystem>(m_Drive = std::make_shared<Drive>(m_Pointer)));
 //        AddSubsystem(std::dynamic_pointer_cast<lib::Subsystem>(m_Flipper = std::make_shared<Flipper>(m_Pointer)));
 //        AddSubsystem(std::dynamic_pointer_cast<lib::Subsystem>(m_BallIntake = std::make_shared<BallIntake>(m_Pointer)));
@@ -57,44 +57,50 @@ namespace garage {
     }
 
     void Robot::TeleopPeriodic() {
-        m_RoutineManager->Update();
         UpdateCommand();
-        for (const auto& subsystem : m_Subsystems)
-            subsystem->Periodic();
         if (m_RoutineManager)
             m_RoutineManager->AddRoutinesFromCommand(m_Command);
+        m_RoutineManager->Update();
+        for (const auto& subsystem : m_Subsystems)
+            subsystem->Periodic();
     }
 
     void Robot::UpdateCommand() {
-        m_Command.driveForward = -m_Controller.GetY(frc::GenericHID::JoystickHand::kRightHand);
-        m_Command.driveTurn = m_Controller.GetX(frc::GenericHID::JoystickHand::kRightHand);
-        m_Command.driveForwardFine = -m_Controller.GetY(frc::GenericHID::JoystickHand::kLeftHand);
-        m_Command.driveTurnFine = m_Controller.GetX(frc::GenericHID::JoystickHand::kLeftHand);
-        m_Command.ballIntake = m_Controller.GetTriggerAxis(frc::GenericHID::JoystickHand::kRightHand) -
-                               m_Controller.GetTriggerAxis(frc::GenericHID::JoystickHand::kLeftHand);
-        m_Command.hatchIntakeDown = m_Controller.GetYButtonPressed();
-        m_Command.flipper = math::axis<double>(
-                m_Controller.GetBumper(frc::GenericHID::JoystickHand::kRightHand),
-                m_Controller.GetBumper(frc::GenericHID::JoystickHand::kLeftHand));
-        const int pov = m_Controller.GetPOV();
-        const bool up = pov == 0,
-                down = pov == 180;
-        const auto input = math::axis<double>(up, down);
-        m_Command.elevatorInput = input;
-//        if (pov == 90) m_Command.elevatorSetPoint = 20000;
-//        if (pov == 270) m_Command.elevatorSetPoint = 185000;
-        m_Command.test = m_Controller.GetY(frc::GenericHID::JoystickHand::kLeftHand);
+//        m_Command.driveForward = -m_Controller.GetY(frc::GenericHID::JoystickHand::kRightHand);
+//        m_Command.driveTurn = m_Controller.GetX(frc::GenericHID::JoystickHand::kRightHand);
+//        m_Command.driveForwardFine = -m_Controller.GetY(frc::GenericHID::JoystickHand::kLeftHand);
+//        m_Command.driveTurnFine = m_Controller.GetX(frc::GenericHID::JoystickHand::kLeftHand);
+//        m_Command.ballIntake = m_Controller.GetTriggerAxis(frc::GenericHID::JoystickHand::kRightHand) -
+//                               m_Controller.GetTriggerAxis(frc::GenericHID::JoystickHand::kLeftHand);
+//        m_Command.hatchIntakeDown = m_Controller.GetYButtonPressed();
+//        m_Command.flipper = math::axis<double>(
+//                m_Controller.GetBumper(frc::GenericHID::JoystickHand::kRightHand),
+//                m_Controller.GetBumper(frc::GenericHID::JoystickHand::kLeftHand));
+//        const int pov = m_Controller.GetPOV();
+//        const bool up = pov == 0,
+//                down = pov == 180;
+//        const auto input = math::axis<double>(up, down);
+//        m_Command.elevatorInput = input;
+////        if (pov == 90) m_Command.elevatorSetPoint = 20000;
+////        if (pov == 270) m_Command.elevatorSetPoint = 185000;
+//        m_Command.test = m_Controller.GetY(frc::GenericHID::JoystickHand::kLeftHand);
         m_Command.routines.clear();
-//        if (m_Controller.GetAButtonPressed()) {
-//            m_Command.routines.push_back(std::make_shared<test::SetElevatorPositionRoutine>(m_Pointer, "Elevator Up", 100000.0));
-//            m_Command.routines.push_back(std::make_shared<lib::WaitRoutine>(m_Pointer, "Elevator Wait", 0.2));
-//            m_Command.routines.push_back(std::make_shared<test::SetElevatorPositionRoutine>(m_Pointer, "Elevator Down", 0.0));
-//        }
-        m_Command.elevatorSoftLand = m_Controller.GetBButtonPressed();
-//        if (m_Controller.GetBButtonPressed()) {
-//            if (m_RoutineManager)
-//                m_RoutineManager->TerminateAllRoutines();
-//        }
+////        if (m_Controller.GetAButtonPressed()) {
+////            m_Command.routines.push_back(std::make_shared<test::SetElevatorPositionRoutine>(m_Pointer, "Elevator Up", 100000.0));
+////            m_Command.routines.push_back(std::make_shared<lib::WaitRoutine>(m_Pointer, "Elevator Wait", 0.2));
+////            m_Command.routines.push_back(std::make_shared<test::SetElevatorPositionRoutine>(m_Pointer, "Elevator Down", 0.0));
+////        }
+//        m_Command.elevatorSoftLand = m_Controller.GetBButtonPressed();
+////        if (m_Controller.GetBButtonPressed()) {
+////            if (m_RoutineManager)
+////                m_RoutineManager->TerminateAllRoutines();
+////        }
+        if (m_Joystick.GetTriggerPressed()) {
+//            m_Command.routines.push_back(std::make_shared<SetElevatorPositionRoutine>(m_Pointer, "Elevator Up", 117500));
+            m_Command.routines.push_back(std::make_shared<SetElevatorPositionRoutine>(m_Pointer, "Elevator Up", 120000));
+        }
+        m_Command.elevatorSoftLand = false;
+        m_Command.elevatorInput = -m_Joystick.GetY(frc::GenericHID::kRightHand);
     }
 
     Command Robot::GetLatestCommand() {

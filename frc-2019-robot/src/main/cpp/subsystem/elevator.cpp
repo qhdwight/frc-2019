@@ -37,7 +37,8 @@ namespace garage {
         m_ElevatorMaster.Config_kD(SET_POINT_SLOT_INDEX, ELEVATOR_D, CONFIG_TIMEOUT);
         m_ElevatorMaster.Config_kI(SET_POINT_SLOT_INDEX, ELEVATOR_I, CONFIG_TIMEOUT);
         m_ElevatorMaster.Config_IntegralZone(SET_POINT_SLOT_INDEX, ELEVATOR_I_ZONE, CONFIG_TIMEOUT);
-        m_ElevatorMaster.ConfigAllowableClosedloopError(SET_POINT_SLOT_INDEX, ELEVATOR_ALLOWABLE_CLOSED_LOOP_ERROR, CONFIG_TIMEOUT);
+        m_ElevatorMaster.ConfigClosedLoopPeakOutput(SET_POINT_SLOT_INDEX, 0.5, CONFIG_TIMEOUT);
+//        m_ElevatorMaster.ConfigAllowableClosedloopError(SET_POINT_SLOT_INDEX, ELEVATOR_ALLOWABLE_CLOSED_LOOP_ERROR, CONFIG_TIMEOUT);
         // Setup network table
         m_Robot->GetNetworkTable()->PutNumber("Elevator/Acceleration", ELEVATOR_ACCELERATION);
         m_Robot->GetNetworkTable()->PutNumber("Elevator/Velocity", ELEVATOR_VELOCITY);
@@ -68,12 +69,13 @@ namespace garage {
             m_ElevatorMaster.Config_IntegralZone(SET_POINT_SLOT_INDEX, static_cast<int>(notification.value->GetDouble()), CONFIG_TIMEOUT);
         }, NT_NOTIFY_UPDATE);
         // Setup controllers
-        auto elevator = std::dynamic_pointer_cast<Elevator>(shared_from_this());
+        // TODO think about more
+        auto elevator = std::shared_ptr<Elevator>(this, [](auto elevator) {});
         m_RawController = std::make_shared<RawElevatorController>(elevator);
         m_SetPointController = std::make_shared<SetPointElevatorController>(elevator);
         m_HybridController = std::make_shared<HybridElevatorController>(elevator);
         m_SoftLandController = std::make_shared<SoftLandElevatorController>(elevator);
-        SetController(m_RawController);
+        SetController(m_SetPointController);
     }
 
     void Elevator::TeleopInit() {
@@ -81,16 +83,13 @@ namespace garage {
     }
 
     void Elevator::UpdateUnlocked(Command& command) {
-        if (command.elevatorSoftLand) {
-            SetController(m_SoftLandController);
-        } else if (math::abs(command.elevatorInput) > JOYSTICK_THRESHOLD) {
-            SetController(m_RawController);
-        }
-        if (m_Controller) {
-            m_Controller->Control(command);
-        } else {
-            LogSample(lib::LogLevel::k_Warning, "No controller detected");
-        }
+//        if (command.elevatorSoftLand) {
+//            SetController(m_SoftLandController);
+//        } else if (math::abs(command.elevatorInput) > JOYSTICK_THRESHOLD) {
+//            SetController(m_RawController);
+//        }
+        if (m_Controller)
+            m_Controller->ProcessCommand(command);
     }
 
     void Elevator::Update() {
@@ -112,8 +111,15 @@ namespace garage {
                 Log(lib::LogLevel::k_Error, m_Robot->GetLogger()->Format("CTRE Error: %d", error));
             }
         }
+        if (!m_IsLimitSwitchDown)
+            s_FirstLimitSwitchDown = true;
         m_EncoderPosition = m_ElevatorMaster.GetSelectedSensorPosition(SET_POINT_SLOT_INDEX);
         m_EncoderVelocity = m_ElevatorMaster.GetSelectedSensorVelocity(SET_POINT_SLOT_INDEX);
+        if (m_Controller) {
+            m_Controller->Control();
+        } else {
+            LogSample(lib::LogLevel::k_Warning, "No controller detected");
+        }
     }
 
     int Elevator::GetElevatorPosition() {
@@ -137,7 +143,7 @@ namespace garage {
     }
 
     bool Elevator::ShouldUnlock(Command& command) {
-        return math::abs(command.elevatorInput) > DEFAULT_INPUT_THRESHOLD;
+        return math::absolute(command.elevatorInput) > DEFAULT_INPUT_THRESHOLD;
     }
 
     void Elevator::OnUnlock() {
@@ -154,15 +160,25 @@ namespace garage {
         return different;
     }
 
-    void RawElevatorController::Control(Command& command) {
-        const double input = math::threshold(command.elevatorInput, JOYSTICK_THRESHOLD);;
-        m_Subsystem->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, input * 0.5);
+    void RawElevatorController::ProcessCommand(Command& command) {
+        m_Input = math::threshold(command.elevatorInput, JOYSTICK_THRESHOLD);
     }
 
-    void SetPointElevatorController::Control(Command& command) {
-        const double input = math::threshold(command.elevatorInput, JOYSTICK_THRESHOLD);
-        m_WantedSetPoint += static_cast<int>(input * 3000.0);
+    void RawElevatorController::Control() {
+        Log(lib::LogLevel::k_Info, m_Subsystem->GetLogger()->Format("Input Value: %f", m_Input));
+        m_Subsystem->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, m_Input * 0.2);
+    }
+
+    void SetPointElevatorController::ProcessCommand(Command& command) {
+        if (!m_Subsystem->m_IsLocked) {
+            const double input = math::threshold(command.elevatorInput, JOYSTICK_THRESHOLD);
+            m_WantedSetPoint += static_cast<int>(input * 5000.0);
+        }
+    }
+
+    void SetPointElevatorController::Control() {
         m_WantedSetPoint = math::clamp(m_WantedSetPoint, ELEVATOR_MIN, ELEVATOR_MAX);
+        Log(lib::LogLevel::k_Info, m_Subsystem->GetLogger()->Format("Wanted Set Point: %d", m_WantedSetPoint));
         if (m_WantedSetPoint > ELEVATOR_MIN_CLOSED_LOOP_HEIGHT) {
             // Our set point is above a negligible amount
             if (m_Subsystem->m_EncoderPosition < ELEVATOR_MAX) {
@@ -186,14 +202,17 @@ namespace garage {
         }
     }
 
-    void HybridElevatorController::Control(Command& command) {
+    void HybridElevatorController::ProcessCommand(Command& command) {
         // TODO add too high checking
-        const double input = math::threshold(command.elevatorInput, JOYSTICK_THRESHOLD);
+        m_Input = math::threshold(command.elevatorInput, JOYSTICK_THRESHOLD);
+    }
+
+    void HybridElevatorController::Control() {
         if (m_Subsystem->m_EncoderPosition > ELEVATOR_MIN_CLOSED_LOOP_HEIGHT) {
             /* We are a negligible amount above the bottom */
             // Test if our input is different from the last one so we avoid flooding the controller with requests
-            const bool inputDifferent = math::abs(m_Subsystem->m_LastCommand.elevatorInput - input) > 0.5;
-            if (input == 0.0 || (m_Subsystem->m_EncoderPosition > ELEVATOR_MAX && input >= 0.0)) {
+            const bool inputDifferent = math::absolute(m_Subsystem->m_LastCommand.elevatorInput - m_Input) > 0.5;
+            if (m_Input == 0.0 || (m_Subsystem->m_EncoderPosition > ELEVATOR_MAX && m_Input >= 0.0)) {
                 // When our input is zero we want to hold the current position with a closed loop velocity control
                 if (inputDifferent)
                     m_Subsystem->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::Velocity, 0.0);
@@ -201,7 +220,7 @@ namespace garage {
                 // If our input is either up or down set to corresponding open loop pre-determined output
                 if (inputDifferent)
                     m_Subsystem->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput,
-                                                      input > 0.0 ? ELEVATOR_UP_OUTPUT : ELEVATOR_DOWN_OUTPUT);
+                                                      m_Input > 0.0 ? ELEVATOR_UP_OUTPUT : ELEVATOR_DOWN_OUTPUT);
             }
         } else {
             // Coast the elevator down so it does not slam at this height
@@ -211,7 +230,7 @@ namespace garage {
         }
     }
 
-    void SoftLandElevatorController::Control(Command& command) {
+    void SoftLandElevatorController::Control() {
         if (m_Subsystem->m_EncoderPosition > SOFT_LAND_ELEVATOR_POSITION_WEAK) {
             m_Subsystem->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, SAFE_ELEVATOR_DOWN_WEAK);
         } else if (m_Subsystem->m_EncoderPosition > SOFT_LAND_ELEVATOR_POSITION_STRONG) {

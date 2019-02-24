@@ -22,7 +22,7 @@ namespace garage {
         m_FlipperController.SetSmartMotionMaxAccel(FLIPPER_ACCELERATION);
         m_FlipperController.SetSmartMotionAllowedClosedLoopError(FLIPPER_ALLOWABLE_ERROR);
         m_LimitSwitch.EnableLimitSwitch(false);
-        auto flipper = std::dynamic_pointer_cast<Flipper>(shared_from_this());
+        auto flipper = std::shared_ptr<Flipper>(this, [](auto flipper) {});
         m_RawController = std::make_shared<RawFlipperController>(flipper);
         m_SetPointController = std::make_shared<SetPointFlipperController>(flipper);
         SetController(m_RawController);
@@ -34,7 +34,7 @@ namespace garage {
 
     void Flipper::UpdateUnlocked(Command& command) {
         if (m_Controller) {
-            m_Controller->Control(command);
+            m_Controller->ProcessCommand(command);
         } else {
             LogSample(lib::LogLevel::k_Warning, "No controller detected");
         }
@@ -101,13 +101,20 @@ namespace garage {
         return different;
     }
 
-    void RawFlipperController::Control(Command& command) {
+    void RawFlipperController::ProcessCommand(Command& command) {
+        m_Input = math::threshold(command.flipper, JOYSTICK_THRESHOLD);
+    }
+
+    void RawFlipperController::Control() {
 
     }
 
-    void SetPointFlipperController::Control(Command& command) {
+    void SetPointFlipperController::ProcessCommand(garage::Command& command) {
         m_SetPoint += math::threshold(command.flipper, DEFAULT_INPUT_THRESHOLD);
         m_SetPoint = math::clamp(m_SetPoint, FLIPPER_LOWER, FLIPPER_UPPER);
+    }
+
+    void SetPointFlipperController::Control() {
         double encoderPosition = m_Subsystem->m_EncoderPosition;
         const bool inMiddle = encoderPosition > FLIPPER_SET_POINT_LOWER && encoderPosition < FLIPPER_SET_POINT_UPPER;
         bool wantingToGoOtherWay = false;

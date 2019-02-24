@@ -7,7 +7,7 @@
 #include <memory>
 #include <string>
 
-#define SPACED_UPDATE_INTERVAL 100
+#define SPACED_UPDATE_INTERVAL 5
 #define DEFAULT_FREQUENCY 10
 
 #define DEFAULT_INPUT_THRESHOLD 0.075
@@ -15,14 +15,7 @@
 namespace garage {
     class Robot;
     namespace lib {
-        template<typename TSubsystem>
-        class SubsystemController;
-
-        class Subsystem : public std::enable_shared_from_this<Subsystem> {
-        private:
-            template<typename TSubsystem>
-            friend SubsystemController;
-
+        class Subsystem {
         protected:
             std::shared_ptr<Robot> m_Robot;
             Command m_LastCommand = {};
@@ -66,6 +59,8 @@ namespace garage {
             bool IsLocked() {
                 return m_IsLocked;
             }
+
+            std::shared_ptr<Logger> GetLogger();
         };
     }
 }

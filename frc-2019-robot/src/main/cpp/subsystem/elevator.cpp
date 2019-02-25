@@ -49,25 +49,39 @@ namespace garage {
         m_Robot->GetNetworkTable()->PutNumber("Elevator/I", ELEVATOR_F);
         m_Robot->GetNetworkTable()->PutNumber("Elevator/I Zone", ELEVATOR_F);
         m_Robot->GetNetworkTable()->GetEntry("Elevator/Acceleration").AddListener([&](const nt::EntryNotification& notification) {
-            m_ElevatorMaster.ConfigMotionAcceleration(static_cast<int>(notification.value->GetDouble()), CONFIG_TIMEOUT);
+            auto acceleration = static_cast<int>(notification.value->GetDouble());
+            m_ElevatorMaster.ConfigMotionAcceleration(acceleration, CONFIG_TIMEOUT);
+            Log(lib::LogLevel::k_Info, m_Robot->GetLogger()->Format("Changed elevator acceleration to %d", acceleration));
         }, NT_NOTIFY_UPDATE);
         m_Robot->GetNetworkTable()->GetEntry("Elevator/Velocity").AddListener([&](const nt::EntryNotification& notification) {
-            m_ElevatorMaster.ConfigMotionCruiseVelocity(static_cast<int>(notification.value->GetDouble()), CONFIG_TIMEOUT);
+            auto velocity = static_cast<int>(notification.value->GetDouble());
+            m_ElevatorMaster.ConfigMotionCruiseVelocity(velocity, CONFIG_TIMEOUT);
+            Log(lib::LogLevel::k_Info, m_Robot->GetLogger()->Format("Changed elevator velocity to %d", velocity));
         }, NT_NOTIFY_UPDATE);
         m_Robot->GetNetworkTable()->GetEntry("Elevator/F").AddListener([&](const nt::EntryNotification& notification) {
-            m_ElevatorMaster.Config_kF(SET_POINT_SLOT_INDEX, notification.value->GetDouble(), CONFIG_TIMEOUT);
+            auto f = notification.value->GetDouble();
+            m_ElevatorMaster.Config_kF(SET_POINT_SLOT_INDEX, f, CONFIG_TIMEOUT);
+            Log(lib::LogLevel::k_Info, m_Robot->GetLogger()->Format("Changed elevator F %f", f));
         }, NT_NOTIFY_UPDATE);
         m_Robot->GetNetworkTable()->GetEntry("Elevator/D").AddListener([&](const nt::EntryNotification& notification) {
-            m_ElevatorMaster.Config_kD(SET_POINT_SLOT_INDEX, notification.value->GetDouble(), CONFIG_TIMEOUT);
+            auto d = notification.value->GetDouble();
+            m_ElevatorMaster.Config_kD(SET_POINT_SLOT_INDEX, d, CONFIG_TIMEOUT);
+            Log(lib::LogLevel::k_Info, m_Robot->GetLogger()->Format("Changed elevator D %f", d));
         }, NT_NOTIFY_UPDATE);
         m_Robot->GetNetworkTable()->GetEntry("Elevator/P").AddListener([&](const nt::EntryNotification& notification) {
-            m_ElevatorMaster.Config_kP(SET_POINT_SLOT_INDEX, notification.value->GetDouble(), CONFIG_TIMEOUT);
+            auto p = notification.value->GetDouble();
+            m_ElevatorMaster.Config_kP(SET_POINT_SLOT_INDEX, p, CONFIG_TIMEOUT);
+            Log(lib::LogLevel::k_Info, m_Robot->GetLogger()->Format("Changed elevator P %f", p));
         }, NT_NOTIFY_UPDATE);
         m_Robot->GetNetworkTable()->GetEntry("Elevator/I").AddListener([&](const nt::EntryNotification& notification) {
-            m_ElevatorMaster.Config_kI(SET_POINT_SLOT_INDEX, notification.value->GetDouble(), CONFIG_TIMEOUT);
+            auto i = notification.value->GetDouble();
+            m_ElevatorMaster.Config_kI(SET_POINT_SLOT_INDEX, i, CONFIG_TIMEOUT);
+            Log(lib::LogLevel::k_Info, m_Robot->GetLogger()->Format("Changed elevator I %f", i));
         }, NT_NOTIFY_UPDATE);
         m_Robot->GetNetworkTable()->GetEntry("Elevator/I Zone").AddListener([&](const nt::EntryNotification& notification) {
-            m_ElevatorMaster.Config_IntegralZone(SET_POINT_SLOT_INDEX, static_cast<int>(notification.value->GetDouble()), CONFIG_TIMEOUT);
+            auto i_zone = static_cast<int>(notification.value->GetDouble());
+            m_ElevatorMaster.Config_IntegralZone(SET_POINT_SLOT_INDEX, i_zone, CONFIG_TIMEOUT);
+            Log(lib::LogLevel::k_Info, m_Robot->GetLogger()->Format("Changed elevator I Zone to: %d", i_zone));
         }, NT_NOTIFY_UPDATE);
         // Setup controllers
         // TODO think about more

@@ -23,6 +23,8 @@ namespace garage {
 
             void AddRoutinesFromCommand(Command& command);
 
+            void Reset();
+
             void Update();
 
             void TerminateAllRoutines();

@@ -31,8 +31,8 @@ namespace garage {
     protected:
         nt::NetworkTableInstance m_NetworkTableInstance;
         std::shared_ptr<nt::NetworkTable> m_NetworkTable;
-//        frc::XboxController m_Controller{0};
-        frc::Joystick m_Joystick{0};
+        frc::XboxController m_Controller{0};
+//        frc::Joystick m_Joystick{0};
         Command m_Command;
         std::shared_ptr<lib::RoutineManager> m_RoutineManager;
         std::shared_ptr<lib::Logger> m_Logger;

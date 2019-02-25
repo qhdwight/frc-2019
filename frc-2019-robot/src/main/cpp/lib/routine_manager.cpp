@@ -30,12 +30,22 @@ namespace garage {
 
         void RoutineManager::TerminateAllRoutines() {
             m_ActiveRoutine.reset();
-            while (!m_QueuedRoutines.empty())
+            while (!m_QueuedRoutines.empty()) {
+                auto routine = m_QueuedRoutines.front();
+                routine->Terminate();
                 m_QueuedRoutines.pop();
+            }
         }
 
         void RoutineManager::AddRoutine(std::shared_ptr<Routine>& routine) {
             m_QueuedRoutines.push(routine);
+        }
+
+        void RoutineManager::Reset() {
+            m_ActiveRoutine.reset();
+            while (!m_QueuedRoutines.empty()) {
+                m_QueuedRoutines.pop();
+            }
         }
     }
 }

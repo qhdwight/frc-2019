@@ -38,7 +38,7 @@ namespace garage {
         m_ElevatorMaster.Config_kD(SET_POINT_SLOT_INDEX, ELEVATOR_D, CONFIG_TIMEOUT);
         m_ElevatorMaster.Config_kI(SET_POINT_SLOT_INDEX, ELEVATOR_I, CONFIG_TIMEOUT);
         m_ElevatorMaster.Config_IntegralZone(SET_POINT_SLOT_INDEX, ELEVATOR_I_ZONE, CONFIG_TIMEOUT);
-        m_ElevatorMaster.ConfigClosedLoopPeakOutput(SET_POINT_SLOT_INDEX, 0.5, CONFIG_TIMEOUT);
+        m_ElevatorMaster.ConfigClosedLoopPeakOutput(SET_POINT_SLOT_INDEX, 0.3, CONFIG_TIMEOUT);
 //        m_ElevatorMaster.ConfigAllowableClosedloopError(SET_POINT_SLOT_INDEX, ELEVATOR_ALLOWABLE_CLOSED_LOOP_ERROR, CONFIG_TIMEOUT);
         // Setup network table
         m_Robot->GetNetworkTable()->PutNumber("Elevator/Acceleration", ELEVATOR_ACCELERATION);
@@ -76,10 +76,12 @@ namespace garage {
         m_SetPointController = std::make_shared<SetPointElevatorController>(elevator);
         m_HybridController = std::make_shared<HybridElevatorController>(elevator);
         m_SoftLandController = std::make_shared<SoftLandElevatorController>(elevator);
-        SetElevatorWantedSetPoint(0);
+//        SetElevatorWantedSetPoint(0);
     }
 
     void Elevator::TeleopInit() {
+        Unlock();
+        m_FirstLimitSwitchDown = true;
         if (m_Controller)
             m_Controller->Reset();
     }
@@ -180,27 +182,21 @@ namespace garage {
     void SetPointElevatorController::Control() {
         m_WantedSetPoint = math::clamp(m_WantedSetPoint, ELEVATOR_MIN, ELEVATOR_MAX);
         Log(lib::LogLevel::k_Info, m_Subsystem->GetLogger()->Format("Wanted Set Point: %d", m_WantedSetPoint));
-        if (m_WantedSetPoint > ELEVATOR_MIN_CLOSED_LOOP_HEIGHT) {
-            // Our set point is above a negligible amount
-            if (m_Subsystem->m_EncoderPosition < ELEVATOR_MAX) {
-                // In middle zone
-                m_Subsystem->LogSample(lib::LogLevel::k_Info, "Theoretically Okay and Working");
-                if (!m_LastSetPointSet || m_WantedSetPoint != m_LastSetPointSet) {
-                    m_Subsystem->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::MotionMagic, m_WantedSetPoint,
-                                                      ctre::phoenix::motorcontrol::DemandType::DemandType_ArbitraryFeedForward, ELEVATOR_FF);
-                    m_LastSetPointSet = m_WantedSetPoint;
-                }
-            } else {
-                // Too high and we must kill the elevator
-                m_Subsystem->Log(lib::LogLevel::k_Error, "Too High");
-                m_Subsystem->SetController(m_Subsystem->m_SoftLandController);
+        // Our set point is above a negligible amount
+        if (m_Subsystem->m_EncoderPosition < ELEVATOR_MAX) {
+            // In middle zone
+            m_Subsystem->LogSample(lib::LogLevel::k_Info, "Theoretically Okay and Working");
+            if (!m_LastSetPointSet || m_WantedSetPoint != m_LastSetPointSet) {
+                m_Subsystem->LogSample(lib::LogLevel::k_Info, "Set Set Point");
+                m_Subsystem->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::MotionMagic, m_WantedSetPoint,
+                                                  ctre::phoenix::motorcontrol::DemandType::DemandType_ArbitraryFeedForward, ELEVATOR_FF);
+//                    m_Subsystem->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::MotionMagic, m_WantedSetPoint);
+                m_LastSetPointSet = m_WantedSetPoint;
             }
         } else {
-            // We want to go a negligible amount, not worth using a closed loop near the bottom
-            m_Subsystem->LogSample(lib::LogLevel::k_Info, "Not High Enough");
-            // Set the elevator to coast output or zero if we are hitting the limit switch
-            m_Subsystem->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput,
-                                              m_Subsystem->m_IsLimitSwitchDown ? 0.0 : SAFE_ELEVATOR_DOWN_STRONG);
+            // Too high and we must kill the elevator
+            m_Subsystem->Log(lib::LogLevel::k_Error, "Too High");
+            m_Subsystem->SetController(m_Subsystem->m_SoftLandController);
         }
     }
 
@@ -232,8 +228,9 @@ namespace garage {
         } else {
             // Coast the elevator down so it does not slam at this height
             m_Subsystem->LogSample(lib::LogLevel::k_Info, "Not High Enough");
-            m_Subsystem->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput,
-                                              m_Subsystem->m_IsLimitSwitchDown ? 0.0 : SAFE_ELEVATOR_DOWN_STRONG);
+//            m_Subsystem->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput,
+//                                              m_Subsystem->m_IsLimitSwitchDown ? 0.0 : SAFE_ELEVATOR_DOWN_STRONG);
+            m_Subsystem->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, 0.0);
         }
     }
 

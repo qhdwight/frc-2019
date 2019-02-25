@@ -54,6 +54,7 @@ namespace garage {
         m_Command = {};
         for (const auto& subsystem : m_Subsystems)
             subsystem->TeleopInit();
+        m_RoutineManager->Reset();
     }
 
     void Robot::TeleopPeriodic() {
@@ -95,12 +96,24 @@ namespace garage {
 ////            if (m_RoutineManager)
 ////                m_RoutineManager->TerminateAllRoutines();
 ////        }
-        if (m_Joystick.GetTriggerPressed()) {
-//            m_Command.routines.push_back(std::make_shared<SetElevatorPositionRoutine>(m_Pointer, "Elevator Up", 117500));
-            m_Command.routines.push_back(std::make_shared<SetElevatorPositionRoutine>(m_Pointer, "Elevator Up", 120000));
+        if (m_Controller.GetAButtonPressed()) {
+            m_RoutineManager->TerminateAllRoutines();
+            m_Command.routines.push_back(std::make_shared<SetElevatorPositionRoutine>(m_Pointer, "Elevator Up", 10000));
+        }
+        if (m_Controller.GetBButtonPressed()) {
+            m_RoutineManager->TerminateAllRoutines();
+            m_Command.routines.push_back(std::make_shared<SetElevatorPositionRoutine>(m_Pointer, "Elevator Up", 50000));
+        }
+        if (m_Controller.GetYButtonPressed()) {
+            m_RoutineManager->TerminateAllRoutines();
+            m_Command.routines.push_back(std::make_shared<SetElevatorPositionRoutine>(m_Pointer, "Elevator Up", 100000));
+        }
+        if (m_Controller.GetXButtonPressed()) {
+            m_RoutineManager->TerminateAllRoutines();
+            m_Command.routines.push_back(std::make_shared<SetElevatorPositionRoutine>(m_Pointer, "Elevator Up", 200000));
         }
         m_Command.elevatorSoftLand = false;
-        m_Command.elevatorInput = -m_Joystick.GetY(frc::GenericHID::kRightHand);
+        m_Command.elevatorInput = -m_Controller.GetY(frc::GenericHID::kRightHand);
     }
 
     Command Robot::GetLatestCommand() {

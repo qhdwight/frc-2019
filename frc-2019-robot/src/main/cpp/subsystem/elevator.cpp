@@ -10,6 +10,7 @@ namespace garage {
         m_ElevatorSlaveOne.ConfigFactoryDefault(CONFIG_TIMEOUT);
         m_ElevatorSlaveTwo.ConfigFactoryDefault(CONFIG_TIMEOUT);
         m_ElevatorSlaveThree.ConfigFactoryDefault(CONFIG_TIMEOUT);
+
         /* Sensors and Limits */
         m_ElevatorMaster.ConfigSelectedFeedbackSensor(ctre::phoenix::motorcontrol::FeedbackDevice::QuadEncoder, SET_POINT_SLOT_INDEX, CONFIG_TIMEOUT);
         // Soft limit
@@ -19,6 +20,7 @@ namespace garage {
         m_ElevatorMaster.ConfigReverseLimitSwitchSource(ctre::phoenix::motorcontrol::LimitSwitchSource_FeedbackConnector,
                                                         ctre::phoenix::motorcontrol::LimitSwitchNormal_NormallyClosed, CONFIG_TIMEOUT);
         m_ElevatorMaster.ConfigClearPositionOnLimitR(true, CONFIG_TIMEOUT);
+
         // Brake mode
         m_ElevatorMaster.SetNeutralMode(ctre::phoenix::motorcontrol::NeutralMode::Brake);
         m_ElevatorSlaveOne.SetNeutralMode(ctre::phoenix::motorcontrol::NeutralMode::Brake);
@@ -28,12 +30,11 @@ namespace garage {
         m_ElevatorMaster.ConfigOpenloopRamp(ELEVATOR_OPEN_LOOP_RAMP, CONFIG_TIMEOUT);
         m_ElevatorMaster.ConfigClosedloopRamp(ELEVATOR_CLOSED_LOOP_RAMP, CONFIG_TIMEOUT);
         // Current limiting
-        m_ElevatorMaster.ConfigPeakCurrentLimit(ELEVATOR_PEAK_CURRENT_LIMIT, CONFIG_TIMEOUT);
         m_ElevatorMaster.ConfigContinuousCurrentLimit(ELEVATOR_CONTINOUS_CURRENT_LIMIT, CONFIG_TIMEOUT);
-        m_ElevatorMaster.EnableCurrentLimit(false);
+        m_ElevatorMaster.ConfigPeakCurrentLimit(ELEVATOR_PEAK_CURRENT_LIMIT, CONFIG_TIMEOUT);
+        m_ElevatorMaster.ConfigPeakCurrentDuration(ELEVATOR_PEAK_CURRENT_DURATION, CONFIG_TIMEOUT);
         // Voltage compensation
         m_ElevatorMaster.ConfigVoltageCompSaturation(ELEVATOR_VOLTAGE_SATURATION, CONFIG_TIMEOUT);
-        m_ElevatorMaster.EnableVoltageCompensation(true);
         // Configure following and inversion
         m_ElevatorSlaveOne.Follow(m_ElevatorMaster);
         m_ElevatorSlaveTwo.Follow(m_ElevatorMaster);
@@ -54,10 +55,14 @@ namespace garage {
         // Safety
         m_ElevatorMaster.ConfigClosedLoopPeakOutput(SET_POINT_SLOT_INDEX, 0.35, CONFIG_TIMEOUT);
         m_ElevatorMaster.ConfigAllowableClosedloopError(SET_POINT_SLOT_INDEX, ELEVATOR_ALLOWABLE_CLOSED_LOOP_ERROR, CONFIG_TIMEOUT);
-        // Final enabling of limits
+
+        /* Final enabling */
+        m_ElevatorMaster.EnableVoltageCompensation(true);
+        m_ElevatorMaster.EnableCurrentLimit(false);
         m_ElevatorMaster.OverrideSoftLimitsEnable(true);
         m_ElevatorMaster.OverrideLimitSwitchesEnable(true);
-        // Setup network table
+
+        /* Setup network table */
         m_Robot->GetNetworkTable()->PutNumber("Elevator/Acceleration", ELEVATOR_ACCELERATION);
         m_Robot->GetNetworkTable()->PutNumber("Elevator/Velocity", ELEVATOR_VELOCITY);
         m_Robot->GetNetworkTable()->PutNumber("Elevator/P", ELEVATOR_P);
@@ -106,14 +111,14 @@ namespace garage {
             m_ElevatorMaster.Config_IntegralZone(SET_POINT_SLOT_INDEX, i_zone, CONFIG_TIMEOUT);
             Log(lib::LogLevel::k_Info, m_Robot->GetLogger()->Format("Changed elevator I Zone to: %d", i_zone));
         }, NT_NOTIFY_UPDATE);
-        // Setup controllers
+
+        /* Setup controllers */
         // TODO think about more
         auto elevator = std::shared_ptr<Elevator>(this, [](auto elevator) {});
         m_RawController = std::make_shared<RawElevatorController>(elevator);
         m_SetPointController = std::make_shared<SetPointElevatorController>(elevator);
         m_VelocityController = std::make_shared<VelocityElevatorController>(elevator);
         m_SoftLandController = std::make_shared<SoftLandElevatorController>(elevator);
-//        SetElevatorWantedSetPoint(0);
     }
 
     void Elevator::TeleopInit() {
@@ -134,8 +139,11 @@ namespace garage {
 
     void Elevator::Update() {
         // TODO add brownout detection and smart current monitoring, check sticky faults
-//        m_ElevatorMaster.GetStickyFaults(m_StickyFaults);
-//        m_ElevatorMaster.ClearStickyFaults();
+        m_ElevatorMaster.GetStickyFaults(m_StickyFaults);
+        if (m_StickyFaults.HasAnyFault()) {
+            m_Robot->GetLogger()->Log(lib::LogLevel::k_Error, m_Robot->GetLogger()->Format("Sticky Faults: %s", m_StickyFaults.ToString().c_str()));
+            m_ElevatorMaster.ClearStickyFaults();
+        }
         m_EncoderPosition = m_ElevatorMaster.GetSelectedSensorPosition(SET_POINT_SLOT_INDEX);
         m_EncoderVelocity = m_ElevatorMaster.GetSelectedSensorVelocity(SET_POINT_SLOT_INDEX);
         if (m_Controller) {
@@ -215,7 +223,7 @@ namespace garage {
         }
     }
 
-    void SetPointElevatorController::Reset()    {
+    void SetPointElevatorController::Reset() {
         m_WantedSetPoint = 0;
     }
 

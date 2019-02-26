@@ -19,7 +19,7 @@ namespace garage {
         m_ElevatorMaster.ConfigReverseLimitSwitchSource(ctre::phoenix::motorcontrol::LimitSwitchSource_FeedbackConnector,
                                                         ctre::phoenix::motorcontrol::LimitSwitchNormal_NormallyClosed, CONFIG_TIMEOUT);
         m_ElevatorMaster.ConfigClearPositionOnLimitR(true, CONFIG_TIMEOUT);
-        // Set brake mode
+        // Brake mode
         m_ElevatorMaster.SetNeutralMode(ctre::phoenix::motorcontrol::NeutralMode::Brake);
         m_ElevatorSlaveOne.SetNeutralMode(ctre::phoenix::motorcontrol::NeutralMode::Brake);
         m_ElevatorSlaveTwo.SetNeutralMode(ctre::phoenix::motorcontrol::NeutralMode::Brake);
@@ -45,11 +45,12 @@ namespace garage {
         // Gains and Motion profiling
         m_ElevatorMaster.ConfigMotionAcceleration(ELEVATOR_ACCELERATION, CONFIG_TIMEOUT);
         m_ElevatorMaster.ConfigMotionCruiseVelocity(ELEVATOR_VELOCITY, CONFIG_TIMEOUT);
-        m_ElevatorMaster.Config_kF(SET_POINT_SLOT_INDEX, ELEVATOR_F, CONFIG_TIMEOUT);
         m_ElevatorMaster.Config_kP(SET_POINT_SLOT_INDEX, ELEVATOR_P, CONFIG_TIMEOUT);
         m_ElevatorMaster.Config_kD(SET_POINT_SLOT_INDEX, ELEVATOR_D, CONFIG_TIMEOUT);
         m_ElevatorMaster.Config_kI(SET_POINT_SLOT_INDEX, ELEVATOR_I, CONFIG_TIMEOUT);
+        m_ElevatorMaster.ConfigMaxIntegralAccumulator(SET_POINT_SLOT_INDEX, ELEVATOR_MAX_I, CONFIG_TIMEOUT);
         m_ElevatorMaster.Config_IntegralZone(SET_POINT_SLOT_INDEX, ELEVATOR_I_ZONE, CONFIG_TIMEOUT);
+        m_ElevatorMaster.Config_kF(SET_POINT_SLOT_INDEX, ELEVATOR_F, CONFIG_TIMEOUT);
         // Safety
         m_ElevatorMaster.ConfigClosedLoopPeakOutput(SET_POINT_SLOT_INDEX, 0.35, CONFIG_TIMEOUT);
         m_ElevatorMaster.ConfigAllowableClosedloopError(SET_POINT_SLOT_INDEX, ELEVATOR_ALLOWABLE_CLOSED_LOOP_ERROR, CONFIG_TIMEOUT);
@@ -82,7 +83,7 @@ namespace garage {
         }, NT_NOTIFY_UPDATE);
         m_Robot->GetNetworkTable()->GetEntry("Elevator/FF").AddListener([&](const nt::EntryNotification& notification) {
             auto ff = notification.value->GetDouble();
-            m_SetPointController->SetFeedForward(ff);
+            m_FeedForward = ff;
             Log(lib::LogLevel::k_Info, m_Robot->GetLogger()->Format("Changed elevator F %f", ff));
         }, NT_NOTIFY_UPDATE);
         m_Robot->GetNetworkTable()->GetEntry("Elevator/D").AddListener([&](const nt::EntryNotification& notification) {
@@ -144,7 +145,7 @@ namespace garage {
         }
     }
 
-    void Elevator::SetElevatorWantedSetPoint(int wantedSetPoint) {
+    void Elevator::SetWantedSetPoint(int wantedSetPoint) {
         SetController(m_SetPointController);
         m_SetPointController->SetWantedSetPoint(wantedSetPoint);
     }
@@ -207,8 +208,10 @@ namespace garage {
             m_Subsystem->LogSample(lib::LogLevel::k_Info, "Theoretically Okay and Working");
             if (!m_LastSetPointSet || m_WantedSetPoint != m_LastSetPointSet) {
                 m_Subsystem->LogSample(lib::LogLevel::k_Info, "Set Set Point");
-                m_Subsystem->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::MotionMagic, m_WantedSetPoint,
-                                                  ctre::phoenix::motorcontrol::DemandType::DemandType_ArbitraryFeedForward, m_FeedForward);
+                m_Subsystem->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::MotionMagic,
+                                                  m_WantedSetPoint,
+                                                  ctre::phoenix::motorcontrol::DemandType::DemandType_ArbitraryFeedForward,
+                                                  m_Subsystem->m_FeedForward);
 //                    m_Subsystem->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::MotionMagic, m_WantedSetPoint);
                 m_LastSetPointSet = m_WantedSetPoint;
             }
@@ -237,7 +240,10 @@ namespace garage {
             if (m_Input == 0.0 || (m_Subsystem->m_EncoderPosition > ELEVATOR_MAX && m_Input >= 0.0)) {
                 // When our input is zero we want to hold the current position with a closed loop velocity control
                 if (inputDifferent)
-                    m_Subsystem->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::Velocity, 0.0);
+                    m_Subsystem->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::Velocity,
+                                                      0.0,
+                                                      ctre::phoenix::motorcontrol::DemandType::DemandType_ArbitraryFeedForward,
+                                                      m_Subsystem->m_FeedForward);
             } else {
                 // If our input is either up or down set to corresponding open loop pre-determined output
                 if (inputDifferent)

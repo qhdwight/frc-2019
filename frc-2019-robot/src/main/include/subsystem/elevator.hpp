@@ -17,7 +17,8 @@
 #define ELEVATOR_VELOCITY 12000 // Units in encoder ticks per 100 ms
 #define ELEVATOR_ACCELERATION 10000 // Units in encoder ticks per 100 ms per 100 ms
 #define ELEVATOR_P 0.013
-#define ELEVATOR_I 0
+#define ELEVATOR_I 0.0
+#define ELEVATOR_MAX_I 0.0
 #define ELEVATOR_I_ZONE 0
 //#define ELEVATOR_D 0.0
 #define ELEVATOR_D ELEVATOR_P * 3.3
@@ -70,7 +71,6 @@ namespace garage {
 
     class SetPointElevatorController : public ElevatorController {
     protected:
-        double m_FeedForward = ELEVATOR_FF;
         int m_WantedSetPoint = 0;
         wpi::optional<int> m_LastSetPointSet;
 
@@ -85,10 +85,6 @@ namespace garage {
 
         void SetWantedSetPoint(int wantedSetPoint) {
             m_WantedSetPoint = wantedSetPoint;
-        }
-
-        void SetFeedForward(double feedForward) {
-            m_FeedForward = feedForward;
         }
     };
 
@@ -121,6 +117,7 @@ namespace garage {
 
     protected:
         int m_EncoderPosition, m_EncoderVelocity;
+        double m_FeedForward = ELEVATOR_FF;
         ctre::phoenix::motorcontrol::StickyFaults m_StickyFaults;
         ctre::phoenix::motorcontrol::can::TalonSRX m_ElevatorMaster{ELEVATOR_MASTER};
         ctre::phoenix::motorcontrol::can::VictorSPX m_ElevatorSlaveOne{ELEVATOR_SLAVE_ONE}, m_ElevatorSlaveTwo{
@@ -150,12 +147,16 @@ namespace garage {
 
         bool WithinPosition(int targetPosition);
 
-        void SetElevatorWantedSetPoint(int wantedSetPoint);
+        void SetWantedSetPoint(int wantedSetPoint);
 
         void SetRawOutput(double output);
 
-        int GetElevatorPosition() {
+        int GetPosition() {
             return m_EncoderPosition;
+        }
+
+        int GetVelocity() {
+            return m_EncoderVelocity;
         }
     };
 }

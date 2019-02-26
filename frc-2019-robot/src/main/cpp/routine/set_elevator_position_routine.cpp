@@ -6,7 +6,7 @@ namespace garage {
     void SetElevatorPositionRoutine::Begin() {
         lib::Routine::Begin();
         m_Subsystem->Lock();
-        m_Robot->GetElevator()->SetElevatorWantedSetPoint(m_SetPoint);
+        m_Robot->GetElevator()->SetWantedSetPoint(m_SetPoint);
     }
 
     void SetElevatorPositionRoutine::Terminate() {

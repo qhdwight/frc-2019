@@ -1,6 +1,7 @@
 #include <robot.hpp>
 
 #include <routine/climb_hab_routine.hpp>
+#include <routine/measure_elevator_speed.hpp>
 #include <routine/set_elevator_position_routine.hpp>
 
 #include <lib/logger.hpp>
@@ -98,19 +99,23 @@ namespace garage {
 ////        }
         if (m_Controller.GetAButtonPressed()) {
             m_RoutineManager->TerminateAllRoutines();
-            m_Command.routines.push_back(std::make_shared<SetElevatorPositionRoutine>(m_Pointer, "Elevator Up", 10000));
+            m_Command.routines.push_back(std::make_shared<SetElevatorPositionRoutine>(m_Pointer, "Elevator 10000", 10000));
         }
         if (m_Controller.GetBButtonPressed()) {
             m_RoutineManager->TerminateAllRoutines();
-            m_Command.routines.push_back(std::make_shared<SetElevatorPositionRoutine>(m_Pointer, "Elevator Up", 50000));
+            m_Command.routines.push_back(std::make_shared<SetElevatorPositionRoutine>(m_Pointer, "Elevator 50000", 50000));
         }
         if (m_Controller.GetYButtonPressed()) {
             m_RoutineManager->TerminateAllRoutines();
-            m_Command.routines.push_back(std::make_shared<SetElevatorPositionRoutine>(m_Pointer, "Elevator Up", 100000));
+            m_Command.routines.push_back(std::make_shared<SetElevatorPositionRoutine>(m_Pointer, "Elevator 100000", 100000));
         }
         if (m_Controller.GetXButtonPressed()) {
             m_RoutineManager->TerminateAllRoutines();
-            m_Command.routines.push_back(std::make_shared<SetElevatorPositionRoutine>(m_Pointer, "Elevator Up", 200000));
+            m_Command.routines.push_back(std::make_shared<SetElevatorPositionRoutine>(m_Pointer, "Elevator 200000", 200000));
+        }
+        if (m_Controller.GetBumperPressed(frc::GenericHID::kRightHand)) {
+            m_RoutineManager->TerminateAllRoutines();
+            m_Command.routines.push_back(std::make_shared<MeasureElevatorSpeed>(m_Pointer, "Measure Elevator Speed", 0.15));
         }
         m_Command.elevatorSoftLand = false;
         m_Command.elevatorInput = -m_Controller.GetY(frc::GenericHID::kRightHand);

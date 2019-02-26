@@ -110,7 +110,6 @@ namespace garage {
         friend class SoftLandElevatorController;
 
     protected:
-        bool m_IsLimitSwitchDown = true, m_FirstLimitSwitchDown = true;
         int m_EncoderPosition, m_EncoderVelocity;
         ctre::phoenix::motorcontrol::StickyFaults m_StickyFaults;
         ctre::phoenix::motorcontrol::can::TalonSRX m_ElevatorMaster{ELEVATOR_MASTER};
@@ -141,8 +140,10 @@ namespace garage {
 
         bool WithinPosition(int targetPosition);
 
-        int GetElevatorPosition();
-
         void SetElevatorWantedSetPoint(int wantedSetPoint);
+
+        int GetElevatorPosition() {
+            return m_EncoderPosition;
+        }
     };
 }

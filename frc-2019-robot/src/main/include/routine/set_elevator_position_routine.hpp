@@ -1,18 +1,20 @@
 #pragma once
 
-#include <lib/routine.hpp>
-
+#include <robot.hpp>
 #include <subsystem/elevator.hpp>
+
+#include <lib/subsystem_routine.hpp>
 
 #include <memory>
 
 namespace garage {
-    class SetElevatorPositionRoutine : public lib::Routine {
+    class SetElevatorPositionRoutine : public lib::SubsystemRoutine<Elevator> {
     private:
-        std::shared_ptr<Elevator> m_Elevator;
-        int m_Position;
+        int m_SetPoint;
+
     public:
-        SetElevatorPositionRoutine(std::shared_ptr<Robot>& robot, const std::string& name, int position);
+        SetElevatorPositionRoutine(std::shared_ptr<Robot>& robot, const std::string& name, int setPoint)
+                : SubsystemRoutine(robot, robot->GetElevator(), name), m_SetPoint(setPoint) {}
 
         void Begin() override;
 

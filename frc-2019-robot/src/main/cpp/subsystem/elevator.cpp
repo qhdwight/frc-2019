@@ -19,9 +19,6 @@ namespace garage {
         m_ElevatorMaster.ConfigReverseLimitSwitchSource(ctre::phoenix::motorcontrol::LimitSwitchSource_FeedbackConnector,
                                                         ctre::phoenix::motorcontrol::LimitSwitchNormal_NormallyClosed, CONFIG_TIMEOUT);
         m_ElevatorMaster.ConfigClearPositionOnLimitR(true, CONFIG_TIMEOUT);
-        // Final enabling of limits
-        m_ElevatorMaster.OverrideSoftLimitsEnable(true);
-        m_ElevatorMaster.OverrideLimitSwitchesEnable(true);
         // Set brake mode
         m_ElevatorMaster.SetNeutralMode(ctre::phoenix::motorcontrol::NeutralMode::Brake);
         m_ElevatorSlaveOne.SetNeutralMode(ctre::phoenix::motorcontrol::NeutralMode::Brake);
@@ -55,13 +52,17 @@ namespace garage {
         m_ElevatorMaster.Config_IntegralZone(SET_POINT_SLOT_INDEX, ELEVATOR_I_ZONE, CONFIG_TIMEOUT);
         // Safety
         m_ElevatorMaster.ConfigClosedLoopPeakOutput(SET_POINT_SLOT_INDEX, 0.35, CONFIG_TIMEOUT);
-//        m_ElevatorMaster.ConfigAllowableClosedloopError(SET_POINT_SLOT_INDEX, ELEVATOR_ALLOWABLE_CLOSED_LOOP_ERROR, CONFIG_TIMEOUT);
+        m_ElevatorMaster.ConfigAllowableClosedloopError(SET_POINT_SLOT_INDEX, ELEVATOR_ALLOWABLE_CLOSED_LOOP_ERROR, CONFIG_TIMEOUT);
+        // Final enabling of limits
+        m_ElevatorMaster.OverrideSoftLimitsEnable(true);
+        m_ElevatorMaster.OverrideLimitSwitchesEnable(true);
         // Setup network table
         m_Robot->GetNetworkTable()->PutNumber("Elevator/Acceleration", ELEVATOR_ACCELERATION);
         m_Robot->GetNetworkTable()->PutNumber("Elevator/Velocity", ELEVATOR_VELOCITY);
         m_Robot->GetNetworkTable()->PutNumber("Elevator/P", ELEVATOR_P);
         m_Robot->GetNetworkTable()->PutNumber("Elevator/D", ELEVATOR_D);
         m_Robot->GetNetworkTable()->PutNumber("Elevator/F", ELEVATOR_F);
+        m_Robot->GetNetworkTable()->PutNumber("Elevator/FF", ELEVATOR_FF);
         m_Robot->GetNetworkTable()->PutNumber("Elevator/I", ELEVATOR_F);
         m_Robot->GetNetworkTable()->PutNumber("Elevator/I Zone", ELEVATOR_F);
         m_Robot->GetNetworkTable()->GetEntry("Elevator/Acceleration").AddListener([&](const nt::EntryNotification& notification) {
@@ -78,6 +79,11 @@ namespace garage {
             auto f = notification.value->GetDouble();
             m_ElevatorMaster.Config_kF(SET_POINT_SLOT_INDEX, f, CONFIG_TIMEOUT);
             Log(lib::LogLevel::k_Info, m_Robot->GetLogger()->Format("Changed elevator F %f", f));
+        }, NT_NOTIFY_UPDATE);
+        m_Robot->GetNetworkTable()->GetEntry("Elevator/FF").AddListener([&](const nt::EntryNotification& notification) {
+            auto ff = notification.value->GetDouble();
+            m_SetPointController->SetFeedForward(ff);
+            Log(lib::LogLevel::k_Info, m_Robot->GetLogger()->Format("Changed elevator F %f", ff));
         }, NT_NOTIFY_UPDATE);
         m_Robot->GetNetworkTable()->GetEntry("Elevator/D").AddListener([&](const nt::EntryNotification& notification) {
             auto d = notification.value->GetDouble();
@@ -150,7 +156,7 @@ namespace garage {
     }
 
     bool Elevator::WithinPosition(int targetPosition) {
-        return math::withinRange(m_EncoderPosition, targetPosition, ELEVATOR_ALLOWABLE_CLOSED_LOOP_ERROR / 2);
+        return math::withinRange(m_EncoderPosition, targetPosition, ELEVATOR_WITHIN_SET_POINT_AMOUNT);
     }
 
     bool Elevator::ShouldUnlock(Command& command) {
@@ -171,13 +177,18 @@ namespace garage {
         return different;
     }
 
+    void Elevator::SetRawOutput(double output) {
+        SetController(m_RawController);
+    }
+
     void RawElevatorController::ProcessCommand(Command& command) {
         m_Input = math::threshold(command.elevatorInput, JOYSTICK_THRESHOLD);
+        m_Output = m_Input * 0.2;
     }
 
     void RawElevatorController::Control() {
-        Log(lib::LogLevel::k_Info, m_Subsystem->GetLogger()->Format("Input Value: %f", m_Input));
-        m_Subsystem->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, m_Input * 0.2);
+        Log(lib::LogLevel::k_Info, m_Subsystem->GetLogger()->Format("Input Value: %f", m_Output));
+        m_Subsystem->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, m_Output);
     }
 
     void SetPointElevatorController::ProcessCommand(Command& command) {
@@ -197,7 +208,7 @@ namespace garage {
             if (!m_LastSetPointSet || m_WantedSetPoint != m_LastSetPointSet) {
                 m_Subsystem->LogSample(lib::LogLevel::k_Info, "Set Set Point");
                 m_Subsystem->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::MotionMagic, m_WantedSetPoint,
-                                                  ctre::phoenix::motorcontrol::DemandType::DemandType_ArbitraryFeedForward, ELEVATOR_FF);
+                                                  ctre::phoenix::motorcontrol::DemandType::DemandType_ArbitraryFeedForward, m_FeedForward);
 //                    m_Subsystem->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::MotionMagic, m_WantedSetPoint);
                 m_LastSetPointSet = m_WantedSetPoint;
             }

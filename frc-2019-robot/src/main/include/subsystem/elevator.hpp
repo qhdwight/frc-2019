@@ -31,6 +31,7 @@
 #define ELEVATOR_PEAK_CURRENT_DURATION 200
 
 #define ELEVATOR_ALLOWABLE_CLOSED_LOOP_ERROR 0
+#define ELEVATOR_WITHIN_SET_POINT_AMOUNT 1000
 
 #define ELEVATOR_MIN_CLOSED_LOOP_HEIGHT 2500.0
 
@@ -54,17 +55,22 @@ namespace garage {
 
     class RawElevatorController : public ElevatorController {
     protected:
-        double m_Input = 0.0;
+        double m_Input = 0.0, m_Output = 0.0;
     public:
         RawElevatorController(std::shared_ptr<Elevator>& subsystem) : ElevatorController(subsystem, "Raw Controller") {};
 
         void ProcessCommand(Command& command) override;
 
         void Control() override;
+
+        void SetRawOutput(double output) {
+            m_Output = output;
+        }
     };
 
     class SetPointElevatorController : public ElevatorController {
     protected:
+        double m_FeedForward = ELEVATOR_FF;
         int m_WantedSetPoint = 0;
         wpi::optional<int> m_LastSetPointSet;
 
@@ -79,6 +85,10 @@ namespace garage {
 
         void SetWantedSetPoint(int wantedSetPoint) {
             m_WantedSetPoint = wantedSetPoint;
+        }
+
+        void SetFeedForward(double feedForward) {
+            m_FeedForward = feedForward;
         }
     };
 
@@ -141,6 +151,8 @@ namespace garage {
         bool WithinPosition(int targetPosition);
 
         void SetElevatorWantedSetPoint(int wantedSetPoint);
+
+        void SetRawOutput(double output);
 
         int GetElevatorPosition() {
             return m_EncoderPosition;

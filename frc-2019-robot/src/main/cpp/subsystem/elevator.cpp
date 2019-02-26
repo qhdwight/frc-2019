@@ -111,7 +111,7 @@ namespace garage {
         auto elevator = std::shared_ptr<Elevator>(this, [](auto elevator) {});
         m_RawController = std::make_shared<RawElevatorController>(elevator);
         m_SetPointController = std::make_shared<SetPointElevatorController>(elevator);
-        m_HybridController = std::make_shared<HybridElevatorController>(elevator);
+        m_VelocityController = std::make_shared<VelocityElevatorController>(elevator);
         m_SoftLandController = std::make_shared<SoftLandElevatorController>(elevator);
 //        SetElevatorWantedSetPoint(0);
     }
@@ -215,17 +215,17 @@ namespace garage {
         }
     }
 
-    void SetPointElevatorController::Reset() {
+    void SetPointElevatorController::Reset()    {
         m_WantedSetPoint = 0;
     }
 
-    void HybridElevatorController::ProcessCommand(Command& command) {
+    void VelocityElevatorController::ProcessCommand(Command& command) {
         // TODO add too high checking
         m_Input = math::threshold(command.elevatorInput, JOYSTICK_THRESHOLD);
         m_WantedVelocity = m_Input * ELEVATOR_VELOCITY;
     }
 
-    void HybridElevatorController::Control() {
+    void VelocityElevatorController::Control() {
         if (m_Subsystem->m_EncoderPosition < ELEVATOR_MAX) {
             Log(lib::LogLevel::k_Info, m_Subsystem->GetLogger()->Format("Wanted Velocity: %f", m_WantedVelocity));
             m_Subsystem->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::Velocity,
@@ -238,7 +238,7 @@ namespace garage {
         }
     }
 
-    void HybridElevatorController::Reset() {
+    void VelocityElevatorController::Reset() {
         m_WantedVelocity = 0.0;
     }
 

@@ -88,12 +88,12 @@ namespace garage {
         }
     };
 
-    class HybridElevatorController : public ElevatorController {
+    class VelocityElevatorController : public ElevatorController {
     protected:
         double m_Input = 0.0, m_WantedVelocity = 0.0;
 
     public:
-        HybridElevatorController(std::shared_ptr<Elevator>& subsystem) : ElevatorController(subsystem, "Hybrid Controller") {};
+        VelocityElevatorController(std::shared_ptr<Elevator>& subsystem) : ElevatorController(subsystem, "Velocity Controller") {};
 
         void ProcessCommand(Command& command) override;
 
@@ -114,7 +114,7 @@ namespace garage {
 
         friend class SetPointElevatorController;
 
-        friend class HybridElevatorController;
+        friend class VelocityElevatorController;
 
         friend class SoftLandElevatorController;
 
@@ -128,7 +128,7 @@ namespace garage {
         std::shared_ptr<ElevatorController> m_Controller;
         std::shared_ptr<RawElevatorController> m_RawController;
         std::shared_ptr<SetPointElevatorController> m_SetPointController;
-        std::shared_ptr<HybridElevatorController> m_HybridController;
+        std::shared_ptr<VelocityElevatorController> m_VelocityController;
         std::shared_ptr<SoftLandElevatorController> m_SoftLandController;
 
         bool ShouldUnlock(Command& command) override;

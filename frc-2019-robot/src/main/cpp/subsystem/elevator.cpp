@@ -180,6 +180,7 @@ namespace garage {
 
     void Elevator::SetRawOutput(double output) {
         SetController(m_RawController);
+        m_RawController->SetRawOutput(output);
     }
 
     void RawElevatorController::ProcessCommand(Command& command) {

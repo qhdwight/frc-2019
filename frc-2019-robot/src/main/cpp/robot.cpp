@@ -115,7 +115,11 @@ namespace garage {
         }
         if (m_Controller.GetBumperPressed(frc::GenericHID::kRightHand)) {
             m_RoutineManager->TerminateAllRoutines();
-            m_Command.routines.push_back(std::make_shared<MeasureElevatorSpeed>(m_Pointer, "Measure Elevator Speed", 0.15));
+            m_Command.routines.push_back(std::make_shared<MeasureElevatorSpeed>(m_Pointer, "Measure Elevator Speed", 0.325));
+        }
+        if (m_Controller.GetBumperPressed(frc::GenericHID::kLeftHand)) {
+            m_RoutineManager->TerminateAllRoutines();
+            m_Elevator->SetManual();
         }
         m_Command.elevatorSoftLand = false;
         m_Command.elevatorInput = -m_Controller.GetY(frc::GenericHID::kRightHand);

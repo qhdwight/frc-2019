@@ -15,8 +15,8 @@ namespace garage {
         double input = command.ballIntake, absoluteInput = math::absolute(input);
         if (absoluteInput > 0.5) input = math::sign(input) * 1.0;
         IntakeMode intakeMode;
-        if (input > JOYSTICK_THRESHOLD) intakeMode = IntakeMode::k_Expelling;
-        else if (input < -JOYSTICK_THRESHOLD) intakeMode = IntakeMode::k_Intaking;
+        if (input > DEFAULT_INPUT_THRESHOLD) intakeMode = IntakeMode::k_Expelling;
+        else if (input < -DEFAULT_INPUT_THRESHOLD) intakeMode = IntakeMode::k_Intaking;
         else intakeMode = IntakeMode::k_Idle;
         SetMode(intakeMode, absoluteInput);
     }

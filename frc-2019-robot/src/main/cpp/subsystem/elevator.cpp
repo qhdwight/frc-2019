@@ -18,9 +18,10 @@ namespace garage {
         m_ElevatorMaster.ConfigForwardSoftLimitEnable(true, CONFIG_TIMEOUT);
         // Limit switch
         m_ElevatorMaster.ConfigReverseLimitSwitchSource(ctre::phoenix::motorcontrol::LimitSwitchSource_FeedbackConnector,
-                                                        ctre::phoenix::motorcontrol::LimitSwitchNormal_NormallyClosed, CONFIG_TIMEOUT);
+                                                        ctre::phoenix::motorcontrol::LimitSwitchNormal_NormallyOpen, CONFIG_TIMEOUT);
         m_ElevatorMaster.ConfigClearPositionOnLimitR(true, CONFIG_TIMEOUT);
-
+        m_ElevatorMaster.ConfigForwardLimitSwitchSource(ctre::phoenix::motorcontrol::LimitSwitchSource_Deactivated,
+                                                        ctre::phoenix::motorcontrol::LimitSwitchNormal_Disabled, CONFIG_TIMEOUT);
         // Brake mode
         m_ElevatorMaster.SetNeutralMode(ctre::phoenix::motorcontrol::NeutralMode::Brake);
         m_ElevatorSlaveOne.SetNeutralMode(ctre::phoenix::motorcontrol::NeutralMode::Brake);
@@ -53,14 +54,14 @@ namespace garage {
         m_ElevatorMaster.Config_IntegralZone(SET_POINT_SLOT_INDEX, ELEVATOR_I_ZONE, CONFIG_TIMEOUT);
         m_ElevatorMaster.Config_kF(SET_POINT_SLOT_INDEX, ELEVATOR_F, CONFIG_TIMEOUT);
         // Safety
-        m_ElevatorMaster.ConfigClosedLoopPeakOutput(SET_POINT_SLOT_INDEX, 0.35, CONFIG_TIMEOUT);
+        m_ElevatorMaster.ConfigClosedLoopPeakOutput(SET_POINT_SLOT_INDEX, 0.5, CONFIG_TIMEOUT);
         m_ElevatorMaster.ConfigAllowableClosedloopError(SET_POINT_SLOT_INDEX, ELEVATOR_ALLOWABLE_CLOSED_LOOP_ERROR, CONFIG_TIMEOUT);
 
         /* Final enabling */
         m_ElevatorMaster.EnableVoltageCompensation(true);
         m_ElevatorMaster.EnableCurrentLimit(false);
         m_ElevatorMaster.OverrideSoftLimitsEnable(true);
-        m_ElevatorMaster.OverrideLimitSwitchesEnable(true);
+        m_ElevatorMaster.OverrideLimitSwitchesEnable(false);
 
         /* Setup network table */
         m_Robot->GetNetworkTable()->PutNumber("Elevator/Acceleration", ELEVATOR_ACCELERATION);
@@ -68,48 +69,54 @@ namespace garage {
         m_Robot->GetNetworkTable()->PutNumber("Elevator/P", ELEVATOR_P);
         m_Robot->GetNetworkTable()->PutNumber("Elevator/D", ELEVATOR_D);
         m_Robot->GetNetworkTable()->PutNumber("Elevator/F", ELEVATOR_F);
-        m_Robot->GetNetworkTable()->PutNumber("Elevator/FF", ELEVATOR_FF);
+        m_Robot->GetNetworkTable()->PutNumber("Elevator/FF", m_FeedForward);
         m_Robot->GetNetworkTable()->PutNumber("Elevator/I", ELEVATOR_F);
         m_Robot->GetNetworkTable()->PutNumber("Elevator/I Zone", ELEVATOR_F);
         m_Robot->GetNetworkTable()->GetEntry("Elevator/Acceleration").AddListener([&](const nt::EntryNotification& notification) {
             auto acceleration = static_cast<int>(notification.value->GetDouble());
-            m_ElevatorMaster.ConfigMotionAcceleration(acceleration, CONFIG_TIMEOUT);
-            Log(lib::LogLevel::k_Info, m_Robot->GetLogger()->Format("Changed elevator acceleration to %d", acceleration));
+            auto error = m_ElevatorMaster.ConfigMotionAcceleration(acceleration, CONFIG_TIMEOUT);
+            if (error == ctre::phoenix::OK)
+                Log(lib::LogLevel::k_Info, m_Robot->GetLogger()->Format("Changed elevator acceleration to %d", acceleration));
         }, NT_NOTIFY_UPDATE);
         m_Robot->GetNetworkTable()->GetEntry("Elevator/Velocity").AddListener([&](const nt::EntryNotification& notification) {
             auto velocity = static_cast<int>(notification.value->GetDouble());
-            m_ElevatorMaster.ConfigMotionCruiseVelocity(velocity, CONFIG_TIMEOUT);
-            Log(lib::LogLevel::k_Info, m_Robot->GetLogger()->Format("Changed elevator velocity to %d", velocity));
+            auto error = m_ElevatorMaster.ConfigMotionCruiseVelocity(velocity, CONFIG_TIMEOUT);
+            if (error == ctre::phoenix::OK)
+                Log(lib::LogLevel::k_Info, m_Robot->GetLogger()->Format("Changed elevator velocity to: %d", velocity));
         }, NT_NOTIFY_UPDATE);
         m_Robot->GetNetworkTable()->GetEntry("Elevator/F").AddListener([&](const nt::EntryNotification& notification) {
             auto f = notification.value->GetDouble();
-            m_ElevatorMaster.Config_kF(SET_POINT_SLOT_INDEX, f, CONFIG_TIMEOUT);
-            Log(lib::LogLevel::k_Info, m_Robot->GetLogger()->Format("Changed elevator F %f", f));
+            auto error = m_ElevatorMaster.Config_kF(SET_POINT_SLOT_INDEX, f, CONFIG_TIMEOUT);
+            if (error == ctre::phoenix::OK)
+                Log(lib::LogLevel::k_Info, m_Robot->GetLogger()->Format("Changed elevator F to: %f", f));
         }, NT_NOTIFY_UPDATE);
         m_Robot->GetNetworkTable()->GetEntry("Elevator/FF").AddListener([&](const nt::EntryNotification& notification) {
             auto ff = notification.value->GetDouble();
             m_FeedForward = ff;
-            Log(lib::LogLevel::k_Info, m_Robot->GetLogger()->Format("Changed elevator F %f", ff));
+            Log(lib::LogLevel::k_Info, m_Robot->GetLogger()->Format("Changed elevator FF to: %f", ff));
         }, NT_NOTIFY_UPDATE);
         m_Robot->GetNetworkTable()->GetEntry("Elevator/D").AddListener([&](const nt::EntryNotification& notification) {
             auto d = notification.value->GetDouble();
-            m_ElevatorMaster.Config_kD(SET_POINT_SLOT_INDEX, d, CONFIG_TIMEOUT);
-            Log(lib::LogLevel::k_Info, m_Robot->GetLogger()->Format("Changed elevator D %f", d));
+            auto error = m_ElevatorMaster.Config_kD(SET_POINT_SLOT_INDEX, d, CONFIG_TIMEOUT);
+            if (error == ctre::phoenix::OK)
+                Log(lib::LogLevel::k_Info, m_Robot->GetLogger()->Format("Changed elevator D to: %f", d));
         }, NT_NOTIFY_UPDATE);
         m_Robot->GetNetworkTable()->GetEntry("Elevator/P").AddListener([&](const nt::EntryNotification& notification) {
             auto p = notification.value->GetDouble();
-            m_ElevatorMaster.Config_kP(SET_POINT_SLOT_INDEX, p, CONFIG_TIMEOUT);
-            Log(lib::LogLevel::k_Info, m_Robot->GetLogger()->Format("Changed elevator P %f", p));
+            m_ElevatorMaster.Config_kP(SET_POINT_SLOT_INDEX, p, 20);
+            Log(lib::LogLevel::k_Info, m_Robot->GetLogger()->Format("Changed elevator P to: %f", p));
         }, NT_NOTIFY_UPDATE);
         m_Robot->GetNetworkTable()->GetEntry("Elevator/I").AddListener([&](const nt::EntryNotification& notification) {
             auto i = notification.value->GetDouble();
-            m_ElevatorMaster.Config_kI(SET_POINT_SLOT_INDEX, i, CONFIG_TIMEOUT);
-            Log(lib::LogLevel::k_Info, m_Robot->GetLogger()->Format("Changed elevator I %f", i));
+            auto error = m_ElevatorMaster.Config_kI(SET_POINT_SLOT_INDEX, i, CONFIG_TIMEOUT);
+            if (error == ctre::phoenix::OK)
+                Log(lib::LogLevel::k_Info, m_Robot->GetLogger()->Format("Changed elevator I to: %f", i));
         }, NT_NOTIFY_UPDATE);
         m_Robot->GetNetworkTable()->GetEntry("Elevator/I Zone").AddListener([&](const nt::EntryNotification& notification) {
             auto i_zone = static_cast<int>(notification.value->GetDouble());
-            m_ElevatorMaster.Config_IntegralZone(SET_POINT_SLOT_INDEX, i_zone, CONFIG_TIMEOUT);
-            Log(lib::LogLevel::k_Info, m_Robot->GetLogger()->Format("Changed elevator I Zone to: %d", i_zone));
+            auto error = m_ElevatorMaster.Config_IntegralZone(SET_POINT_SLOT_INDEX, i_zone, CONFIG_TIMEOUT);
+            if (error == ctre::phoenix::OK)
+                Log(lib::LogLevel::k_Info, m_Robot->GetLogger()->Format("Changed elevator I Zone to: %d", i_zone));
         }, NT_NOTIFY_UPDATE);
 
         /* Setup controllers */
@@ -122,17 +129,23 @@ namespace garage {
     }
 
     void Elevator::TeleopInit() {
+        m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, 0.0);
+        SetController(nullptr);
         Unlock();
-        if (m_Controller)
-            m_Controller->Reset();
+        m_RawController->Reset();
+        m_SetPointController->Reset();
+        m_VelocityController->Reset();
+        m_SoftLandController->Reset();
     }
 
     void Elevator::UpdateUnlocked(Command& command) {
 //        if (command.elevatorSoftLand) {
 //            SetController(m_SoftLandController);
-//        } else if (math::abs(command.elevatorInput) > JOYSTICK_THRESHOLD) {
+//        } else if (math::abs(command.elevatorInput) > DEFAULT_INPUT_THRESHOLD) {
 //            SetController(m_RawController);
 //        }
+        if (m_Controller != m_SoftLandController)
+            SetController(m_VelocityController);
         if (m_Controller)
             m_Controller->ProcessCommand(command);
     }
@@ -141,7 +154,10 @@ namespace garage {
         // TODO add brownout detection and smart current monitoring, check sticky faults
         m_ElevatorMaster.GetStickyFaults(m_StickyFaults);
         if (m_StickyFaults.HasAnyFault()) {
-            m_Robot->GetLogger()->Log(lib::LogLevel::k_Error, m_Robot->GetLogger()->Format("Sticky Faults: %s", m_StickyFaults.ToString().c_str()));
+            // Don't log reverse limit switch error
+            if ((m_StickyFaults.ToBitfield() & ~(1 << 2)) != 0)
+                m_Robot->GetLogger()->Log(lib::LogLevel::k_Error,
+                                          m_Robot->GetLogger()->Format("Sticky Faults: %s", m_StickyFaults.ToString().c_str()));
             m_ElevatorMaster.ClearStickyFaults();
         }
         m_EncoderPosition = m_ElevatorMaster.GetSelectedSensorPosition(SET_POINT_SLOT_INDEX);
@@ -159,9 +175,13 @@ namespace garage {
     }
 
     void Elevator::SpacedUpdate(Command& command) {
+        double current = m_ElevatorMaster.GetOutputCurrent(), output = m_ElevatorMaster.GetMotorOutputPercent();
+        m_Robot->GetNetworkTable()->PutNumber("Elevator/Encoder", m_EncoderPosition);
+        m_Robot->GetNetworkTable()->PutNumber("Elevator/Current", current);
+        m_Robot->GetNetworkTable()->PutNumber("Elevator/Output", output);
         Log(lib::LogLevel::k_Info, m_Robot->GetLogger()->Format(
                 "Output: %f, Current: %f, Encoder Position: %d, Encoder Velocity: %d",
-                m_ElevatorMaster.GetMotorOutputPercent(), m_ElevatorMaster.GetOutputCurrent(), m_EncoderPosition, m_EncoderVelocity));
+                output, current, m_EncoderPosition, m_EncoderVelocity));
     }
 
     bool Elevator::WithinPosition(int targetPosition) {
@@ -173,7 +193,11 @@ namespace garage {
     }
 
     void Elevator::OnUnlock() {
+        m_Robot->GetLogger()->Log(lib::LogLevel::k_Info, "Unlocked");
+    }
 
+    void Elevator::OnLock() {
+        m_Robot->GetLogger()->Log(lib::LogLevel::k_Info, "Locked");
     }
 
     bool Elevator::SetController(std::shared_ptr<ElevatorController> controller) {
@@ -181,7 +205,8 @@ namespace garage {
         if (different) {
             if (m_Controller) m_Controller->OnDisable();
             m_Controller = controller;
-            controller->OnEnable();
+            m_Robot->GetNetworkTable()->PutString("Controller", m_Controller ? m_Controller->GetName() : "None");
+            if (controller) controller->OnEnable();
         }
         return different;
     }
@@ -191,26 +216,31 @@ namespace garage {
         m_RawController->SetRawOutput(output);
     }
 
+    void Elevator::SetManual() {
+        SetController(m_VelocityController);
+    }
+
     void RawElevatorController::ProcessCommand(Command& command) {
-        m_Input = math::threshold(command.elevatorInput, JOYSTICK_THRESHOLD);
+        m_Input = math::threshold(command.elevatorInput, DEFAULT_INPUT_THRESHOLD);
         m_Output = m_Input * 0.2;
     }
 
     void RawElevatorController::Control() {
-        Log(lib::LogLevel::k_Info, m_Subsystem->GetLogger()->Format("Input Value: %f", m_Output));
+        Log(lib::LogLevel::k_Info, m_Subsystem->GetLogger()->Format("Input Value: %f, Output Value: %f", m_Input, m_Output));
         m_Subsystem->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, m_Output);
     }
 
     void SetPointElevatorController::ProcessCommand(Command& command) {
         if (!m_Subsystem->m_IsLocked) {
-            const double input = math::threshold(command.elevatorInput, JOYSTICK_THRESHOLD);
+            const double input = math::threshold(command.elevatorInput, DEFAULT_INPUT_THRESHOLD);
             m_WantedSetPoint += static_cast<int>(input * 5000.0);
         }
     }
 
     void SetPointElevatorController::Control() {
         m_WantedSetPoint = math::clamp(m_WantedSetPoint, ELEVATOR_MIN, ELEVATOR_MAX);
-        Log(lib::LogLevel::k_Info, m_Subsystem->GetLogger()->Format("Wanted Set Point: %d", m_WantedSetPoint));
+        Log(lib::LogLevel::k_Info,
+            m_Subsystem->GetLogger()->Format("Wanted Set Point: %d, Feed Forward: %f", m_WantedSetPoint, m_Subsystem->m_FeedForward));
         if (m_Subsystem->m_EncoderPosition < ELEVATOR_MAX) {
             m_Subsystem->LogSample(lib::LogLevel::k_Info, "Theoretically Okay and Working");
             m_Subsystem->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::MotionMagic,
@@ -229,7 +259,7 @@ namespace garage {
 
     void VelocityElevatorController::ProcessCommand(Command& command) {
         // TODO add too high checking
-        m_Input = math::threshold(command.elevatorInput, JOYSTICK_THRESHOLD);
+        m_Input = math::threshold(command.elevatorInput, DEFAULT_INPUT_THRESHOLD);
         m_WantedVelocity = m_Input * ELEVATOR_VELOCITY;
     }
 
@@ -237,9 +267,9 @@ namespace garage {
         if (m_Subsystem->m_EncoderPosition < ELEVATOR_MAX) {
             Log(lib::LogLevel::k_Info, m_Subsystem->GetLogger()->Format("Wanted Velocity: %f", m_WantedVelocity));
             m_Subsystem->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::Velocity,
-                                              0.0,
+                                              m_WantedVelocity,
                                               ctre::phoenix::motorcontrol::DemandType::DemandType_ArbitraryFeedForward,
-                                              m_Subsystem->m_FeedForward);
+                                              m_Subsystem->m_FeedForward - 0.015);
         } else {
             m_Subsystem->Log(lib::LogLevel::k_Error, "Too High");
             m_Subsystem->SetController(m_Subsystem->m_SoftLandController);

@@ -10,7 +10,7 @@
 #define SPACED_UPDATE_INTERVAL 5
 #define DEFAULT_FREQUENCY 10
 
-#define DEFAULT_INPUT_THRESHOLD 0.075
+#define DEFAULT_INPUT_THRESHOLD 0.1
 
 namespace garage {
     class Robot;

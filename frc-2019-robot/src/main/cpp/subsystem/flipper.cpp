@@ -102,7 +102,7 @@ namespace garage {
     }
 
     void RawFlipperController::ProcessCommand(Command& command) {
-        m_Input = math::threshold(command.flipper, JOYSTICK_THRESHOLD);
+        m_Input = math::threshold(command.flipper, DEFAULT_INPUT_THRESHOLD);
     }
 
     void RawFlipperController::Control() {

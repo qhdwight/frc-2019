@@ -6,6 +6,7 @@
 namespace garage {
     void MeasureElevatorSpeed::Begin() {
         Routine::Begin();
+        m_Subsystem->Lock();
         m_Subsystem->SetRawOutput(m_Output);
     }
 
@@ -21,6 +22,7 @@ namespace garage {
         m_Robot->GetLogger()->Log(lib::LogLevel::k_Info, m_Robot->GetLogger()->Format("Median Velocity: %f", medianVelocity));
         // TODO safe land
         m_Subsystem->SetRawOutput(0.0);
+        m_Subsystem->Unlock();
     }
 
     bool MeasureElevatorSpeed::CheckFinished() {

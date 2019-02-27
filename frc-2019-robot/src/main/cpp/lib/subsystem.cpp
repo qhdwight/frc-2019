@@ -24,7 +24,7 @@ namespace garage {
 
         void Subsystem::Periodic() {
             auto command = m_Robot->GetLatestCommand();
-            if (ShouldUnlock(command))
+            if (m_IsLocked && ShouldUnlock(command))
                 Unlock();
             AdvanceSequence();
             if (m_SequenceNumber % SPACED_UPDATE_INTERVAL == 0)

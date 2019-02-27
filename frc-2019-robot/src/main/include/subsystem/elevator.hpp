@@ -14,16 +14,16 @@
 #define ELEVATOR_MAX 250000
 
 /* Gains and Motion Magic */
-#define ELEVATOR_VELOCITY 12000 // Units in encoder ticks per 100 ms
-#define ELEVATOR_ACCELERATION 10000 // Units in encoder ticks per 100 ms per 100 ms
-#define ELEVATOR_P 0.0
+#define ELEVATOR_VELOCITY 24343 // Units in encoder ticks per 100 ms
+#define ELEVATOR_ACCELERATION 40000 // Units in encoder ticks per 100 ms per 100 ms
+#define ELEVATOR_P 0.018
 #define ELEVATOR_I 0.0
 #define ELEVATOR_MAX_I 0.0
 #define ELEVATOR_I_ZONE 0
-#define ELEVATOR_D 0.0
+#define ELEVATOR_D 1.75
 //#define ELEVATOR_D ELEVATOR_P * 3.3
-#define ELEVATOR_F 0.0
-#define ELEVATOR_FF 0.0875
+#define ELEVATOR_F 1023.0 * 0.325 / ELEVATOR_VELOCITY
+#define ELEVATOR_FF 0.12
 
 // Energy
 #define ELEVATOR_VOLTAGE_SATURATION 12.0 // Volts
@@ -137,6 +137,8 @@ namespace garage {
 
         void SpacedUpdate(Command& command) override;
 
+        void OnLock() override;
+
         void OnUnlock() override;
 
         bool SetController(std::shared_ptr<ElevatorController> controller);
@@ -151,6 +153,8 @@ namespace garage {
         void SetWantedSetPoint(int wantedSetPoint);
 
         void SetRawOutput(double output);
+
+        void SetManual();
 
         int GetPosition() {
             return m_EncoderPosition;

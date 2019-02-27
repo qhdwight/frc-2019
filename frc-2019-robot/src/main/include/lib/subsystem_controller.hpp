@@ -41,6 +41,10 @@ namespace garage {
             virtual void ProcessCommand(Command& command) {};
 
             virtual void Control() {};
+
+            const std::string& GetName() const {
+                return m_Name;
+            }
         };
     }
 }

@@ -25,16 +25,16 @@ namespace garage {
 
     double Drive::InputFromCommand(double commandInput) {
         const double absoluteCommand = std::abs(commandInput), sign = math::sign(commandInput);
-        return absoluteCommand > JOYSTICK_THRESHOLD ? sign * std::abs(std::pow(commandInput, 2.0)) : 0.0;
+        return absoluteCommand > DEFAULT_INPUT_THRESHOLD ? sign * std::abs(std::pow(commandInput, 2.0)) : 0.0;
     }
 
     void Drive::UpdateUnlocked(Command& command) {
         const double
                 forwardInput = InputFromCommand(command.driveForward),
                 turnInput = InputFromCommand(command.driveTurn),
-                forwardInputFine = math::threshold(command.driveForwardFine, JOYSTICK_THRESHOLD),
-                turnInputFine = math::threshold(command.driveTurnFine, JOYSTICK_THRESHOLD);
-        if (std::abs(forwardInput) > JOYSTICK_THRESHOLD || std::abs(turnInput) > JOYSTICK_THRESHOLD) {
+                forwardInputFine = math::threshold(command.driveForwardFine, DEFAULT_INPUT_THRESHOLD),
+                turnInputFine = math::threshold(command.driveTurnFine, DEFAULT_INPUT_THRESHOLD);
+        if (std::abs(forwardInput) > DEFAULT_INPUT_THRESHOLD || std::abs(turnInput) > DEFAULT_INPUT_THRESHOLD) {
             m_LeftOutput = forwardInput + turnInput * (1 - math::absolute(forwardInput) * 0.5) * 0.25;
             m_RightOutput = forwardInput - turnInput * (1 - math::absolute(forwardInput) * 0.5) * 0.25;
         } else {

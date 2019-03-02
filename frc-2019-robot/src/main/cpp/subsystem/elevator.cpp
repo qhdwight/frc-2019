@@ -121,7 +121,7 @@ namespace garage {
 
         /* Setup controllers */
         // TODO think about more
-        auto elevator = std::shared_ptr<Elevator>(this, [](auto elevator) {});
+        auto elevator = std::dynamic_pointer_cast<Elevator>(shared_from_this());
         m_RawController = std::make_shared<RawElevatorController>(elevator);
         m_SetPointController = std::make_shared<SetPointElevatorController>(elevator);
         m_VelocityController = std::make_shared<VelocityElevatorController>(elevator);
@@ -226,30 +226,33 @@ namespace garage {
     }
 
     void RawElevatorController::Control() {
-        Log(lib::LogLevel::k_Info, m_Subsystem->GetLogger()->Format("Input Value: %f, Output Value: %f", m_Input, m_Output));
-        m_Subsystem->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, m_Output);
+        auto elevator = m_Subsystem.lock();
+        Log(lib::LogLevel::k_Info, elevator->GetLogger()->Format("Input Value: %f, Output Value: %f", m_Input, m_Output));
+        elevator->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, m_Output);
     }
 
     void SetPointElevatorController::ProcessCommand(Command& command) {
-        if (!m_Subsystem->m_IsLocked) {
+        auto elevator = m_Subsystem.lock();
+        if (!elevator->m_IsLocked) {
             const double input = math::threshold(command.elevatorInput, DEFAULT_INPUT_THRESHOLD);
             m_WantedSetPoint += static_cast<int>(input * 5000.0);
         }
     }
 
     void SetPointElevatorController::Control() {
+        auto elevator = m_Subsystem.lock();
         m_WantedSetPoint = math::clamp(m_WantedSetPoint, ELEVATOR_MIN, ELEVATOR_MAX);
         Log(lib::LogLevel::k_Info,
-            m_Subsystem->GetLogger()->Format("Wanted Set Point: %d, Feed Forward: %f", m_WantedSetPoint, m_Subsystem->m_FeedForward));
-        if (m_Subsystem->m_EncoderPosition < ELEVATOR_MAX) {
-            m_Subsystem->LogSample(lib::LogLevel::k_Info, "Theoretically Okay and Working");
-            m_Subsystem->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::MotionMagic,
-                                              m_WantedSetPoint,
-                                              ctre::phoenix::motorcontrol::DemandType::DemandType_ArbitraryFeedForward,
-                                              m_Subsystem->m_FeedForward);
+            elevator->GetLogger()->Format("Wanted Set Point: %d, Feed Forward: %f", m_WantedSetPoint, elevator->m_FeedForward));
+        if (elevator->m_EncoderPosition < ELEVATOR_MAX) {
+            elevator->LogSample(lib::LogLevel::k_Info, "Theoretically Okay and Working");
+            elevator->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::MotionMagic,
+                                           m_WantedSetPoint,
+                                           ctre::phoenix::motorcontrol::DemandType::DemandType_ArbitraryFeedForward,
+                                           elevator->m_FeedForward);
         } else {
-            m_Subsystem->Log(lib::LogLevel::k_Error, "Too High");
-            m_Subsystem->SetController(m_Subsystem->m_SoftLandController);
+            elevator->Log(lib::LogLevel::k_Error, "Too High");
+            elevator->SetController(elevator->m_SoftLandController);
         }
     }
 
@@ -264,15 +267,16 @@ namespace garage {
     }
 
     void VelocityElevatorController::Control() {
-        if (m_Subsystem->m_EncoderPosition < ELEVATOR_MAX) {
-            Log(lib::LogLevel::k_Info, m_Subsystem->GetLogger()->Format("Wanted Velocity: %f", m_WantedVelocity));
-            m_Subsystem->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::Velocity,
-                                              m_WantedVelocity,
-                                              ctre::phoenix::motorcontrol::DemandType::DemandType_ArbitraryFeedForward,
-                                              m_Subsystem->m_FeedForward - 0.015);
+        auto elevator = m_Subsystem.lock();
+        if (elevator->m_EncoderPosition < ELEVATOR_MAX) {
+            Log(lib::LogLevel::k_Info, elevator->GetLogger()->Format("Wanted Velocity: %f", m_WantedVelocity));
+            elevator->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::Velocity,
+                                           m_WantedVelocity,
+                                           ctre::phoenix::motorcontrol::DemandType::DemandType_ArbitraryFeedForward,
+                                           elevator->m_FeedForward);
         } else {
-            m_Subsystem->Log(lib::LogLevel::k_Error, "Too High");
-            m_Subsystem->SetController(m_Subsystem->m_SoftLandController);
+            elevator->Log(lib::LogLevel::k_Error, "Too High");
+            elevator->SetController(elevator->m_SoftLandController);
         }
     }
 
@@ -281,10 +285,11 @@ namespace garage {
     }
 
     void SoftLandElevatorController::Control() {
-        if (m_Subsystem->m_EncoderPosition > SOFT_LAND_ELEVATOR_POSITION_WEAK) {
-            m_Subsystem->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, SAFE_ELEVATOR_DOWN_WEAK);
-        } else if (m_Subsystem->m_EncoderPosition > SOFT_LAND_ELEVATOR_POSITION_STRONG) {
-            m_Subsystem->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, SAFE_ELEVATOR_DOWN_STRONG);
+        auto elevator = m_Subsystem.lock();
+        if (elevator->m_EncoderPosition > SOFT_LAND_ELEVATOR_POSITION_WEAK) {
+            elevator->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, SAFE_ELEVATOR_DOWN_WEAK);
+        } else if (elevator->m_EncoderPosition > SOFT_LAND_ELEVATOR_POSITION_STRONG) {
+            elevator->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, SAFE_ELEVATOR_DOWN_STRONG);
         }
     }
 }

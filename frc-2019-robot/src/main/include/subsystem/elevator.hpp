@@ -57,7 +57,7 @@ namespace garage {
         double m_Input = 0.0, m_Output = 0.0;
 
     public:
-        RawElevatorController(std::shared_ptr<Elevator>& subsystem) : ElevatorController(subsystem, "Raw Controller") {};
+        RawElevatorController(std::weak_ptr<Elevator>& subsystem) : ElevatorController(subsystem, "Raw Controller") {};
 
         void ProcessCommand(Command& command) override;
 

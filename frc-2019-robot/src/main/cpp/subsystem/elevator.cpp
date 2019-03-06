@@ -6,6 +6,17 @@
 
 namespace garage {
     Elevator::Elevator(std::shared_ptr<Robot>& robot) : Subsystem(robot, "Elevator") {
+        ConfigSpeedControllers();
+        SetupNetworkTableEntries();
+        // TODO think about more
+        auto elevator = std::dynamic_pointer_cast<Elevator>(shared_from_this());
+        m_RawController = std::make_shared<RawElevatorController>(elevator);
+        m_SetPointController = std::make_shared<SetPointElevatorController>(elevator);
+        m_VelocityController = std::make_shared<VelocityElevatorController>(elevator);
+        m_SoftLandController = std::make_shared<SoftLandElevatorController>(elevator);
+    }
+
+    void Elevator::ConfigSpeedControllers() {
         m_ElevatorMaster.ConfigFactoryDefault(CONFIG_TIMEOUT);
         m_ElevatorSlaveOne.ConfigFactoryDefault(CONFIG_TIMEOUT);
         m_ElevatorSlaveTwo.ConfigFactoryDefault(CONFIG_TIMEOUT);
@@ -62,8 +73,9 @@ namespace garage {
         m_ElevatorMaster.EnableCurrentLimit(false);
         m_ElevatorMaster.OverrideSoftLimitsEnable(true);
         m_ElevatorMaster.OverrideLimitSwitchesEnable(false);
+    }
 
-        /* Setup network table */
+    void Elevator::SetupNetworkTableEntries() {
         m_Robot->GetNetworkTable()->PutNumber("Elevator/Acceleration", ELEVATOR_ACCELERATION);
         m_Robot->GetNetworkTable()->PutNumber("Elevator/Velocity", ELEVATOR_VELOCITY);
         m_Robot->GetNetworkTable()->PutNumber("Elevator/P", ELEVATOR_P);
@@ -72,6 +84,7 @@ namespace garage {
         m_Robot->GetNetworkTable()->PutNumber("Elevator/FF", m_FeedForward);
         m_Robot->GetNetworkTable()->PutNumber("Elevator/I", ELEVATOR_F);
         m_Robot->GetNetworkTable()->PutNumber("Elevator/I Zone", ELEVATOR_F);
+        // Add listeners for each entry when a value is updated on the dashboard
         m_Robot->GetNetworkTable()->GetEntry("Elevator/Acceleration").AddListener([&](const nt::EntryNotification& notification) {
             auto acceleration = static_cast<int>(notification.value->GetDouble());
             auto error = m_ElevatorMaster.ConfigMotionAcceleration(acceleration, CONFIG_TIMEOUT);
@@ -118,14 +131,6 @@ namespace garage {
             if (error == ctre::phoenix::OK)
                 Log(lib::LogLevel::k_Info, m_Robot->GetLogger()->Format("Changed elevator I Zone to: %d", i_zone));
         }, NT_NOTIFY_UPDATE);
-
-        /* Setup controllers */
-        // TODO think about more
-        auto elevator = std::dynamic_pointer_cast<Elevator>(shared_from_this());
-        m_RawController = std::make_shared<RawElevatorController>(elevator);
-        m_SetPointController = std::make_shared<SetPointElevatorController>(elevator);
-        m_VelocityController = std::make_shared<VelocityElevatorController>(elevator);
-        m_SoftLandController = std::make_shared<SoftLandElevatorController>(elevator);
     }
 
     void Elevator::TeleopInit() {

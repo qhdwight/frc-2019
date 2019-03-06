@@ -58,8 +58,8 @@ namespace garage {
         rev::CANSparkMax m_FlipperMaster{FLIPPER, rev::CANSparkMax::MotorType::kBrushless};
         rev::CANPIDController m_FlipperController = m_FlipperMaster.GetPIDController();
         rev::CANEncoder m_Encoder = m_FlipperMaster.GetEncoder();
-        rev::CANDigitalInput m_LimitSwitch = m_FlipperMaster.GetForwardLimitSwitch(rev::CANDigitalInput::LimitSwitchPolarity::kNormallyClosed);
-        bool m_IsLimitSwitchDown = true;
+        rev::CANDigitalInput m_LimitSwitch = m_FlipperMaster.GetForwardLimitSwitch(rev::CANDigitalInput::LimitSwitchPolarity::kNormallyOpen);
+        bool m_IsLimitSwitchDown = true, m_FirstLimitSwitchHit = true;
         double m_EncoderPosition = 0.0, m_EncoderVelocity = 0.0;
         std::shared_ptr<FlipperController> m_Controller;
         std::shared_ptr<RawFlipperController> m_RawController;
@@ -81,8 +81,8 @@ namespace garage {
 
         void TeleopInit() override;
 
-        void SetRawOutput(double output, bool forceSet = false);
+        void SetRawOutput(double output);
 
-        void SetSetPoint(double setPoint, bool forceSet = false);
+        void SetSetPoint(double setPoint);
     };
 }

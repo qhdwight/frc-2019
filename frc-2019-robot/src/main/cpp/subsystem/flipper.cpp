@@ -21,6 +21,7 @@ namespace garage {
         m_FlipperController.SetSmartMotionMinOutputVelocity(0.0);
         m_FlipperController.SetSmartMotionMaxAccel(FLIPPER_ACCELERATION);
         m_FlipperController.SetSmartMotionAllowedClosedLoopError(FLIPPER_ALLOWABLE_ERROR);
+        m_FlipperMaster.EnableVoltageCompensation(12.0);
         m_LimitSwitch.EnableLimitSwitch(false);
         auto flipper = std::dynamic_pointer_cast<Flipper>(shared_from_this());
         m_RawController = std::make_shared<RawFlipperController>(flipper);
@@ -42,18 +43,17 @@ namespace garage {
 
     void Flipper::Update() {
         m_IsLimitSwitchDown = m_LimitSwitch.Get();
-        static bool s_FirstLimitSwitchHit = true;
-        if (m_IsLimitSwitchDown && s_FirstLimitSwitchHit) {
+        if (m_IsLimitSwitchDown && m_FirstLimitSwitchHit) {
             auto error = m_Encoder.SetPosition(0.0);
             if (error == rev::CANError::kOK) {
                 Log(lib::LogLevel::k_Info, "Limit switch hit and encoder reset");
-                s_FirstLimitSwitchHit = false;
+                m_FirstLimitSwitchHit = false;
             } else {
                 Log(lib::LogLevel::k_Error, m_Robot->GetLogger()->Format("CAN Error: %d", error));
             }
         }
         if (!m_IsLimitSwitchDown)
-            s_FirstLimitSwitchHit = true;
+            m_FirstLimitSwitchHit = true;
         m_EncoderPosition = m_Encoder.GetPosition();
         m_EncoderVelocity = m_Encoder.GetVelocity();
         const uint16_t faults = m_FlipperMaster.GetStickyFaults();
@@ -71,26 +71,18 @@ namespace garage {
                 m_FlipperMaster.GetAppliedOutput(), m_EncoderPosition, m_EncoderVelocity, m_IsLimitSwitchDown ? "true" : "false"));
     }
 
-    void Flipper::SetRawOutput(double output, bool forceSet) {
-        static double s_LastOutput = 0.0;
-        if (SetController(std::dynamic_pointer_cast<FlipperController>(m_RawController))) forceSet = true;
-        if (forceSet || output != s_LastOutput) {
-            m_FlipperMaster.Set(output);
-            s_LastOutput = output;
-        }
+    void Flipper::SetRawOutput(double output) {
+        SetController(m_RawController);
+        m_FlipperMaster.Set(output);
     }
 
-    void Flipper::SetSetPoint(double setPoint, bool forceSet) {
-        static double s_LastWantedPosition = 0.0;
-        if (SetController(std::dynamic_pointer_cast<FlipperController>(m_SetPointController))) forceSet = true;
-        if (forceSet || setPoint != s_LastWantedPosition) {
-            auto error = m_FlipperController.SetReference(setPoint, rev::ControlType::kSmartMotion);
-            if (error == rev::CANError::kOK) {
-                Log(lib::LogLevel::k_Info, m_Robot->GetLogger()->Format("Setting set point to: %d", setPoint));
-                s_LastWantedPosition = setPoint;
-            } else {
-                Log(lib::LogLevel::k_Error, m_Robot->GetLogger()->Format("CAN Error: %d", error));
-            }
+    void Flipper::SetSetPoint(double setPoint) {
+        SetController(m_SetPointController);
+        auto error = m_FlipperController.SetReference(setPoint, rev::ControlType::kSmartMotion);
+        if (error == rev::CANError::kOK) {
+            Log(lib::LogLevel::k_Info, m_Robot->GetLogger()->Format("Setting set point to: %d", setPoint));
+        } else {
+            Log(lib::LogLevel::k_Error, m_Robot->GetLogger()->Format("CAN Error: %d", error));
         }
     }
 
@@ -124,7 +116,7 @@ namespace garage {
             wantingToGoOtherWay = true;
         if (inMiddle || wantingToGoOtherWay) {
             const double clampedSetPoint = math::clamp(m_SetPoint, FLIPPER_SET_POINT_LOWER, FLIPPER_SET_POINT_UPPER);
-            flipper->SetSetPoint(clampedSetPoint, true);
+            flipper->SetSetPoint(clampedSetPoint);
         } else {
             flipper->LogSample(lib::LogLevel::k_Info, "Not doing anything");
             flipper->m_FlipperMaster.Set(0.0);

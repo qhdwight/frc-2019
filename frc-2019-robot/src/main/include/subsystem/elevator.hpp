@@ -57,7 +57,7 @@ namespace garage {
         double m_Input = 0.0, m_Output = 0.0;
 
     public:
-        RawElevatorController(std::weak_ptr<Elevator>& subsystem) : ElevatorController(subsystem, "Raw Controller") {};
+        RawElevatorController(std::shared_ptr<Elevator>& subsystem) : ElevatorController(subsystem, "Raw Controller") {};
 
         void ProcessCommand(Command& command) override;
 
@@ -128,6 +128,10 @@ namespace garage {
         std::shared_ptr<SetPointElevatorController> m_SetPointController;
         std::shared_ptr<VelocityElevatorController> m_VelocityController;
         std::shared_ptr<SoftLandElevatorController> m_SoftLandController;
+
+        void ConfigSpeedControllers();
+
+        void SetupNetworkTableEntries();
 
         bool ShouldUnlock(Command& command) override;
 

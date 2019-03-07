@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <string>
+#include <functional>
 
 #define SPACED_UPDATE_INTERVAL 5
 #define DEFAULT_FREQUENCY 10
@@ -40,6 +41,8 @@ namespace garage {
             virtual void OnLock() {};
 
             virtual void OnUnlock() {};
+
+            void AddNetworkTableListener(const std::string& entryName, std::function<bool(const double newValue)> callback);
 
         public:
             Subsystem(std::shared_ptr<Robot>& robot, const std::string& subsystemName);

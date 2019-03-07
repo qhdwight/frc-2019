@@ -64,5 +64,16 @@ namespace garage {
         std::shared_ptr<Logger> Subsystem::GetLogger() {
             return m_Robot->GetLogger();
         }
+
+        void Subsystem::AddNetworkTableListener(const std::string& entryName, std::function<bool(const double newValue)> callback) {
+            m_Robot->GetNetworkTable()->GetEntry(m_Robot->GetLogger()->Format("%s/%s", m_SubsystemName.c_str(), entryName.c_str())).AddListener(
+                    [&](const nt::EntryNotification& notification) {
+                        const auto newValue = notification.value->GetDouble();
+                        const bool success = callback(newValue);
+                        Log(lib::LogLevel::k_Info,
+                            m_Robot->GetLogger()->Format("%s %s value %s to %d", success ? "Successfully set" : "Error in setting",
+                                                         m_SubsystemName.c_str(), entryName.c_str(), newValue));
+                    }, NT_NOTIFY_UPDATE);
+        }
     }
 }

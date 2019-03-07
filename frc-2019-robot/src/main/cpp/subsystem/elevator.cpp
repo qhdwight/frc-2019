@@ -42,7 +42,7 @@ namespace garage {
         m_ElevatorMaster.ConfigOpenloopRamp(ELEVATOR_OPEN_LOOP_RAMP, CONFIG_TIMEOUT);
         m_ElevatorMaster.ConfigClosedloopRamp(ELEVATOR_CLOSED_LOOP_RAMP, CONFIG_TIMEOUT);
         // Current limiting
-        m_ElevatorMaster.ConfigContinuousCurrentLimit(ELEVATOR_CONTINOUS_CURRENT_LIMIT, CONFIG_TIMEOUT);
+        m_ElevatorMaster.ConfigContinuousCurrentLimit(ELEVATOR_CONTINUOUS_CURRENT_LIMIT, CONFIG_TIMEOUT);
         m_ElevatorMaster.ConfigPeakCurrentLimit(ELEVATOR_PEAK_CURRENT_LIMIT, CONFIG_TIMEOUT);
         m_ElevatorMaster.ConfigPeakCurrentDuration(ELEVATOR_PEAK_CURRENT_DURATION, CONFIG_TIMEOUT);
         // Voltage compensation
@@ -85,52 +85,42 @@ namespace garage {
         m_Robot->GetNetworkTable()->PutNumber("Elevator/I", ELEVATOR_F);
         m_Robot->GetNetworkTable()->PutNumber("Elevator/I Zone", ELEVATOR_F);
         // Add listeners for each entry when a value is updated on the dashboard
-        m_Robot->GetNetworkTable()->GetEntry("Elevator/Acceleration").AddListener([&](const nt::EntryNotification& notification) {
-            auto acceleration = static_cast<int>(notification.value->GetDouble());
+        AddNetworkTableListener("Acceleration", [&](const int acceleration) {
             auto error = m_ElevatorMaster.ConfigMotionAcceleration(acceleration, CONFIG_TIMEOUT);
-            if (error == ctre::phoenix::OK)
-                Log(lib::LogLevel::k_Info, m_Robot->GetLogger()->Format("Changed elevator acceleration to %d", acceleration));
-        }, NT_NOTIFY_UPDATE);
-        m_Robot->GetNetworkTable()->GetEntry("Elevator/Velocity").AddListener([&](const nt::EntryNotification& notification) {
-            auto velocity = static_cast<int>(notification.value->GetDouble());
+            return error == ctre::phoenix::OK;
+        });
+        AddNetworkTableListener("Velocity", [&](const int velocity) {
             auto error = m_ElevatorMaster.ConfigMotionCruiseVelocity(velocity, CONFIG_TIMEOUT);
-            if (error == ctre::phoenix::OK)
-                Log(lib::LogLevel::k_Info, m_Robot->GetLogger()->Format("Changed elevator velocity to: %d", velocity));
-        }, NT_NOTIFY_UPDATE);
-        m_Robot->GetNetworkTable()->GetEntry("Elevator/F").AddListener([&](const nt::EntryNotification& notification) {
-            auto f = notification.value->GetDouble();
+            return error == ctre::phoenix::OK;
+        });
+        AddNetworkTableListener("F", [&](const double f) {
             auto error = m_ElevatorMaster.Config_kF(SET_POINT_SLOT_INDEX, f, CONFIG_TIMEOUT);
-            if (error == ctre::phoenix::OK)
-                Log(lib::LogLevel::k_Info, m_Robot->GetLogger()->Format("Changed elevator F to: %f", f));
-        }, NT_NOTIFY_UPDATE);
-        m_Robot->GetNetworkTable()->GetEntry("Elevator/FF").AddListener([&](const nt::EntryNotification& notification) {
-            auto ff = notification.value->GetDouble();
+            return error == ctre::phoenix::OK;
+        });
+        AddNetworkTableListener("FF", [&](const double ff) {
             m_FeedForward = ff;
-            Log(lib::LogLevel::k_Info, m_Robot->GetLogger()->Format("Changed elevator FF to: %f", ff));
-        }, NT_NOTIFY_UPDATE);
-        m_Robot->GetNetworkTable()->GetEntry("Elevator/D").AddListener([&](const nt::EntryNotification& notification) {
-            auto d = notification.value->GetDouble();
+            return true;
+        });
+        AddNetworkTableListener("P", [&](const double p) {
+            auto error = m_ElevatorMaster.Config_kP(SET_POINT_SLOT_INDEX, p, CONFIG_TIMEOUT);
+            return error == ctre::phoenix::OK;
+        });
+        AddNetworkTableListener("D", [&](const double d) {
             auto error = m_ElevatorMaster.Config_kD(SET_POINT_SLOT_INDEX, d, CONFIG_TIMEOUT);
-            if (error == ctre::phoenix::OK)
-                Log(lib::LogLevel::k_Info, m_Robot->GetLogger()->Format("Changed elevator D to: %f", d));
-        }, NT_NOTIFY_UPDATE);
-        m_Robot->GetNetworkTable()->GetEntry("Elevator/P").AddListener([&](const nt::EntryNotification& notification) {
-            auto p = notification.value->GetDouble();
-            m_ElevatorMaster.Config_kP(SET_POINT_SLOT_INDEX, p, 20);
-            Log(lib::LogLevel::k_Info, m_Robot->GetLogger()->Format("Changed elevator P to: %f", p));
-        }, NT_NOTIFY_UPDATE);
-        m_Robot->GetNetworkTable()->GetEntry("Elevator/I").AddListener([&](const nt::EntryNotification& notification) {
-            auto i = notification.value->GetDouble();
-            auto error = m_ElevatorMaster.Config_kI(SET_POINT_SLOT_INDEX, i, CONFIG_TIMEOUT);
-            if (error == ctre::phoenix::OK)
-                Log(lib::LogLevel::k_Info, m_Robot->GetLogger()->Format("Changed elevator I to: %f", i));
-        }, NT_NOTIFY_UPDATE);
-        m_Robot->GetNetworkTable()->GetEntry("Elevator/I Zone").AddListener([&](const nt::EntryNotification& notification) {
-            auto i_zone = static_cast<int>(notification.value->GetDouble());
-            auto error = m_ElevatorMaster.Config_IntegralZone(SET_POINT_SLOT_INDEX, i_zone, CONFIG_TIMEOUT);
-            if (error == ctre::phoenix::OK)
-                Log(lib::LogLevel::k_Info, m_Robot->GetLogger()->Format("Changed elevator I Zone to: %d", i_zone));
-        }, NT_NOTIFY_UPDATE);
+            return error == ctre::phoenix::OK;
+        });
+//        m_Robot->GetNetworkTable()->GetEntry("Elevator/I").AddListener([&](const nt::EntryNotification& notification) {
+//            auto i = notification.value->GetDouble();
+//            auto error = m_ElevatorMaster.Config_kI(SET_POINT_SLOT_INDEX, i, CONFIG_TIMEOUT);
+//            if (error == ctre::phoenix::OK)
+//                Log(lib::LogLevel::k_Info, m_Robot->GetLogger()->Format("Changed elevator I to: %f", i));
+//        }, NT_NOTIFY_UPDATE);
+//        m_Robot->GetNetworkTable()->GetEntry("Elevator/I Zone").AddListener([&](const nt::EntryNotification& notification) {
+//            auto i_zone = static_cast<int>(notification.value->GetDouble());
+//            auto error = m_ElevatorMaster.Config_IntegralZone(SET_POINT_SLOT_INDEX, i_zone, CONFIG_TIMEOUT);
+//            if (error == ctre::phoenix::OK)
+//                Log(lib::LogLevel::k_Info, m_Robot->GetLogger()->Format("Changed elevator I Zone to: %d", i_zone));
+//        }, NT_NOTIFY_UPDATE);
     }
 
     void Elevator::TeleopInit() {
@@ -246,7 +236,7 @@ namespace garage {
 
     void SetPointElevatorController::Control() {
         auto elevator = m_Subsystem.lock();
-        m_WantedSetPoint = math::clamp(m_WantedSetPoint, ELEVATOR_MIN, ELEVATOR_MAX);
+        m_WantedSetPoint = math::clamp(m_WantedSetPoint, ELEVATOR_MIN_CLOSED_LOOP_HEIGHT, ELEVATOR_MAX);
         Log(lib::LogLevel::k_Info,
             elevator->GetLogger()->Format("Wanted Set Point: %d, Feed Forward: %f", m_WantedSetPoint, elevator->m_FeedForward));
         if (elevator->m_EncoderPosition < ELEVATOR_MAX) {
@@ -273,7 +263,7 @@ namespace garage {
 
     void VelocityElevatorController::Control() {
         auto elevator = m_Subsystem.lock();
-        if (elevator->m_EncoderPosition < ELEVATOR_MAX) {
+        if (elevator->m_EncoderPosition < ELEVATOR_MAX && elevator->m_EncoderPosition > ELEVATOR_MIN_CLOSED_LOOP_HEIGHT) {
             Log(lib::LogLevel::k_Info, elevator->GetLogger()->Format("Wanted Velocity: %f", m_WantedVelocity));
             elevator->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::Velocity,
                                            m_WantedVelocity,
@@ -291,10 +281,7 @@ namespace garage {
 
     void SoftLandElevatorController::Control() {
         auto elevator = m_Subsystem.lock();
-        if (elevator->m_EncoderPosition > SOFT_LAND_ELEVATOR_POSITION_WEAK) {
-            elevator->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, SAFE_ELEVATOR_DOWN_WEAK);
-        } else if (elevator->m_EncoderPosition > SOFT_LAND_ELEVATOR_POSITION_STRONG) {
-            elevator->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, SAFE_ELEVATOR_DOWN_STRONG);
-        }
+        elevator->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput,
+                                       elevator->m_EncoderPosition > 1000 ? SAFE_ELEVATOR_DOWN : 0.0);
     }
 }

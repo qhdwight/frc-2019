@@ -10,40 +10,34 @@
 
 #include <wpi/optional.h>
 
-#define ELEVATOR_MIN 0
-#define ELEVATOR_MAX 250000
+#define ELEVATOR_MAX 250000 // Encoder ticks
 
 /* Gains and Motion Magic */
-#define ELEVATOR_VELOCITY 24343 // Units in encoder ticks per 100 ms
-#define ELEVATOR_ACCELERATION 40000 // Units in encoder ticks per 100 ms per 100 ms
+#define ELEVATOR_VELOCITY 24343 // Encoder ticks per 100 ms
+#define ELEVATOR_ACCELERATION 40000 // Encoder ticks per 100 ms per 100 ms
 #define ELEVATOR_P 0.018
 #define ELEVATOR_I 0.0
 #define ELEVATOR_MAX_I 0.0
-#define ELEVATOR_I_ZONE 0
+#define ELEVATOR_I_ZONE 0 // Encoder ticks
 #define ELEVATOR_D 1.75
 //#define ELEVATOR_D ELEVATOR_P * 3.3
-#define ELEVATOR_F 1023.0 * 0.325 / ELEVATOR_VELOCITY
-#define ELEVATOR_FF 0.12
+#define ELEVATOR_F 1023.0 * 0.325 / ELEVATOR_VELOCITY // Multiplied by velocity calculated by motion magic and added to output, does most of work
+#define ELEVATOR_FF 0.12 // Percent output - Output required to hold elevator at a position, always added to motor output in closed loop
+#define ELEVATOR_MIN_CLOSED_LOOP_HEIGHT 4000 // Encoder ticks
 
-// Energy
+/* Energy Management */
 #define ELEVATOR_VOLTAGE_SATURATION 12.0 // Volts
-#define ELEVATOR_CONTINOUS_CURRENT_LIMIT 40 // Amperes
+#define ELEVATOR_CONTINUOUS_CURRENT_LIMIT 40 // Amperes
 #define ELEVATOR_PEAK_CURRENT_LIMIT 300 // Amperes
-#define ELEVATOR_PEAK_CURRENT_DURATION 200
+#define ELEVATOR_PEAK_CURRENT_DURATION 200 // Milliseconds
 
-#define ELEVATOR_ALLOWABLE_CLOSED_LOOP_ERROR 0
-#define ELEVATOR_WITHIN_SET_POINT_AMOUNT 1000
+#define ELEVATOR_ALLOWABLE_CLOSED_LOOP_ERROR 0 // Encoder ticks - Zero is always try to get to value and do not stop
+#define ELEVATOR_WITHIN_SET_POINT_AMOUNT 1000 // Encoder ticks
 
-#define ELEVATOR_MIN_CLOSED_LOOP_HEIGHT 2500.0
+#define ELEVATOR_OPEN_LOOP_RAMP 0.4 // Seconds
+#define ELEVATOR_CLOSED_LOOP_RAMP 0.1 // Seconds
 
-#define ELEVATOR_OPEN_LOOP_RAMP 0.4
-#define ELEVATOR_CLOSED_LOOP_RAMP 0.1
-
-// TODO change
-#define SAFE_ELEVATOR_DOWN_STRONG 0.02
-#define SAFE_ELEVATOR_DOWN_WEAK 0.01
-#define SOFT_LAND_ELEVATOR_POSITION_STRONG 11000
-#define SOFT_LAND_ELEVATOR_POSITION_WEAK 30000
+#define SAFE_ELEVATOR_DOWN 0.02 // Percent output
 
 #define SET_POINT_SLOT_INDEX 0
 

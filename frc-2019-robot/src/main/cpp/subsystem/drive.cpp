@@ -7,7 +7,7 @@
 #include <cmath>
 
 namespace garage {
-    Drive::Drive(std::shared_ptr<Robot>& robot) : Subsystem(robot, "Drive") {
+    Drive::Drive(std::shared_ptr<Robot>& robot) : lib::ControllableSubsystem<Drive>(robot, "Drive") {
         m_LeftSlave.RestoreFactoryDefaults();
         m_RightSlave.RestoreFactoryDefaults();
         m_LeftMaster.RestoreFactoryDefaults();

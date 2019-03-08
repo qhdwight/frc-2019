@@ -5,7 +5,7 @@
 #include <robot.hpp>
 
 namespace garage {
-    HatchIntake::HatchIntake(std::shared_ptr<Robot>& robot) : Subsystem(robot, "Hatch Intake") {
+    HatchIntake::HatchIntake(std::shared_ptr<Robot>& robot) : lib::ControllableSubsystem<HatchIntake>(robot, "Hatch Intake") {
 
     }
 

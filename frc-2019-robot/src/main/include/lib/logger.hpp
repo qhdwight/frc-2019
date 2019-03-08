@@ -2,6 +2,8 @@
 
 #include <string>
 
+#define FMT_STR(STRING) STRING.c_str()
+
 namespace garage {
     namespace lib {
         class Logger {

@@ -2,7 +2,8 @@
 
 #include <hardware_map.hpp>
 
-#include <lib/subsystem.hpp>
+#include <lib/subsystem_controller.hpp>
+#include <lib/controllable_subsystem.hpp>
 
 #include <ctre/phoenix/motorcontrol/can/TalonSRX.h>
 
@@ -20,7 +21,7 @@ namespace garage {
         k_Idle, k_Intaking, k_Expelling
     };
 
-    class BallIntake : public lib::Subsystem {
+    class BallIntake : public lib::ControllableSubsystem<BallIntake> {
     private:
         ctre::phoenix::motorcontrol::can::TalonSRX m_RightIntake{BALL_INTAKE_MASTER}, m_LeftIntake{BALL_INTAKE_SLAVE};
 

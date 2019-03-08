@@ -1,12 +1,6 @@
 #pragma once
 
 #include <command.hpp>
-#include <subsystem/drive.hpp>
-#include <subsystem/flipper.hpp>
-#include <subsystem/elevator.hpp>
-#include <subsystem/outrigger.hpp>
-#include <subsystem/ball_intake.hpp>
-#include <subsystem/hatch_intake.hpp>
 
 #include <lib/logger.hpp>
 #include <lib/subsystem.hpp>
@@ -22,6 +16,13 @@
 #include <memory>
 
 namespace garage {
+    class Elevator;
+    class Drive;
+    class Outrigger;
+    class BallIntake;
+    class Flipper;
+    class HatchIntake;
+
     class Robot : public frc::TimedRobot {
     private:
         std::shared_ptr<Robot> m_Pointer;

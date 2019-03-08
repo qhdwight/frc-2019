@@ -1,5 +1,12 @@
 #include <robot.hpp>
 
+#include <subsystem/drive.hpp>
+#include <subsystem/flipper.hpp>
+#include <subsystem/elevator.hpp>
+#include <subsystem/outrigger.hpp>
+#include <subsystem/ball_intake.hpp>
+#include <subsystem/hatch_intake.hpp>
+
 #include <routine/climb_hab_routine.hpp>
 #include <routine/measure_elevator_speed.hpp>
 #include <routine/set_elevator_position_routine.hpp>

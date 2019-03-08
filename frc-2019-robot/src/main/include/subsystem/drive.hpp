@@ -3,7 +3,8 @@
 #include <command.hpp>
 #include <hardware_map.hpp>
 
-#include <lib/subsystem.hpp>
+#include <lib/subsystem_controller.hpp>
+#include <lib/controllable_subsystem.hpp>
 
 #include <garage_math/garage_math.hpp>
 
@@ -13,7 +14,7 @@
 #include <memory>
 
 namespace garage {
-    class Drive : public lib::Subsystem {
+    class Drive : public lib::ControllableSubsystem<Drive> {
     private:
         double m_LeftOutput = 0.0, m_RightOutput = 0.0;
         rev::CANSparkMax

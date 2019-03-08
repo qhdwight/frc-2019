@@ -2,8 +2,8 @@
 
 #include <hardware_map.hpp>
 
-#include <lib/subsystem.hpp>
 #include <lib/subsystem_controller.hpp>
+#include <lib/controllable_subsystem.hpp>
 
 #include <rev/CANSparkMax.h>
 
@@ -53,7 +53,7 @@ namespace garage {
         void Control() override;
     };
 
-    class Flipper : public lib::Subsystem {
+    class Flipper : public lib::ControllableSubsystem<Flipper> {
     private:
         rev::CANSparkMax m_FlipperMaster{FLIPPER, rev::CANSparkMax::MotorType::kBrushless};
         rev::CANPIDController m_FlipperController = m_FlipperMaster.GetPIDController();

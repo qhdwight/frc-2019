@@ -1,6 +1,7 @@
 #include <lib/auto_routine.hpp>
 
 #include <robot.hpp>
+#include <subsystem/drive.hpp>
 
 namespace garage {
     namespace lib {

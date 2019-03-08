@@ -11,12 +11,12 @@ namespace garage {
         std::string Logger::Format(const std::string& format, ...) {
             va_list arguments;
                     va_start(arguments, format);
-            auto length = static_cast<size_t>(std::vsnprintf(nullptr, 0, format.c_str(), arguments));
+            auto length = static_cast<size_t>(std::vsnprintf(nullptr, 0, FMT_STR(format), arguments));
                     va_end(arguments);
             std::vector<char> output(length + 1);
                     va_start(arguments, format);
             auto* front = output.data();
-            std::vsnprintf(front, length + 1, format.c_str(), arguments);
+            std::vsnprintf(front, length + 1, FMT_STR(format), arguments);
                     va_end(arguments);
             return front;
         }

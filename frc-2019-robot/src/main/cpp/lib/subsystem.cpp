@@ -34,7 +34,7 @@ namespace garage {
                 UpdateLocked();
             else
                 UpdateUnlocked(command);
-            SetLastCommand(command);
+            m_LastCommand = command;
         }
 
         void Subsystem::AdvanceSequence() {
@@ -42,10 +42,6 @@ namespace garage {
                 m_SequenceNumber++;
             else
                 m_SequenceNumber = 0;
-        }
-
-        void Subsystem::SetLastCommand(Command& command) {
-            m_LastCommand = command;
         }
 
         void Subsystem::Log(Logger::LogLevel logLevel, const std::string& log) {
@@ -63,14 +59,14 @@ namespace garage {
 
         void Subsystem::AddNetworkTableListener(const std::string& entryName, const double defaultValue,
                                                 std::function<bool(const double newValue)> callback) {
-            m_Robot->GetNetworkTable()->PutNumber(Logger::Format("%s/%s", m_SubsystemName.c_str(), entryName.c_str()), defaultValue);
-            m_Robot->GetNetworkTable()->GetEntry(Logger::Format("%s/%s", m_SubsystemName.c_str(), entryName.c_str())).AddListener(
+            m_Robot->GetNetworkTable()->PutNumber(Logger::Format("%s/%s", FMT_STR(m_SubsystemName), FMT_STR(entryName)), defaultValue);
+            m_Robot->GetNetworkTable()->GetEntry(Logger::Format("%s/%s", FMT_STR(m_SubsystemName), FMT_STR(entryName))).AddListener(
                     [&](const nt::EntryNotification& notification) {
                         const auto newValue = notification.value->GetDouble();
                         const bool success = callback(newValue);
                         Log(Logger::LogLevel::k_Info,
                             Logger::Format("%s %s value %s to %d", success ? "Successfully set" : "Error in setting",
-                                           m_SubsystemName.c_str(), entryName.c_str(), newValue));
+                                           FMT_STR(m_SubsystemName), FMT_STR(entryName), newValue));
                     }, NT_NOTIFY_UPDATE);
         }
     }

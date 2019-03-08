@@ -1,6 +1,9 @@
 #include <routine/climb_hab_routine.hpp>
 
 #include <robot.hpp>
+#include <subsystem/drive.hpp>
+#include <subsystem/elevator.hpp>
+#include <subsystem/outrigger.hpp>
 
 #include <lib/logger.hpp>
 
@@ -16,7 +19,7 @@ namespace garage {
 
     void OutriggerAutoLevelRoutine::Update() {
         const double tilt = m_Robot->GetDrive()->GetTilt();
-        m_Robot->GetDrive()->LogSample(lib::Logger::LogLevel::k_Info, lib::Logger::Format(" [%s] Tilt: %f", m_Name.c_str(), tilt));
+        m_Robot->GetDrive()->LogSample(lib::Logger::LogLevel::k_Info, lib::Logger::Format(" [%s] Tilt: %f", FMT_STR(m_Name), tilt));
 //        const double p = 1.0 / 90.0;
 //        m_Robot->GetOutrigger()->SetOutput(tilt * p);
     }

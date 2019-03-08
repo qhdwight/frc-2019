@@ -16,7 +16,7 @@
 namespace garage {
     class Robot;
     namespace lib {
-        class Subsystem : public std::enable_shared_from_this<Subsystem> {
+        class Subsystem {
         protected:
             std::shared_ptr<Robot> m_Robot;
             Command m_LastCommand = {};
@@ -26,7 +26,7 @@ namespace garage {
 
             virtual void AdvanceSequence();
 
-            virtual void SpacedUpdate(Command& command) {};
+            virtual void SpacedUpdate(Command& command) {}
 
             virtual bool ShouldUnlock(Command& command);
 
@@ -34,13 +34,11 @@ namespace garage {
 
             virtual void UpdateLocked() {}
 
-            virtual void Update() {};
+            virtual void Update() {}
 
-            virtual void SetLastCommand(Command& command);
+            virtual void OnLock() {}
 
-            virtual void OnLock() {};
-
-            virtual void OnUnlock() {};
+            virtual void OnUnlock() {}
 
             void AddNetworkTableListener(const std::string& entryName, const double defaultValue,
                                          std::function<bool(const double newValue)> callback);
@@ -48,7 +46,7 @@ namespace garage {
         public:
             Subsystem(std::shared_ptr<Robot>& robot, const std::string& subsystemName);
 
-            virtual void TeleopInit() {};
+            virtual void TeleopInit() {}
 
             void Periodic();
 

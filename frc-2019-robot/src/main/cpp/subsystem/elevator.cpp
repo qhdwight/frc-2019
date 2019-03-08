@@ -5,7 +5,7 @@
 #include <garage_math/garage_math.hpp>
 
 namespace garage {
-    Elevator::Elevator(std::shared_ptr<Robot>& robot) : Subsystem(robot, "Elevator") {
+    Elevator::Elevator(std::shared_ptr<Robot>& robot) : lib::ControllableSubsystem<Elevator>(robot, "Elevator") {
         ConfigSpeedControllers();
         SetupNetworkTableEntries();
         // TODO think about more
@@ -132,7 +132,7 @@ namespace garage {
             // Don't log reverse limit switch error
             if ((m_StickyFaults.ToBitfield() & ~(1 << 2)) != 0)
                 lib::Logger::Log(lib::Logger::LogLevel::k_Error,
-                                 lib::Logger::Format("Sticky Faults: %s", m_StickyFaults.ToString().c_str()));
+                                 lib::Logger::Format("Sticky Faults: %s", FMT_STR(m_StickyFaults.ToString())));
             m_ElevatorMaster.ClearStickyFaults();
         }
         m_EncoderPosition = m_ElevatorMaster.GetSelectedSensorPosition(SET_POINT_SLOT_INDEX);
@@ -175,17 +175,6 @@ namespace garage {
         lib::Logger::Log(lib::Logger::LogLevel::k_Info, "Locked");
     }
 
-    bool Elevator::SetController(std::shared_ptr<ElevatorController> controller) {
-        bool different = controller != m_Controller;
-        if (different) {
-            if (m_Controller) m_Controller->OnDisable();
-            m_Controller = controller;
-            m_Robot->GetNetworkTable()->PutString("Controller", m_Controller ? m_Controller->GetName() : "None");
-            if (controller) controller->OnEnable();
-        }
-        return different;
-    }
-
     void Elevator::SetRawOutput(double output) {
         SetController(m_RawController);
         m_RawController->SetRawOutput(output);
@@ -204,6 +193,11 @@ namespace garage {
         auto elevator = m_Subsystem.lock();
         Log(lib::Logger::LogLevel::k_Info, lib::Logger::Format("Input Value: %f, Output Value: %f", m_Input, m_Output));
         elevator->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, m_Output);
+    }
+
+    void RawElevatorController::Reset() {
+        m_Input = 0.0;
+        m_Output = 0.0;
     }
 
     void SetPointElevatorController::ProcessCommand(Command& command) {
@@ -256,6 +250,7 @@ namespace garage {
     }
 
     void VelocityElevatorController::Reset() {
+        m_Input = 0.0;
         m_WantedVelocity = 0.0;
     }
 

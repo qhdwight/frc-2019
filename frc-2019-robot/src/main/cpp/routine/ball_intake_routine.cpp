@@ -1,7 +1,5 @@
 #include <routine/ball_intake_routine.hpp>
 
-#include <robot.hpp>
-
 #include <lib/wait_routine.hpp>
 
 namespace garage {

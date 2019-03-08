@@ -1,12 +1,5 @@
 #include <robot.hpp>
 
-#include <subsystem/drive.hpp>
-#include <subsystem/flipper.hpp>
-#include <subsystem/elevator.hpp>
-#include <subsystem/outrigger.hpp>
-#include <subsystem/ball_intake.hpp>
-#include <subsystem/hatch_intake.hpp>
-
 #include <routine/climb_hab_routine.hpp>
 #include <routine/measure_elevator_speed.hpp>
 #include <routine/set_elevator_position_routine.hpp>
@@ -30,12 +23,12 @@ namespace garage {
             lib::Logger::SetLogLevel(logLevel);
             lib::Logger::Log(lib::Logger::LogLevel::k_Info, lib::Logger::Format("Updated log level to: %d", logLevel));
         }, NT_NOTIFY_UPDATE);
-        AddSubsystem(std::dynamic_pointer_cast<lib::Subsystem>(m_Elevator = std::make_shared<Elevator>(m_Pointer)));
-//        AddSubsystem(std::dynamic_pointer_cast<lib::Subsystem>(m_Drive = std::make_shared<Drive>(m_Pointer)));
-//        AddSubsystem(std::dynamic_pointer_cast<lib::Subsystem>(m_Flipper = std::make_shared<Flipper>(m_Pointer)));
-//        AddSubsystem(std::dynamic_pointer_cast<lib::Subsystem>(m_BallIntake = std::make_shared<BallIntake>(m_Pointer)));
-//        AddSubsystem(std::dynamic_pointer_cast<lib::Subsystem>(m_HatchIntake = std::make_shared<HatchIntake>(m_Pointer)));
-//        AddSubsystem(std::dynamic_pointer_cast<lib::Subsystem>(m_Outrigger = std::make_shared<Outrigger>(m_Pointer)));
+        AddSubsystem(m_Elevator = std::make_shared<Elevator>(m_Pointer));
+//        AddSubsystem(m_Drive = std::make_shared<Drive>(m_Pointer));
+//        AddSubsystem(m_Flipper = std::make_shared<Flipper>(m_Pointer));
+//        AddSubsystem(m_BallIntake = std::make_shared<BallIntake>(m_Pointer));
+//        AddSubsystem(m_HatchIntake = std::make_shared<HatchIntake>(m_Pointer));
+//        AddSubsystem(m_Outrigger = std::make_shared<Outrigger>(m_Pointer));
     }
 
     void Robot::AddSubsystem(std::shared_ptr<lib::Subsystem> subsystem) {

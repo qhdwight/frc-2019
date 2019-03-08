@@ -8,7 +8,7 @@
 namespace garage {
     namespace lib {
         Subsystem::Subsystem(std::shared_ptr<Robot>& robot, const std::string& subsystemName)
-                : m_Robot(robot), m_SubsystemName(subsystemName) {
+                : m_Robot(robot), m_NetworkTable(robot->GetNetworkTable()->GetSubTable(subsystemName)), m_SubsystemName(subsystemName) {
             Log(Logger::LogLevel::k_Info, "Subsystem Initialized");
         }
 
@@ -59,8 +59,8 @@ namespace garage {
 
         void Subsystem::AddNetworkTableListener(const std::string& entryName, const double defaultValue,
                                                 std::function<bool(const double newValue)> callback) {
-            m_Robot->GetNetworkTable()->PutNumber(Logger::Format("%s/%s", FMT_STR(m_SubsystemName), FMT_STR(entryName)), defaultValue);
-            m_Robot->GetNetworkTable()->GetEntry(Logger::Format("%s/%s", FMT_STR(m_SubsystemName), FMT_STR(entryName))).AddListener(
+            m_NetworkTable->PutNumber(m_SubsystemName, defaultValue);
+            m_NetworkTable->GetEntry(m_SubsystemName).AddListener(
                     [&](const nt::EntryNotification& notification) {
                         const auto newValue = notification.value->GetDouble();
                         const bool success = callback(newValue);

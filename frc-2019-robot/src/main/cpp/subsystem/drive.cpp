@@ -41,13 +41,13 @@ namespace garage {
             m_LeftOutput = (forwardInputFine + turnInputFine) * 0.05;
             m_RightOutput = (forwardInputFine - turnInputFine) * 0.05;
         }
-//        m_Robot->GetNetworkTable()->PutNumber("Drive/Gyro", m_Pigeon.GetFusedHeading());
-//        m_Robot->GetNetworkTable()->PutNumber("Drive/Left Output", m_LeftOutput);
-//        m_Robot->GetNetworkTable()->PutNumber("Drive/Right Output", m_RightOutput);
-//        m_Robot->GetNetworkTable()->PutNumber("Drive/Left Encoder", m_LeftEncoder.GetPosition());
-//        m_Robot->GetNetworkTable()->PutNumber("Drive/Left Amperage", m_LeftMaster.GetOutputCurrent());
-//        m_Robot->GetNetworkTable()->PutNumber("Drive/Right Encoder", m_RightEncoder.GetPosition());
-//        m_Robot->GetNetworkTable()->PutNumber("Drive/Right Amperage", m_RightMaster.GetOutputCurrent());
+//        m_NetworkTable->PutNumber("Gyro", m_Pigeon.GetFusedHeading());
+//        m_NetworkTable->PutNumber("Left Output", m_LeftOutput);
+//        m_NetworkTable->PutNumber("Right Output", m_RightOutput);
+//        m_NetworkTable->PutNumber("Left Encoder", m_LeftEncoder.GetPosition());
+//        m_NetworkTable->PutNumber("Left Amperage", m_LeftMaster.GetOutputCurrent());
+//        m_NetworkTable->PutNumber("Right Encoder", m_RightEncoder.GetPosition());
+//        m_NetworkTable->PutNumber("Right Amperage", m_RightMaster.GetOutputCurrent());
     }
 
     void Drive::SpacedUpdate(Command& command) {

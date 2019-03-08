@@ -13,7 +13,7 @@ namespace garage {
     }
 
     void BallIntake::UpdateUnlocked(Command& command) {
-//        m_Robot->GetNetworkTable()->PutNumber("Ball Intake/Current", m_RightIntake.GetOutputCurrent());
+//        m_NetworkTable->PutNumber("Ball Intake/Current", m_RightIntake.GetOutputCurrent());
         double input = command.ballIntake, absoluteInput = math::absolute(input);
         if (absoluteInput > 0.5) input = math::sign(input) * 1.0;
         IntakeMode intakeMode;

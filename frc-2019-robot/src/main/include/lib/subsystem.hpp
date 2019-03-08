@@ -8,6 +8,8 @@
 #include <string>
 #include <functional>
 
+#include <networktables/NetworkTable.h>
+
 #define SPACED_UPDATE_INTERVAL 5
 #define DEFAULT_FREQUENCY 10
 
@@ -19,6 +21,7 @@ namespace garage {
         class Subsystem {
         protected:
             std::shared_ptr<Robot> m_Robot;
+            std::shared_ptr<nt::NetworkTable> m_NetworkTable;
             Command m_LastCommand = {};
             bool m_IsLocked = false;
             unsigned long m_SequenceNumber = 0;
@@ -45,6 +48,8 @@ namespace garage {
 
         public:
             Subsystem(std::shared_ptr<Robot>& robot, const std::string& subsystemName);
+
+            virtual void Reset() {}
 
             virtual void TeleopInit() {}
 

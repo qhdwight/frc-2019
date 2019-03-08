@@ -1,7 +1,6 @@
 #pragma once
 
 #include <robot.hpp>
-#include <subsystem/elevator.hpp>
 
 #include <lib/subsystem_routine.hpp>
 

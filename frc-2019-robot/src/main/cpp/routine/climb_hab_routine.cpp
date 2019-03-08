@@ -1,9 +1,6 @@
 #include <routine/climb_hab_routine.hpp>
 
 #include <robot.hpp>
-#include <subsystem/drive.hpp>
-#include <subsystem/elevator.hpp>
-#include <subsystem/outrigger.hpp>
 
 #include <lib/logger.hpp>
 

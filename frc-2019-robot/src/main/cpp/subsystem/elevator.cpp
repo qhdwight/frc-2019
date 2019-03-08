@@ -10,10 +10,10 @@ namespace garage {
         SetupNetworkTableEntries();
         // TODO think about more
         auto elevator = std::dynamic_pointer_cast<Elevator>(shared_from_this());
-        m_RawController = std::make_shared<RawElevatorController>(elevator);
-        m_SetPointController = std::make_shared<SetPointElevatorController>(elevator);
-        m_VelocityController = std::make_shared<VelocityElevatorController>(elevator);
-        m_SoftLandController = std::make_shared<SoftLandElevatorController>(elevator);
+        AddController(m_RawController = std::make_shared<RawElevatorController>(elevator));
+        AddController(m_SetPointController = std::make_shared<SetPointElevatorController>(elevator));
+        AddController(m_VelocityController = std::make_shared<VelocityElevatorController>(elevator));
+        AddController(m_SoftLandController = std::make_shared<SoftLandElevatorController>(elevator));
     }
 
     void Elevator::ConfigSpeedControllers() {
@@ -107,10 +107,7 @@ namespace garage {
         m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, 0.0);
         SetController(nullptr);
         Unlock();
-        m_RawController->Reset();
-        m_SetPointController->Reset();
-        m_VelocityController->Reset();
-        m_SoftLandController->Reset();
+        Reset();
     }
 
     void Elevator::UpdateUnlocked(Command& command) {
@@ -151,9 +148,9 @@ namespace garage {
 
     void Elevator::SpacedUpdate(Command& command) {
         double current = m_ElevatorMaster.GetOutputCurrent(), output = m_ElevatorMaster.GetMotorOutputPercent();
-        m_Robot->GetNetworkTable()->PutNumber("Elevator/Encoder", m_EncoderPosition);
-        m_Robot->GetNetworkTable()->PutNumber("Elevator/Current", current);
-        m_Robot->GetNetworkTable()->PutNumber("Elevator/Output", output);
+        m_NetworkTable->PutNumber("Encoder", m_EncoderPosition);
+        m_NetworkTable->PutNumber("Current", current);
+        m_NetworkTable->PutNumber("Output", output);
         Log(lib::Logger::LogLevel::k_Info, lib::Logger::Format(
                 "Output: %f, Current: %f, Encoder Position: %d, Encoder Velocity: %d",
                 output, current, m_EncoderPosition, m_EncoderVelocity));

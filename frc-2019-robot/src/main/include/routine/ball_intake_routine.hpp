@@ -1,7 +1,6 @@
 #pragma once
 
-#include <subsystem/flipper.hpp>
-#include <subsystem/ball_intake.hpp>
+#include <robot.hpp>
 
 #include <lib/routine.hpp>
 #include <lib/sequential_routine.hpp>

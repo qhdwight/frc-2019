@@ -51,7 +51,7 @@ namespace garage {
     }
 
     void Drive::SpacedUpdate(Command& command) {
-        LogSample(lib::LogLevel::k_Info, m_Robot->GetLogger()->Format(
+        LogSample(lib::Logger::LogLevel::k_Info, lib::Logger::Format(
                 "Left Output: %f, Right Output: %f, Left Current: %f, Right Current: %f",
                 m_LeftMaster.GetAppliedOutput(), m_RightMaster.GetAppliedOutput(),
                 m_LeftMaster.GetOutputCurrent(), m_RightMaster.GetOutputCurrent()));

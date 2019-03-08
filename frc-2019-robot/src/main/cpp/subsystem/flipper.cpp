@@ -37,7 +37,7 @@ namespace garage {
         if (m_Controller) {
             m_Controller->ProcessCommand(command);
         } else {
-            LogSample(lib::LogLevel::k_Warning, "No controller detected");
+            LogSample(lib::Logger::LogLevel::k_Warning, "No controller detected");
         }
     }
 
@@ -46,10 +46,10 @@ namespace garage {
         if (m_IsLimitSwitchDown && m_FirstLimitSwitchHit) {
             auto error = m_Encoder.SetPosition(0.0);
             if (error == rev::CANError::kOK) {
-                Log(lib::LogLevel::k_Info, "Limit switch hit and encoder reset");
+                Log(lib::Logger::LogLevel::k_Info, "Limit switch hit and encoder reset");
                 m_FirstLimitSwitchHit = false;
             } else {
-                Log(lib::LogLevel::k_Error, m_Robot->GetLogger()->Format("CAN Error: %d", error));
+                Log(lib::Logger::LogLevel::k_Error, lib::Logger::Format("CAN Error: %d", error));
             }
         }
         if (!m_IsLimitSwitchDown)
@@ -58,7 +58,7 @@ namespace garage {
         m_EncoderVelocity = m_Encoder.GetVelocity();
         const uint16_t faults = m_FlipperMaster.GetStickyFaults();
         if (faults != 0) {
-            Log(lib::LogLevel::k_Error, m_Robot->GetLogger()->Format("Stick Fault Error: %d", faults));
+            Log(lib::Logger::LogLevel::k_Error, lib::Logger::Format("Stick Fault Error: %d", faults));
             m_FlipperMaster.ClearFaults();
         }
 //        const double output = math::threshold(m_LastCommand.ballIntake, DEFAULT_INPUT_THRESHOLD) * 0.35;
@@ -66,7 +66,7 @@ namespace garage {
     }
 
     void Flipper::SpacedUpdate(Command& command) {
-        Log(lib::LogLevel::k_Info, m_Robot->GetLogger()->Format(
+        Log(lib::Logger::LogLevel::k_Info, lib::Logger::Format(
                 "Output: %f, Encoder Position: %f, Encoder Velocity: %f, Limit Switch: %s",
                 m_FlipperMaster.GetAppliedOutput(), m_EncoderPosition, m_EncoderVelocity, m_IsLimitSwitchDown ? "true" : "false"));
     }
@@ -80,9 +80,9 @@ namespace garage {
         SetController(m_SetPointController);
         auto error = m_FlipperController.SetReference(setPoint, rev::ControlType::kSmartMotion);
         if (error == rev::CANError::kOK) {
-            Log(lib::LogLevel::k_Info, m_Robot->GetLogger()->Format("Setting set point to: %d", setPoint));
+            Log(lib::Logger::LogLevel::k_Info, lib::Logger::Format("Setting set point to: %d", setPoint));
         } else {
-            Log(lib::LogLevel::k_Error, m_Robot->GetLogger()->Format("CAN Error: %d", error));
+            Log(lib::Logger::LogLevel::k_Error, lib::Logger::Format("CAN Error: %d", error));
         }
     }
 
@@ -118,7 +118,7 @@ namespace garage {
             const double clampedSetPoint = math::clamp(m_SetPoint, FLIPPER_SET_POINT_LOWER, FLIPPER_SET_POINT_UPPER);
             flipper->SetSetPoint(clampedSetPoint);
         } else {
-            flipper->LogSample(lib::LogLevel::k_Info, "Not doing anything");
+            flipper->LogSample(lib::Logger::LogLevel::k_Info, "Not doing anything");
             flipper->m_FlipperMaster.Set(0.0);
         }
     }

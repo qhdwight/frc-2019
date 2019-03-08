@@ -46,7 +46,7 @@ namespace garage {
             if (leftError == ctre::phoenix::OK && rightError == ctre::phoenix::OK)
                 s_LastRamp = ramp;
             else
-                Log(lib::LogLevel::k_Error, m_Robot->GetLogger()->Format("Left Error: %d, Right Error: %d", leftError, rightError));
+                Log(lib::Logger::LogLevel::k_Error, lib::Logger::Format("Left Error: %d, Right Error: %d", leftError, rightError));
         }
     }
 

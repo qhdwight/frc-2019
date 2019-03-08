@@ -18,7 +18,7 @@ namespace garage {
             m_ServoOutput = static_cast<uint16_t>(m_IntakeOpen ? HATCH_SERVO_LOWER : HATCH_SERVO_UPPER);
             m_IntakeOpen = !m_IntakeOpen;
         }
-        LogSample(lib::LogLevel::k_Info, m_Robot->GetLogger()->Format("Servo Output: %d", m_ServoOutput));
+        LogSample(lib::Logger::LogLevel::k_Info, lib::Logger::Format("Servo Output: %d", m_ServoOutput));
     }
 
     void HatchIntake::Update() {

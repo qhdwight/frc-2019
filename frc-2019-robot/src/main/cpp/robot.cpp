@@ -10,19 +10,18 @@
 
 namespace garage {
     void Robot::RobotInit() {
-        const auto defaultLogLevel = lib::LogLevel::k_Info;
-        m_Logger = std::make_shared<lib::Logger>();
-        m_Logger->SetLogLevel(defaultLogLevel);
-        m_Logger->Log(lib::LogLevel::k_Info, "Robot initialized");
+        const auto defaultLogLevel = lib::Logger::LogLevel::k_Info;
+        lib::Logger::SetLogLevel(defaultLogLevel);
+        lib::Logger::Log(lib::Logger::LogLevel::k_Info, "Robot initialized");
         m_Pointer = std::shared_ptr<Robot>(this, [](auto robot) {});
         m_NetworkTableInstance = nt::NetworkTableInstance::GetDefault();
         m_NetworkTable = m_NetworkTableInstance.GetTable("Garage Robotics");
         m_RoutineManager = std::make_shared<lib::RoutineManager>(m_Pointer);
         m_NetworkTable->PutNumber("Log Level", static_cast<double>(defaultLogLevel));
         m_NetworkTable->GetEntry("Log Level").AddListener([&](const nt::EntryNotification& notification) {
-            auto logLevel = static_cast<lib::LogLevel>(std::round(notification.value->GetDouble()));
-            m_Logger->SetLogLevel(logLevel);
-            m_Logger->Log(lib::LogLevel::k_Info, m_Logger->Format("Updated log level to: %d", logLevel));
+            auto logLevel = static_cast<lib::Logger::LogLevel>(std::round(notification.value->GetDouble()));
+            lib::Logger::SetLogLevel(logLevel);
+            lib::Logger::Log(lib::Logger::LogLevel::k_Info, lib::Logger::Format("Updated log level to: %d", logLevel));
         }, NT_NOTIFY_UPDATE);
         AddSubsystem(std::dynamic_pointer_cast<lib::Subsystem>(m_Elevator = std::make_shared<Elevator>(m_Pointer)));
 //        AddSubsystem(std::dynamic_pointer_cast<lib::Subsystem>(m_Drive = std::make_shared<Drive>(m_Pointer)));
@@ -143,10 +142,6 @@ namespace garage {
 
     std::shared_ptr<Outrigger> Robot::GetOutrigger() {
         return m_Outrigger;
-    }
-
-    std::shared_ptr<lib::Logger> Robot::GetLogger() {
-        return m_Logger;
     }
 
     std::shared_ptr<BallIntake> Robot::GetBallIntake() {

@@ -4,19 +4,21 @@
 
 namespace garage {
     namespace lib {
-        enum class LogLevel {
-            k_Silent = 0, k_Fatal = 1, k_Error = 2, k_Warning = 3, k_Info = 4, k_Debug = 5, k_Verbose = 6
-        };
-
         class Logger {
-        private:
-            LogLevel m_LogLevel;
         public:
-            std::string Format(const std::string& format, ...);
+            enum class LogLevel {
+                k_Silent = 0, k_Fatal = 1, k_Error = 2, k_Warning = 3, k_Info = 4, k_Debug = 5, k_Verbose = 6
+            };
 
-            void SetLogLevel(LogLevel logLevel);
+        private:
+            static LogLevel s_LogLevel;
 
-            void Log(LogLevel logLevel, std::string log);
+        public:
+            static std::string Format(const std::string& format, ...);
+
+            static void SetLogLevel(LogLevel logLevel);
+
+            static void Log(LogLevel logLevel, std::string log);
         };
     }
 }

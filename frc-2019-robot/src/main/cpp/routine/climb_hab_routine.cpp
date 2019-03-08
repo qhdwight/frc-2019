@@ -16,7 +16,7 @@ namespace garage {
 
     void OutriggerAutoLevelRoutine::Update() {
         const double tilt = m_Robot->GetDrive()->GetTilt();
-        m_Robot->GetDrive()->LogSample(lib::LogLevel::k_Info, m_Robot->GetLogger()->Format(" [%s] Tilt: %f", m_Name.c_str(), tilt));
+        m_Robot->GetDrive()->LogSample(lib::Logger::LogLevel::k_Info, lib::Logger::Format(" [%s] Tilt: %f", m_Name.c_str(), tilt));
 //        const double p = 1.0 / 90.0;
 //        m_Robot->GetOutrigger()->SetOutput(tilt * p);
     }

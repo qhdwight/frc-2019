@@ -19,7 +19,7 @@ namespace garage {
         Routine::Terminate();
         std::sort(m_Velocities.begin(), m_Velocities.end());
         const double medianVelocity = m_Velocities[m_Velocities.size() / 2];
-        m_Robot->GetLogger()->Log(lib::LogLevel::k_Info, m_Robot->GetLogger()->Format("Median Velocity: %f", medianVelocity));
+        lib::Logger::Log(lib::Logger::LogLevel::k_Info, lib::Logger::Format("Median Velocity: %f", medianVelocity));
         // TODO safe land
         m_Subsystem->SetRawOutput(0.0);
         m_Subsystem->Unlock();

@@ -11,11 +11,11 @@ namespace garage {
         }
 
         void Routine::Begin() {
-            m_Robot->GetLogger()->Log(LogLevel::k_Info, m_Robot->GetLogger()->Format("[%s] Starting routine", m_Name.c_str()));
+            Logger::Log(Logger::LogLevel::k_Info, Logger::Format("[%s] Starting routine", m_Name.c_str()));
         }
 
         void Routine::Terminate() {
-            m_Robot->GetLogger()->Log(LogLevel::k_Info, m_Robot->GetLogger()->Format("[%s] Terminating routine", m_Name.c_str()));
+            Logger::Log(Logger::LogLevel::k_Info, Logger::Format("[%s] Terminating routine", m_Name.c_str()));
         }
     }
 }

@@ -42,7 +42,8 @@ namespace garage {
 
             virtual void OnUnlock() {};
 
-            void AddNetworkTableListener(const std::string& entryName, std::function<bool(const double newValue)> callback);
+            void AddNetworkTableListener(const std::string& entryName, const double defaultValue,
+                                         std::function<bool(const double newValue)> callback);
 
         public:
             Subsystem(std::shared_ptr<Robot>& robot, const std::string& subsystemName);
@@ -51,9 +52,9 @@ namespace garage {
 
             void Periodic();
 
-            void Log(lib::LogLevel logLevel, const std::string& log);
+            void Log(Logger::LogLevel logLevel, const std::string& log);
 
-            void LogSample(lib::LogLevel logLevel, const std::string& log, int frequency = DEFAULT_FREQUENCY);
+            void LogSample(Logger::LogLevel logLevel, const std::string& log, int frequency = DEFAULT_FREQUENCY);
 
             void Lock();
 
@@ -62,8 +63,6 @@ namespace garage {
             bool IsLocked() {
                 return m_IsLocked;
             }
-
-            std::shared_ptr<Logger> GetLogger();
         };
     }
 }

@@ -35,7 +35,6 @@ namespace garage {
 //        frc::Joystick m_Joystick{0};
         Command m_Command;
         std::shared_ptr<lib::RoutineManager> m_RoutineManager;
-        std::shared_ptr<lib::Logger> m_Logger;
         std::shared_ptr<Drive> m_Drive;
         std::shared_ptr<Flipper> m_Flipper;
         std::shared_ptr<Elevator> m_Elevator;
@@ -66,8 +65,6 @@ namespace garage {
         Command GetLatestCommand();
 
         std::shared_ptr<NetworkTable> GetNetworkTable() const;
-
-        std::shared_ptr<lib::Logger> GetLogger();
 
         std::shared_ptr<Elevator> GetElevator();
 

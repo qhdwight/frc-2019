@@ -6,25 +6,27 @@
 
 namespace garage {
     namespace lib {
+        Logger::LogLevel Logger::s_LogLevel = LogLevel::k_Info;
+
         std::string Logger::Format(const std::string& format, ...) {
             va_list arguments;
-            va_start(arguments, format);
+                    va_start(arguments, format);
             auto length = static_cast<size_t>(std::vsnprintf(nullptr, 0, format.c_str(), arguments));
-            va_end(arguments);
+                    va_end(arguments);
             std::vector<char> output(length + 1);
-            va_start(arguments, format);
+                    va_start(arguments, format);
             auto* front = output.data();
             std::vsnprintf(front, length + 1, format.c_str(), arguments);
-            va_end(arguments);
+                    va_end(arguments);
             return front;
         }
 
         void Logger::SetLogLevel(LogLevel logLevel) {
-            m_LogLevel = logLevel;
+            s_LogLevel = logLevel;
         }
 
         void Logger::Log(LogLevel logLevel, std::string log) {
-            if (logLevel <= m_LogLevel) {
+            if (logLevel <= s_LogLevel) {
                 wpi::outs() << log << '\n';
             }
         }

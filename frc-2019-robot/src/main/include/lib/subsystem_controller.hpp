@@ -22,18 +22,18 @@ namespace garage {
 //                static_assert(std::is_base_of<Subsystem, TSubsystem>::value, "Must be a subsystem");
             };
 
-            void Log(LogLevel logLevel, const std::string& log) {
+            void Log(Logger::LogLevel logLevel, const std::string& log) {
                 auto subsystem = std::dynamic_pointer_cast<Subsystem>(m_Subsystem.lock());
-                subsystem->Log(logLevel, subsystem->GetLogger()->Format(" [%s] %s", m_Name.c_str(), log.c_str()));
+                subsystem->Log(logLevel, Logger::Format(" [%s] %s", m_Name.c_str(), log.c_str()));
             }
 
             virtual void OnEnable() {
-                Log(LogLevel::k_Info, "Enabled");
+                Log(Logger::LogLevel::k_Info, "Enabled");
             }
 
             virtual void OnDisable() {
                 Reset();
-                Log(LogLevel::k_Info, "Disabled");
+                Log(Logger::LogLevel::k_Info, "Disabled");
             }
 
             virtual void Reset() {};

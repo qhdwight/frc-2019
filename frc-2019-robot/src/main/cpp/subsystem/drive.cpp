@@ -41,25 +41,31 @@ namespace garage {
             m_LeftOutput = (forwardInputFine + turnInputFine) * 0.05;
             m_RightOutput = (forwardInputFine - turnInputFine) * 0.05;
         }
-//        m_NetworkTable->PutNumber("Gyro", m_Pigeon.GetFusedHeading());
-//        m_NetworkTable->PutNumber("Left Output", m_LeftOutput);
-//        m_NetworkTable->PutNumber("Right Output", m_RightOutput);
-//        m_NetworkTable->PutNumber("Left Encoder", m_LeftEncoder.GetPosition());
-//        m_NetworkTable->PutNumber("Left Amperage", m_LeftMaster.GetOutputCurrent());
-//        m_NetworkTable->PutNumber("Right Encoder", m_RightEncoder.GetPosition());
-//        m_NetworkTable->PutNumber("Right Amperage", m_RightMaster.GetOutputCurrent());
     }
 
     void Drive::SpacedUpdate(Command& command) {
+        const double
+            leftOutput = m_LeftMaster.GetAppliedOutput(),
+            rightOutput = m_RightMaster.GetAppliedOutput(),
+            leftCurrent = m_LeftMaster.GetOutputCurrent(),
+            rightCurrent = m_RightMaster.GetOutputCurrent();
+        m_NetworkTable->PutNumber("Gyro", m_Pigeon.GetFusedHeading());
+        m_NetworkTable->PutNumber("Left Output", leftOutput);
+        m_NetworkTable->PutNumber("Right Output", rightOutput);
+        m_NetworkTable->PutNumber("Left Encoder", m_LeftEncoder.GetPosition());
+        m_NetworkTable->PutNumber("Left Amperage", leftCurrent);
+        m_NetworkTable->PutNumber("Right Encoder", m_RightEncoder.GetPosition());
+        m_NetworkTable->PutNumber("Right Amperage", rightCurrent);
         LogSample(lib::Logger::LogLevel::k_Info, lib::Logger::Format(
                 "Left Output: %f, Right Output: %f, Left Current: %f, Right Current: %f",
-                m_LeftMaster.GetAppliedOutput(), m_RightMaster.GetAppliedOutput(),
-                m_LeftMaster.GetOutputCurrent(), m_RightMaster.GetOutputCurrent()));
+                leftOutput, rightOutput, leftCurrent, rightCurrent));
     }
 
     void Drive::Update() {
-        m_LeftMaster.Set(m_LeftOutput);
-        m_RightMaster.Set(m_RightOutput);
+        if (Robot::ShouldOutput) {
+            m_LeftMaster.Set(m_LeftOutput);
+            m_RightMaster.Set(m_RightOutput);
+        }
     }
 
     double Drive::GetHeading() {

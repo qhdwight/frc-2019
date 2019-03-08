@@ -123,9 +123,7 @@ namespace garage {
         }
         if (m_Controller.GetBumperPressed(frc::GenericHID::kLeftHand)) {
             m_RoutineManager->TerminateAllRoutines();
-            m_Elevator->SetManual();
         }
-        m_Command.elevatorSoftLand = false;
         m_Command.elevatorInput = -m_Controller.GetY(frc::GenericHID::kRightHand);
     }
 

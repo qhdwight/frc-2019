@@ -20,8 +20,6 @@ namespace garage {
         std::sort(m_Velocities.begin(), m_Velocities.end());
         const double medianVelocity = m_Velocities[m_Velocities.size() / 2];
         lib::Logger::Log(lib::Logger::LogLevel::k_Info, lib::Logger::Format("Median Velocity: %f", medianVelocity));
-        // TODO safe land
-        m_Subsystem->SetRawOutput(0.0);
         m_Subsystem->Unlock();
     }
 

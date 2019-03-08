@@ -12,6 +12,12 @@ namespace garage {
         m_RightIntake.SetNeutralMode(ctre::phoenix::motorcontrol::NeutralMode::Brake);
     }
 
+    void BallIntake::OnReset() {
+        SetOutput(0.0);
+        m_LastOutput = 0.0;
+        m_HasBallCount = 0;
+    }
+
     void BallIntake::UpdateUnlocked(Command& command) {
 //        m_NetworkTable->PutNumber("Ball Intake/Current", m_RightIntake.GetOutputCurrent());
         double input = command.ballIntake, absoluteInput = math::absolute(input);
@@ -24,20 +30,18 @@ namespace garage {
     }
 
     bool BallIntake::GetHasBall() {
-        static int s_HasBallCount = 0;
         if (m_RightIntake.GetOutputCurrent() > HAS_BALL_STALL_CURRENT)
-            s_HasBallCount++;
-        else if (s_HasBallCount > 0)
-            s_HasBallCount = 0;
-        return s_HasBallCount > HAS_BALL_COUNTS_REQUIRED;
+            m_HasBallCount++;
+        else if (m_HasBallCount > 0)
+            m_HasBallCount = 0;
+        return m_HasBallCount > HAS_BALL_COUNTS_REQUIRED;
     }
 
     void BallIntake::SetOutput(double output) {
-        static double s_LastOutput = 0.0;
-        if (s_LastOutput != output) {
+        if (m_LastOutput != output) {
             m_RightIntake.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, output);
             m_LeftIntake.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, output);
-            s_LastOutput = output;
+            m_LastOutput = output;
         }
     }
 

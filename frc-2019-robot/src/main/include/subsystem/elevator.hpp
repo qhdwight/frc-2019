@@ -37,7 +37,7 @@
 #define ELEVATOR_OPEN_LOOP_RAMP 0.4 // Seconds
 #define ELEVATOR_CLOSED_LOOP_RAMP 0.1 // Seconds
 
-#define SAFE_ELEVATOR_DOWN 0.02 // Percent output
+#define SAFE_ELEVATOR_DOWN 0.10 // Percent output
 
 #define SET_POINT_SLOT_INDEX 0
 
@@ -146,6 +146,8 @@ namespace garage {
         void SetRawOutput(double output);
 
         void SetManual();
+
+        void SoftLand();
 
         int GetPosition() {
             return m_EncoderPosition;

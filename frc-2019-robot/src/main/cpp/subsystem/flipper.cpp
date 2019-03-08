@@ -47,8 +47,9 @@ namespace garage {
                 Log(lib::Logger::LogLevel::k_Error, lib::Logger::Format("CAN Error: %d", error));
             }
         }
-        if (!m_IsLimitSwitchDown)
+        if (!m_IsLimitSwitchDown) {
             m_FirstLimitSwitchHit = true;
+        }
         m_EncoderPosition = m_Encoder.GetPosition();
         m_EncoderVelocity = m_Encoder.GetVelocity();
         const uint16_t faults = m_FlipperMaster.GetStickyFaults();
@@ -68,16 +69,20 @@ namespace garage {
 
     void Flipper::SetRawOutput(double output) {
         SetController(m_RawController);
-        m_FlipperMaster.Set(output);
+        if (Robot::ShouldOutput) {
+            m_FlipperMaster.Set(output);
+        }
     }
 
     void Flipper::SetSetPoint(double setPoint) {
         SetController(m_SetPointController);
-        auto error = m_FlipperController.SetReference(setPoint, rev::ControlType::kSmartMotion);
-        if (error == rev::CANError::kOK) {
-            Log(lib::Logger::LogLevel::k_Info, lib::Logger::Format("Setting set point to: %d", setPoint));
-        } else {
-            Log(lib::Logger::LogLevel::k_Error, lib::Logger::Format("CAN Error: %d", error));
+        if (Robot::ShouldOutput) {
+            auto error = m_FlipperController.SetReference(setPoint, rev::ControlType::kSmartMotion);
+            if (error == rev::CANError::kOK) {
+                Log(lib::Logger::LogLevel::k_Info, lib::Logger::Format("Setting set point to: %d", setPoint));
+            } else {
+                Log(lib::Logger::LogLevel::k_Error, lib::Logger::Format("CAN Error: %d", error));
+            }
         }
     }
 

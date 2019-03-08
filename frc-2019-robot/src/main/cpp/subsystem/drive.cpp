@@ -7,7 +7,7 @@
 #include <cmath>
 
 namespace garage {
-    Drive::Drive(std::shared_ptr<Robot>& robot) : lib::ControllableSubsystem<Drive>(robot, "Drive") {
+    Drive::Drive(std::shared_ptr<Robot>& robot) : lib::Subsystem(robot, "Drive") {
         m_LeftSlave.RestoreFactoryDefaults();
         m_RightSlave.RestoreFactoryDefaults();
         m_LeftMaster.RestoreFactoryDefaults();
@@ -19,7 +19,7 @@ namespace garage {
         m_RightSlave.SetOpenLoopRampRate(0.2);
     }
 
-    void Drive::TeleopInit() {
+    void Drive::OnReset() {
         ResetGyroAndEncoders();
     }
 

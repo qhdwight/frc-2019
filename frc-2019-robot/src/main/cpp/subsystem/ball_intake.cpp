@@ -5,7 +5,7 @@
 #include <garage_math/garage_math.hpp>
 
 namespace garage {
-    BallIntake::BallIntake(std::shared_ptr<Robot>& robot) : lib::ControllableSubsystem<BallIntake>(robot, "Ball Intake") {
+    BallIntake::BallIntake(std::shared_ptr<Robot>& robot) : lib::Subsystem(robot, "Ball Intake") {
         m_LeftIntake.ConfigFactoryDefault();
         m_RightIntake.ConfigFactoryDefault();
         m_LeftIntake.SetNeutralMode(ctre::phoenix::motorcontrol::NeutralMode::Brake);

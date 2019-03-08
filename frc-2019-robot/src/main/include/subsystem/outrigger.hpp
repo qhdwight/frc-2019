@@ -2,13 +2,12 @@
 
 #include <hardware_map.hpp>
 
-#include <lib/subsystem_controller.hpp>
-#include <lib/controllable_subsystem.hpp>
+#include <lib/subsystem.hpp>
 
 #include <rev/CANSparkMax.h>
 
 namespace garage {
-    class Outrigger : public lib::ControllableSubsystem<Outrigger> {
+    class Outrigger : public lib::Subsystem {
     private:
         double m_Output = 0.0;
         rev::CANSparkMax

@@ -32,8 +32,10 @@ namespace garage {
         double m_Input = 0.0;
 
     public:
-        RawFlipperController(std::shared_ptr<Flipper>& subsystem)
+        RawFlipperController(std::weak_ptr<Flipper>& subsystem)
                 : SubsystemController(subsystem, "Raw Controller") {};
+
+        void Reset() override;
 
         void ProcessCommand(Command& command) override;
 
@@ -45,8 +47,10 @@ namespace garage {
         double m_SetPoint = 0.0;
 
     public:
-        SetPointFlipperController(std::shared_ptr<Flipper>& subsystem)
+        SetPointFlipperController(std::weak_ptr<Flipper>& subsystem)
                 : SubsystemController(subsystem, "Set Point Controller") {};
+
+        void Reset() override;
 
         void ProcessCommand(Command& command) override;
 
@@ -61,7 +65,6 @@ namespace garage {
         rev::CANDigitalInput m_LimitSwitch = m_FlipperMaster.GetForwardLimitSwitch(rev::CANDigitalInput::LimitSwitchPolarity::kNormallyOpen);
         bool m_IsLimitSwitchDown = true, m_FirstLimitSwitchHit = true;
         double m_EncoderPosition = 0.0, m_EncoderVelocity = 0.0;
-        std::shared_ptr<FlipperController> m_Controller;
         std::shared_ptr<RawFlipperController> m_RawController;
         std::shared_ptr<SetPointFlipperController> m_SetPointController;
 
@@ -74,12 +77,8 @@ namespace garage {
 
         void SpacedUpdate(Command& command) override;
 
-        bool SetController(std::shared_ptr<FlipperController> controller);
-
     public:
         Flipper(std::shared_ptr<Robot>& robot);
-
-        void TeleopInit() override;
 
         void SetRawOutput(double output);
 

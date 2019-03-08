@@ -1,6 +1,7 @@
 #include <robot.hpp>
 
 #include <routine/climb_hab_routine.hpp>
+#include <routine/ball_intake_routine.hpp>
 #include <routine/measure_elevator_speed.hpp>
 #include <routine/set_elevator_position_routine.hpp>
 
@@ -33,6 +34,7 @@ namespace garage {
 
     void Robot::AddSubsystem(std::shared_ptr<lib::Subsystem> subsystem) {
         m_Subsystems.push_back(subsystem);
+        subsystem->Reset();
     }
 
     void Robot::RobotPeriodic() {}
@@ -45,16 +47,19 @@ namespace garage {
 
     void Robot::AutonomousPeriodic() {}
 
+    void Robot::Reset() {
+        m_RoutineManager->Reset();
+        for (const auto& subsystem : m_Subsystems)
+            subsystem->Reset();
+    }
+
     void Robot::TeleopInit() {
+        m_Command = {};
 //        auto r1 = std::dynamic_pointer_cast<lib::Routine>(std::make_shared<lib::WaitRoutine>(m_Pointer, "Wait One", 2.0));
 //        auto r2 = std::dynamic_pointer_cast<lib::Routine>(std::make_shared<lib::WaitRoutine>(m_Pointer, "Wait Two", 4.0));
 //        std::vector<std::shared_ptr<lib::Routine>> routines{r1, r2};
 //        auto seq = std::dynamic_pointer_cast<lib::Routine>(std::make_shared<lib::SequentialRoutine>(m_Pointer, "All", std::move(routines)));
 //        m_RoutineManager->AddRoutine(seq);
-        m_Command = {};
-        for (const auto& subsystem : m_Subsystems)
-            subsystem->TeleopInit();
-        m_RoutineManager->Reset();
     }
 
     void Robot::TeleopPeriodic() {

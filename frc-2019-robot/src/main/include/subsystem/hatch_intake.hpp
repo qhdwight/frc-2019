@@ -2,15 +2,14 @@
 
 #include <hardware_map.hpp>
 
-#include <lib/subsystem_controller.hpp>
-#include <lib/controllable_subsystem.hpp>
+#include <lib/subsystem.hpp>
 
 #include <frc/Servo.h>
 
 #include <ctre/phoenix/motorcontrol/can/VictorSPX.h>
 
 namespace garage {
-    class HatchIntake : public lib::ControllableSubsystem<HatchIntake> {
+    class HatchIntake : public lib::Subsystem {
     private:
         bool m_IntakeOpen = false;
         uint16_t m_ServoOutput = 0;
@@ -21,9 +20,9 @@ namespace garage {
 
         void Update() override;
 
+        void OnReset() override;
+
     public:
         HatchIntake(std::shared_ptr<Robot>& robot);
-
-        void TeleopInit() override;
     };
 }

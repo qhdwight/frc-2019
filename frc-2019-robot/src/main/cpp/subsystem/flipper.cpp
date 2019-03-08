@@ -23,14 +23,9 @@ namespace garage {
         m_FlipperController.SetSmartMotionAllowedClosedLoopError(FLIPPER_ALLOWABLE_ERROR);
         m_FlipperMaster.EnableVoltageCompensation(12.0);
         m_LimitSwitch.EnableLimitSwitch(false);
-        auto flipper = std::dynamic_pointer_cast<Flipper>(shared_from_this());
-        m_RawController = std::make_shared<RawFlipperController>(flipper);
-        m_SetPointController = std::make_shared<SetPointFlipperController>(flipper);
-        SetController(m_RawController);
-    }
-
-    void Flipper::TeleopInit() {
-
+        auto flipper = std::weak_ptr<Flipper>(shared_from_this());
+        AddDefaultController(m_RawController = std::make_shared<RawFlipperController>(flipper));
+        AddController(m_SetPointController = std::make_shared<SetPointFlipperController>(flipper));
     }
 
     void Flipper::UpdateUnlocked(Command& command) {
@@ -86,19 +81,16 @@ namespace garage {
         }
     }
 
-    bool Flipper::SetController(std::shared_ptr<FlipperController> controller) {
-        bool different = controller != m_Controller;
-        if (different)
-            m_Controller = controller;
-        return different;
-    }
-
     void RawFlipperController::ProcessCommand(Command& command) {
         m_Input = math::threshold(command.flipper, DEFAULT_INPUT_THRESHOLD);
     }
 
     void RawFlipperController::Control() {
+        // TODO implement
+    }
 
+    void RawFlipperController::Reset() {
+        m_Input = 0.0;
     }
 
     void SetPointFlipperController::ProcessCommand(garage::Command& command) {
@@ -121,5 +113,9 @@ namespace garage {
             flipper->LogSample(lib::Logger::LogLevel::k_Info, "Not doing anything");
             flipper->m_FlipperMaster.Set(0.0);
         }
+    }
+
+    void SetPointFlipperController::Reset() {
+        m_SetPoint = 0.0;
     }
 }

@@ -5,11 +5,11 @@
 #include <robot.hpp>
 
 namespace garage {
-    HatchIntake::HatchIntake(std::shared_ptr<Robot>& robot) : lib::ControllableSubsystem<HatchIntake>(robot, "Hatch Intake") {
+    HatchIntake::HatchIntake(std::shared_ptr<Robot>& robot) : lib::Subsystem(robot, "Hatch Intake") {
 
     }
 
-    void HatchIntake::TeleopInit() {
+    void HatchIntake::OnReset() {
         m_ServoOutput = HATCH_SERVO_LOWER;
     }
 

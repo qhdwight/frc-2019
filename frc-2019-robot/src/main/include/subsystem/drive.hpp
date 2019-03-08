@@ -3,8 +3,7 @@
 #include <command.hpp>
 #include <hardware_map.hpp>
 
-#include <lib/subsystem_controller.hpp>
-#include <lib/controllable_subsystem.hpp>
+#include <lib/subsystem.hpp>
 
 #include <garage_math/garage_math.hpp>
 
@@ -14,7 +13,7 @@
 #include <memory>
 
 namespace garage {
-    class Drive : public lib::ControllableSubsystem<Drive> {
+    class Drive : public lib::Subsystem {
     private:
         double m_LeftOutput = 0.0, m_RightOutput = 0.0;
         rev::CANSparkMax
@@ -34,10 +33,10 @@ namespace garage {
 
         void Update() override;
 
+        void OnReset() override;
+
     public:
         Drive(std::shared_ptr<Robot>& robot);
-
-        void TeleopInit() override;
 
         double GetHeading();
 

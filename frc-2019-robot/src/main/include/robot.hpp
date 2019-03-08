@@ -46,6 +46,8 @@ namespace garage {
     public:
         void RobotInit() override;
 
+        void Reset();
+
         void RobotPeriodic() override;
 
         void DisabledInit() override;

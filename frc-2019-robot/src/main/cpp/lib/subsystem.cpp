@@ -13,11 +13,13 @@ namespace garage {
         }
 
         void Subsystem::Lock() {
+            Log(lib::Logger::LogLevel::k_Info, "Locked");
             OnLock();
             m_IsLocked = true;
         }
 
         void Subsystem::Unlock() {
+            Log(lib::Logger::LogLevel::k_Info, "Unlocked");
             OnUnlock();
             m_IsLocked = false;
         }
@@ -68,6 +70,10 @@ namespace garage {
                             Logger::Format("%s %s value %s to %d", success ? "Successfully set" : "Error in setting",
                                            FMT_STR(m_SubsystemName), FMT_STR(entryName), newValue));
                     }, NT_NOTIFY_UPDATE);
+        }
+
+        void Subsystem::Reset() {
+            Unlock();
         }
     }
 }

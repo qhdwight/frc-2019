@@ -16,7 +16,7 @@ namespace garage {
             std::string m_Name;
 
         public:
-            SubsystemController(std::shared_ptr<TSubsystem>& subsystem, const std::string& name)
+            SubsystemController(std::weak_ptr<TSubsystem>& subsystem, const std::string& name)
                     : m_Subsystem(subsystem), m_Name(name) {
 //                static_assert(std::is_base_of<Subsystem, TSubsystem>::value, "Must be a subsystem");
             };

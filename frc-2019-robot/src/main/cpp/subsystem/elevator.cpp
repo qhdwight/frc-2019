@@ -9,8 +9,8 @@ namespace garage {
         ConfigSpeedControllers();
         SetupNetworkTableEntries();
         // TODO think about more
-        auto elevator = std::dynamic_pointer_cast<Elevator>(shared_from_this());
-        AddController(m_RawController = std::make_shared<RawElevatorController>(elevator));
+        auto elevator = std::weak_ptr<Elevator>(shared_from_this());
+        AddDefaultController(m_RawController = std::make_shared<RawElevatorController>(elevator));
         AddController(m_SetPointController = std::make_shared<SetPointElevatorController>(elevator));
         AddController(m_VelocityController = std::make_shared<VelocityElevatorController>(elevator));
         AddController(m_SoftLandController = std::make_shared<SoftLandElevatorController>(elevator));
@@ -103,13 +103,6 @@ namespace garage {
         });
     }
 
-    void Elevator::TeleopInit() {
-        m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, 0.0);
-        SetController(nullptr);
-        Unlock();
-        Reset();
-    }
-
     void Elevator::UpdateUnlocked(Command& command) {
 //        if (command.elevatorSoftLand) {
 //            SetController(m_SoftLandController);
@@ -164,14 +157,6 @@ namespace garage {
         return math::absolute(command.elevatorInput) > DEFAULT_INPUT_THRESHOLD;
     }
 
-    void Elevator::OnUnlock() {
-        lib::Logger::Log(lib::Logger::LogLevel::k_Info, "Unlocked");
-    }
-
-    void Elevator::OnLock() {
-        lib::Logger::Log(lib::Logger::LogLevel::k_Info, "Locked");
-    }
-
     void Elevator::SetRawOutput(double output) {
         SetController(m_RawController);
         m_RawController->SetRawOutput(output);
@@ -179,6 +164,10 @@ namespace garage {
 
     void Elevator::SetManual() {
         SetController(m_VelocityController);
+    }
+
+    void Elevator::OnReset() {
+        m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, 0.0);
     }
 
     void RawElevatorController::ProcessCommand(Command& command) {

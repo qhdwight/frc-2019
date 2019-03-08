@@ -13,6 +13,7 @@ namespace garage {
         protected:
             std::vector<std::shared_ptr<Controller>> m_Controllers;
             std::shared_ptr<Controller> m_Controller;
+            std::shared_ptr<Controller> m_DefaultController;
 
             virtual bool SetController(std::shared_ptr<Controller> controller) {
                 const bool different = controller != m_Controller;
@@ -29,11 +30,24 @@ namespace garage {
                 m_Controllers.push_back(controller);
             }
 
+            virtual void AddDefaultController(std::shared_ptr<Controller> controller) {
+                AddController(controller);
+                m_DefaultController = controller;
+            }
+
+            void OnUnlock() override {
+                SetController(m_DefaultController);
+            }
+
             void Reset() override {
+                Subsystem::Reset();
                 for (auto& controller : m_Controllers) {
                     controller->Reset();
                 }
+                OnReset();
             }
+
+            virtual void OnReset() {}
 
         public:
             using Subsystem::Subsystem;

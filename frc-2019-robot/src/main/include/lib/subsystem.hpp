@@ -43,15 +43,15 @@ namespace garage {
 
             virtual void OnUnlock() {}
 
+            virtual void OnReset() {}
+
             void AddNetworkTableListener(const std::string& entryName, const double defaultValue,
                                          std::function<bool(const double newValue)> callback);
 
         public:
             Subsystem(std::shared_ptr<Robot>& robot, const std::string& subsystemName);
 
-            virtual void Reset() {}
-
-            virtual void TeleopInit() {}
+            virtual void Reset();
 
             void Periodic();
 

@@ -49,7 +49,7 @@ namespace garage {
         double m_Input = 0.0, m_Output = 0.0;
 
     public:
-        RawElevatorController(std::shared_ptr<Elevator>& subsystem) : lib::SubsystemController<Elevator>(subsystem, "Raw Controller") {}
+        RawElevatorController(std::weak_ptr<Elevator>& subsystem) : lib::SubsystemController<Elevator>(subsystem, "Raw Controller") {}
 
         void ProcessCommand(Command& command) override;
 
@@ -67,7 +67,7 @@ namespace garage {
         int m_WantedSetPoint = 0;
 
     public:
-        SetPointElevatorController(std::shared_ptr<Elevator>& subsystem) : lib::SubsystemController<Elevator>(subsystem, "Set Point Controller") {}
+        SetPointElevatorController(std::weak_ptr<Elevator>& subsystem) : lib::SubsystemController<Elevator>(subsystem, "Set Point Controller") {}
 
         void ProcessCommand(Command& command) override;
 
@@ -85,7 +85,7 @@ namespace garage {
         double m_Input = 0.0, m_WantedVelocity = 0.0;
 
     public:
-        VelocityElevatorController(std::shared_ptr<Elevator>& subsystem) : lib::SubsystemController<Elevator>(subsystem, "Velocity Controller") {}
+        VelocityElevatorController(std::weak_ptr<Elevator>& subsystem) : lib::SubsystemController<Elevator>(subsystem, "Velocity Controller") {}
 
         void ProcessCommand(Command& command) override;
 
@@ -96,7 +96,7 @@ namespace garage {
 
     class SoftLandElevatorController : public lib::SubsystemController<Elevator> {
     public:
-        SoftLandElevatorController(std::shared_ptr<Elevator>& subsystem) : lib::SubsystemController<Elevator>(subsystem, "Soft Land Controller") {}
+        SoftLandElevatorController(std::weak_ptr<Elevator>& subsystem) : lib::SubsystemController<Elevator>(subsystem, "Soft Land Controller") {}
 
         void Control() override;
     };
@@ -115,8 +115,8 @@ namespace garage {
         double m_FeedForward = ELEVATOR_FF;
         ctre::phoenix::motorcontrol::StickyFaults m_StickyFaults;
         ctre::phoenix::motorcontrol::can::TalonSRX m_ElevatorMaster{ELEVATOR_MASTER};
-        ctre::phoenix::motorcontrol::can::VictorSPX m_ElevatorSlaveOne{ELEVATOR_SLAVE_ONE}, m_ElevatorSlaveTwo{
-                ELEVATOR_SLAVE_TWO}, m_ElevatorSlaveThree{ELEVATOR_SLAVE_THREE};
+        ctre::phoenix::motorcontrol::can::VictorSPX m_ElevatorSlaveOne{ELEVATOR_SLAVE_ONE}, m_ElevatorSlaveTwo{ELEVATOR_SLAVE_TWO},
+                m_ElevatorSlaveThree{ELEVATOR_SLAVE_THREE};
         std::shared_ptr<RawElevatorController> m_RawController;
         std::shared_ptr<SetPointElevatorController> m_SetPointController;
         std::shared_ptr<VelocityElevatorController> m_VelocityController;
@@ -126,6 +126,8 @@ namespace garage {
 
         void SetupNetworkTableEntries();
 
+        void OnReset() override;
+
         bool ShouldUnlock(Command& command) override;
 
         void UpdateUnlocked(Command& command) override;
@@ -134,14 +136,8 @@ namespace garage {
 
         void SpacedUpdate(Command& command) override;
 
-        void OnLock() override;
-
-        void OnUnlock() override;
-
     public:
         Elevator(std::shared_ptr<Robot>& robot);
-
-        void TeleopInit() override;
 
         bool WithinPosition(int targetPosition);
 

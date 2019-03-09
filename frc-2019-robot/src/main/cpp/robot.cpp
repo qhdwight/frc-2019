@@ -34,7 +34,7 @@ namespace garage {
 
     void Robot::AddSubsystem(std::shared_ptr<lib::Subsystem> subsystem) {
         m_Subsystems.push_back(subsystem);
-        subsystem->Reset();
+        subsystem->PostInitialize();
     }
 
     void Robot::RobotPeriodic() {}
@@ -119,10 +119,12 @@ namespace garage {
         }
         if (m_Controller.GetBumperPressed(frc::GenericHID::kRightHand)) {
             m_RoutineManager->TerminateAllRoutines();
-            m_Command.routines.push_back(std::make_shared<MeasureElevatorSpeed>(m_Pointer, "Measure Elevator Speed", 0.325));
+//            m_Command.routines.push_back(std::make_shared<MeasureElevatorSpeed>(m_Pointer, "Measure Elevator Speed", 0.325));
+            m_Elevator->SetRawOutput(0.0);
         }
         if (m_Controller.GetBumperPressed(frc::GenericHID::kLeftHand)) {
             m_RoutineManager->TerminateAllRoutines();
+            m_Elevator->SoftLand();
         }
         m_Command.elevatorInput = -m_Controller.GetY(frc::GenericHID::kRightHand);
     }

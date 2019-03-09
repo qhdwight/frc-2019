@@ -44,7 +44,7 @@ namespace garage {
         std::vector<std::shared_ptr<lib::Subsystem>> m_Subsystems;
 
     public:
-        static constexpr bool ShouldOutput = false;
+        static constexpr bool ShouldOutput = true;
 
         void RobotInit() override;
 

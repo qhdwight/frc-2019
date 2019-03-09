@@ -14,14 +14,14 @@ namespace garage {
 
         void Subsystem::Lock() {
             Log(lib::Logger::LogLevel::k_Info, "Locked");
-            OnLock();
             m_IsLocked = true;
+            OnLock();
         }
 
         void Subsystem::Unlock() {
             Log(lib::Logger::LogLevel::k_Info, "Unlocked");
-            OnUnlock();
             m_IsLocked = false;
+            OnUnlock();
         }
 
         void Subsystem::Periodic() {
@@ -73,7 +73,14 @@ namespace garage {
         }
 
         void Subsystem::Reset() {
+            Log(lib::Logger::LogLevel::k_Info, "Reset");
             Unlock();
+            OnReset();
+        }
+
+        void Subsystem::PostInitialize() {
+            OnPostInitialize();
+            Reset();
         }
     }
 }

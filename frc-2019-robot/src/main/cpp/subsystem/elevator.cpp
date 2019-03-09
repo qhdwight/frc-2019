@@ -8,11 +8,6 @@ namespace garage {
     Elevator::Elevator(std::shared_ptr<Robot>& robot) : lib::ControllableSubsystem<Elevator>(robot, "Elevator") {
         ConfigSpeedControllers();
         SetupNetworkTableEntries();
-        auto elevator = std::weak_ptr<Elevator>(shared_from_this());
-        AddDefaultController(m_RawController = std::make_shared<RawElevatorController>(elevator));
-        AddController(m_SetPointController = std::make_shared<SetPointElevatorController>(elevator));
-        AddController(m_VelocityController = std::make_shared<VelocityElevatorController>(elevator));
-        AddController(m_SoftLandController = std::make_shared<SoftLandElevatorController>(elevator));
     }
 
     void Elevator::ConfigSpeedControllers() {
@@ -74,6 +69,14 @@ namespace garage {
         m_ElevatorMaster.OverrideLimitSwitchesEnable(false);
     }
 
+    void Elevator::OnPostInitialize() {
+        auto elevator = std::weak_ptr<Elevator>(shared_from_this());
+        AddController(m_RawController = std::make_shared<RawElevatorController>(elevator));
+        AddController(m_SetPointController = std::make_shared<SetPointElevatorController>(elevator));
+        AddController(m_VelocityController = std::make_shared<VelocityElevatorController>(elevator));
+        AddDefaultController(m_SoftLandController = std::make_shared<SoftLandElevatorController>(elevator));
+    }
+
     void Elevator::OnReset() {
         m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, 0.0);
     }
@@ -112,8 +115,6 @@ namespace garage {
 //        } else if (math::abs(command.elevatorInput) > DEFAULT_INPUT_THRESHOLD) {
 //            SetController(m_RawController);
 //        }
-        if (m_Controller != m_SoftLandController)
-            SetController(m_VelocityController);
         if (m_Controller)
             m_Controller->ProcessCommand(command);
     }
@@ -175,7 +176,7 @@ namespace garage {
 
     void RawElevatorController::ProcessCommand(Command& command) {
         m_Input = math::threshold(command.elevatorInput, DEFAULT_INPUT_THRESHOLD);
-        m_Output = m_Input * 0.2;
+        m_Output = m_Input * 0.5;
     }
 
     void RawElevatorController::Control() {

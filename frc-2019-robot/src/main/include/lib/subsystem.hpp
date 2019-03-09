@@ -51,6 +51,10 @@ namespace garage {
         public:
             Subsystem(std::shared_ptr<Robot>& robot, const std::string& subsystemName);
 
+            void PostInitialize();
+
+            virtual void OnPostInitialize() {}
+
             virtual void Reset();
 
             void Periodic();

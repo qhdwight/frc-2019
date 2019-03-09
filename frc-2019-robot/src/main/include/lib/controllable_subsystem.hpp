@@ -20,6 +20,7 @@ namespace garage {
                 if (different) {
                     if (m_Controller) m_Controller->OnDisable();
                     m_Controller = controller;
+                    Log(Logger::LogLevel::k_Info, Logger::Format("Setting controller to: %s", FMT_STR(m_Controller->GetName())));
                     m_NetworkTable->PutString("Controller", m_Controller ? m_Controller->GetName() : "None");
                     if (controller) controller->OnEnable();
                 }
@@ -44,7 +45,6 @@ namespace garage {
                 for (auto& controller : m_Controllers) {
                     controller->Reset();
                 }
-                OnReset();
             }
 
             virtual void OnReset() {}

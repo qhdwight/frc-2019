@@ -7,7 +7,6 @@
 namespace garage {
     Elevator::Elevator(std::shared_ptr<Robot>& robot) : lib::ControllableSubsystem<Elevator>(robot, "Elevator") {
         ConfigSpeedControllers();
-        SetupNetworkTableEntries();
     }
 
     void Elevator::ConfigSpeedControllers() {
@@ -58,6 +57,7 @@ namespace garage {
         m_ElevatorMaster.ConfigMaxIntegralAccumulator(SET_POINT_SLOT_INDEX, ELEVATOR_MAX_I, CONFIG_TIMEOUT);
         m_ElevatorMaster.Config_IntegralZone(SET_POINT_SLOT_INDEX, ELEVATOR_I_ZONE, CONFIG_TIMEOUT);
         m_ElevatorMaster.Config_kF(SET_POINT_SLOT_INDEX, ELEVATOR_F, CONFIG_TIMEOUT);
+        m_ElevatorMaster.ConfigMotionSCurveStrength(ELEVATOR_S_CURVE_STRENGTH, CONFIG_TIMEOUT);
         // Safety
         m_ElevatorMaster.ConfigClosedLoopPeakOutput(SET_POINT_SLOT_INDEX, 0.5, CONFIG_TIMEOUT);
         m_ElevatorMaster.ConfigAllowableClosedloopError(SET_POINT_SLOT_INDEX, ELEVATOR_ALLOWABLE_CLOSED_LOOP_ERROR, CONFIG_TIMEOUT);
@@ -70,6 +70,7 @@ namespace garage {
     }
 
     void Elevator::OnPostInitialize() {
+        SetupNetworkTableEntries();
         auto elevator = std::weak_ptr<Elevator>(shared_from_this());
         AddController(m_RawController = std::make_shared<RawElevatorController>(elevator));
         AddController(m_SetPointController = std::make_shared<SetPointElevatorController>(elevator));

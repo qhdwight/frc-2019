@@ -61,13 +61,13 @@ namespace garage {
 
         void Subsystem::AddNetworkTableListener(const std::string& entryName, const double defaultValue,
                                                 std::function<bool(const double newValue)> callback) {
-            m_NetworkTable->PutNumber(m_SubsystemName, defaultValue);
-            m_NetworkTable->GetEntry(m_SubsystemName).AddListener(
-                    [&](const nt::EntryNotification& notification) {
+            m_NetworkTable->PutNumber(entryName, defaultValue);
+            m_NetworkTable->GetEntry(entryName).AddListener(
+                    [this, entryName, callback](const nt::EntryNotification& notification) {
                         const auto newValue = notification.value->GetDouble();
                         const bool success = callback(newValue);
                         Log(Logger::LogLevel::k_Info,
-                            Logger::Format("%s %s value %s to %d", success ? "Successfully set" : "Error in setting",
+                            Logger::Format("%s %s value %s to %f", success ? "Successfully set" : "Error in setting",
                                            FMT_STR(m_SubsystemName), FMT_STR(entryName), newValue));
                     }, NT_NOTIFY_UPDATE);
         }

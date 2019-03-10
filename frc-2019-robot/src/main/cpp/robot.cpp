@@ -9,6 +9,12 @@
 #include <lib/wait_routine.hpp>
 #include <lib/sequential_routine.hpp>
 
+#include <wpi/json.h>
+#include <wpi/Path.h>
+#include <wpi/FileSystem.h>
+
+#include <frc/Filesystem.h>
+
 namespace garage {
     void Robot::RobotInit() {
         const auto defaultLogLevel = lib::Logger::LogLevel::k_Info;
@@ -25,11 +31,16 @@ namespace garage {
             lib::Logger::Log(lib::Logger::LogLevel::k_Info, lib::Logger::Format("Updated log level to: %d", logLevel));
         }, NT_NOTIFY_UPDATE);
         AddSubsystem(m_Elevator = std::make_shared<Elevator>(m_Pointer));
-//        AddSubsystem(m_Drive = std::make_shared<Drive>(m_Pointer));
+        AddSubsystem(m_Drive = std::make_shared<Drive>(m_Pointer));
 //        AddSubsystem(m_Flipper = std::make_shared<Flipper>(m_Pointer));
 //        AddSubsystem(m_BallIntake = std::make_shared<BallIntake>(m_Pointer));
 //        AddSubsystem(m_HatchIntake = std::make_shared<HatchIntake>(m_Pointer));
 //        AddSubsystem(m_Outrigger = std::make_shared<Outrigger>(m_Pointer));
+        wpi::SmallString<256> deployDirectory;
+        frc::filesystem::GetDeployDirectory(deployDirectory);
+        wpi::sys::path::append(deployDirectory, "settings.json");
+        auto json = wpi::json::parse(deployDirectory);
+        lib::Logger::Log(lib::Logger::LogLevel::k_Info, lib::Logger::Format("Settings: %s", FMT_STR(json.dump())));
     }
 
     void Robot::AddSubsystem(std::shared_ptr<lib::Subsystem> subsystem) {
@@ -72,10 +83,10 @@ namespace garage {
     }
 
     void Robot::UpdateCommand() {
-//        m_Command.driveForward = -m_Controller.GetY(frc::GenericHID::JoystickHand::kRightHand);
-//        m_Command.driveTurn = m_Controller.GetX(frc::GenericHID::JoystickHand::kRightHand);
-//        m_Command.driveForwardFine = -m_Controller.GetY(frc::GenericHID::JoystickHand::kLeftHand);
-//        m_Command.driveTurnFine = m_Controller.GetX(frc::GenericHID::JoystickHand::kLeftHand);
+        m_Command.driveForward = -m_Controller.GetY(frc::GenericHID::JoystickHand::kRightHand);
+        m_Command.driveTurn = m_Controller.GetX(frc::GenericHID::JoystickHand::kRightHand);
+        m_Command.driveForwardFine = -m_Controller.GetY(frc::GenericHID::JoystickHand::kLeftHand);
+        m_Command.driveTurnFine = m_Controller.GetX(frc::GenericHID::JoystickHand::kLeftHand);
 //        m_Command.ballIntake = m_Controller.GetTriggerAxis(frc::GenericHID::JoystickHand::kRightHand) -
 //                               m_Controller.GetTriggerAxis(frc::GenericHID::JoystickHand::kLeftHand);
 //        m_Command.hatchIntakeDown = m_Controller.GetYButtonPressed();
@@ -124,7 +135,6 @@ namespace garage {
         }
         if (m_Controller.GetBumperPressed(frc::GenericHID::kLeftHand)) {
             m_RoutineManager->TerminateAllRoutines();
-            m_Elevator->SoftLand();
         }
         m_Command.elevatorInput = -m_Controller.GetY(frc::GenericHID::kRightHand);
     }

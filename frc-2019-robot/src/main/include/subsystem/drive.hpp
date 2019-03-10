@@ -22,7 +22,7 @@ namespace garage {
                 m_RightSlave{DRIVE_RIGHT_SLAVE, rev::CANSparkMax::MotorType::kBrushless},
                 m_LeftSlave{DRIVE_LEFT_SLAVE, rev::CANSparkMax::MotorType::kBrushless};
         rev::CANEncoder m_LeftEncoder = m_LeftMaster.GetEncoder(), m_RightEncoder = m_RightMaster.GetEncoder();
-        ctre::phoenix::sensors::PigeonIMU m_Pigeon{PIGEON_IMU};
+//        ctre::phoenix::sensors::PigeonIMU m_Pigeon{PIGEON_IMU};
 
     protected:
         double InputFromCommand(double commandInput);

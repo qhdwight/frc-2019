@@ -7,6 +7,7 @@
 #include <cmath>
 
 namespace garage {
+    // TODO fix pigeon heading
     Drive::Drive(std::shared_ptr<Robot>& robot) : lib::Subsystem(robot, "Drive") {
         m_LeftSlave.RestoreFactoryDefaults();
         m_RightSlave.RestoreFactoryDefaults();
@@ -49,7 +50,7 @@ namespace garage {
             rightOutput = m_RightMaster.GetAppliedOutput(),
             leftCurrent = m_LeftMaster.GetOutputCurrent(),
             rightCurrent = m_RightMaster.GetOutputCurrent();
-        m_NetworkTable->PutNumber("Gyro", m_Pigeon.GetFusedHeading());
+//        m_NetworkTable->PutNumber("Gyro", m_Pigeon.GetFusedHeading());
         m_NetworkTable->PutNumber("Left Output", leftOutput);
         m_NetworkTable->PutNumber("Right Output", rightOutput);
         m_NetworkTable->PutNumber("Left Encoder", m_LeftEncoder.GetPosition());
@@ -69,11 +70,12 @@ namespace garage {
     }
 
     double Drive::GetHeading() {
-        return m_Pigeon.GetFusedHeading();
+        return 0.0;
+//        return m_Pigeon.GetFusedHeading();
     }
 
     void Drive::ResetGyroAndEncoders() {
-        m_Pigeon.SetFusedHeading(0.0);
+//        m_Pigeon.SetFusedHeading(0.0);
         m_LeftEncoder.SetPosition(0.0);
         m_RightEncoder.SetPosition(0.0);
     }
@@ -84,8 +86,9 @@ namespace garage {
     }
 
     double Drive::GetTilt() {
-        double angles[3];
-        m_Pigeon.GetYawPitchRoll(angles);
-        return angles[1];
+        return 0.0;
+//        double angles[3];
+//        m_Pigeon.GetYawPitchRoll(angles);
+//        return angles[1];
     }
 }

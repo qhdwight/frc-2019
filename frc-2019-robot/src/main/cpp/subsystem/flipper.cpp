@@ -10,7 +10,7 @@ namespace garage {
     Flipper::Flipper(std::shared_ptr<Robot>& robot) : lib::ControllableSubsystem<Flipper>(robot, "Flipper") {
         m_FlipperMaster.RestoreFactoryDefaults();
         m_FlipperMaster.SetIdleMode(rev::CANSparkMax::IdleMode::kBrake);
-        m_FlipperMaster.SetOpenLoopRampRate(0.2);
+        m_FlipperMaster.SetOpenLoopRampRate(FLIPPER_CLOSED_LOOP_RAMP);
         m_FlipperController.SetP(FLIPPER_P);
         m_FlipperController.SetI(FLIPPER_I);
         m_FlipperController.SetD(FLIPPER_D);
@@ -21,8 +21,12 @@ namespace garage {
         m_FlipperController.SetSmartMotionMinOutputVelocity(0.0);
         m_FlipperController.SetSmartMotionMaxAccel(FLIPPER_ACCELERATION);
         m_FlipperController.SetSmartMotionAllowedClosedLoopError(FLIPPER_ALLOWABLE_ERROR);
-        m_FlipperMaster.EnableVoltageCompensation(12.0);
+        m_FlipperController.SetSmartMotionAccelStrategy(rev::CANPIDController::AccelStrategy::kSCurve);
+        m_FlipperMaster.EnableVoltageCompensation(FLIPPER_VOLTAGE_COMPENSATION);
         m_LimitSwitch.EnableLimitSwitch(false);
+    }
+
+    void Flipper::OnPostInitialize() {
         auto flipper = std::weak_ptr<Flipper>(shared_from_this());
         AddDefaultController(m_RawController = std::make_shared<RawFlipperController>(flipper));
         AddController(m_SetPointController = std::make_shared<SetPointFlipperController>(flipper));
@@ -69,9 +73,6 @@ namespace garage {
 
     void Flipper::SetRawOutput(double output) {
         SetController(m_RawController);
-        if (Robot::ShouldOutput) {
-            m_FlipperMaster.Set(output);
-        }
     }
 
     void Flipper::SetSetPoint(double setPoint) {
@@ -92,14 +93,19 @@ namespace garage {
 
     void RawFlipperController::ProcessCommand(Command& command) {
         m_Input = math::threshold(command.flipper, DEFAULT_INPUT_THRESHOLD);
+        m_Output = m_Input * 0.25;
     }
 
     void RawFlipperController::Control() {
-        // TODO implement
+        auto flipper = m_Subsystem.lock();
+        if (Robot::ShouldOutput) {
+            flipper->m_FlipperMaster.Set(m_Output);
+        }
     }
 
     void RawFlipperController::Reset() {
         m_Input = 0.0;
+        m_Output = 0.0;
     }
 
     void SetPointFlipperController::ProcessCommand(garage::Command& command) {

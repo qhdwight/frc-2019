@@ -20,7 +20,10 @@
 #define FLIPPER_FF 0.000156
 #define FLIPPER_VELOCITY 4400.0
 #define FLIPPER_ACCELERATION 2300.0
-#define FLIPPER_ALLOWABLE_ERROR 0.05
+#define FLIPPER_ALLOWABLE_ERROR 0.0
+
+#define FLIPPER_VOLTAGE_COMPENSATION 11.0
+#define FLIPPER_CLOSED_LOOP_RAMP 0.1
 
 namespace garage {
     class Flipper;
@@ -29,7 +32,7 @@ namespace garage {
 
     class RawFlipperController : public FlipperController {
     private:
-        double m_Input = 0.0;
+        double m_Input = 0.0, m_Output = 0.0;
 
     public:
         RawFlipperController(std::weak_ptr<Flipper>& subsystem)
@@ -58,6 +61,10 @@ namespace garage {
     };
 
     class Flipper : public lib::ControllableSubsystem<Flipper> {
+        friend class RawFlipperController;
+
+        friend class SetPointFlipperController;
+
     private:
         rev::CANSparkMax m_FlipperMaster{FLIPPER, rev::CANSparkMax::MotorType::kBrushless};
         rev::CANPIDController m_FlipperController = m_FlipperMaster.GetPIDController();
@@ -67,8 +74,6 @@ namespace garage {
         double m_EncoderPosition = 0.0, m_EncoderVelocity = 0.0;
         std::shared_ptr<RawFlipperController> m_RawController;
         std::shared_ptr<SetPointFlipperController> m_SetPointController;
-
-        friend class SetPointFlipperController;
 
     protected:
         void UpdateUnlocked(Command& command) override;
@@ -83,5 +88,7 @@ namespace garage {
         void SetRawOutput(double output);
 
         void SetSetPoint(double setPoint);
+
+        void OnPostInitialize() override;
     };
 }

@@ -13,12 +13,14 @@
 #include <lib/routine_manager.hpp>
 #include <lib/drive_forward_auto_routine.hpp>
 
+#include <networktables/NetworkTable.h>
+#include <networktables/NetworkTableInstance.h>
+
 #include <frc/Joystick.h>
 #include <frc/TimedRobot.h>
 #include <frc/XboxController.h>
 
-#include <networktables/NetworkTable.h>
-#include <networktables/NetworkTableInstance.h>
+#include <wpi/optional.h>
 
 #include <chrono>
 #include <memory>
@@ -45,11 +47,10 @@ namespace garage {
         std::shared_ptr<HatchIntake> m_HatchIntake;
         std::vector<std::shared_ptr<lib::Subsystem>> m_Subsystems;
         std::shared_ptr<lib::DriveForwardAutoRoutine> m_DriveForwardRoutine;
-        std::chrono::system_clock::time_point m_LastPeriodicTime;
+        wpi::optional<std::chrono::system_clock::time_point> m_LastPeriodicTime;
+        bool m_ShouldOutputMotors = true;
 
     public:
-        static constexpr bool ShouldOutput = true;
-
         void RobotInit() override;
 
         void Reset();
@@ -72,20 +73,40 @@ namespace garage {
 
         void MatchPeriodic();
 
-        Command GetLatestCommand();
+        bool ShouldOutputMotors() const {
+            return m_ShouldOutputMotors;
+        }
 
-        std::shared_ptr<NetworkTable> GetNetworkTable() const;
+        Command GetLatestCommand() {
+            return m_Command;
+        }
 
-        std::shared_ptr<lib::RoutineManager> GetRoutineManager();
+        std::shared_ptr<NetworkTable> GetNetworkTable() const {
+            return m_NetworkTable;
+        }
 
-        std::shared_ptr<Elevator> GetElevator();
+        std::shared_ptr<Elevator> GetElevator() {
+            return m_Elevator;
+        }
 
-        std::shared_ptr<Drive> GetDrive();
+        std::shared_ptr<Drive> GetDrive() {
+            return m_Drive;
+        }
 
-        std::shared_ptr<Outrigger> GetOutrigger();
+        std::shared_ptr<Outrigger> GetOutrigger() {
+            return m_Outrigger;
+        }
 
-        std::shared_ptr<BallIntake> GetBallIntake();
+        std::shared_ptr<BallIntake> GetBallIntake() {
+            return m_BallIntake;
+        }
 
-        std::shared_ptr<Flipper> GetFlipper();
+        std::shared_ptr<Flipper> GetFlipper() {
+            return m_Flipper;
+        }
+
+        std::shared_ptr<lib::RoutineManager> GetRoutineManager() {
+            return m_RoutineManager;
+        }
     };
 }

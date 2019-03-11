@@ -15,12 +15,12 @@ namespace garage {
         m_RightMaster.SetInverted(true);
         m_LeftSlave.Follow(m_LeftMaster);
         m_RightSlave.Follow(m_RightMaster);
-        m_LeftSlave.SetOpenLoopRampRate(0.2);
-        m_RightSlave.SetOpenLoopRampRate(0.2);
-    }
-
-    void Drive::OnReset() {
-        ResetGyroAndEncoders();
+        m_LeftSlave.SetOpenLoopRampRate(DRIVE_RAMPING);
+        m_RightSlave.SetOpenLoopRampRate(DRIVE_RAMPING);
+        m_LeftMaster.EnableVoltageCompensation(DEFAULT_VOLTAGE_COMPENSATION);
+        m_RightMaster.EnableVoltageCompensation(DEFAULT_VOLTAGE_COMPENSATION);
+        m_LeftMaster.Set(0.0);
+        m_RightMaster.Set(0.0);
     }
 
     double Drive::InputFromCommand(double commandInput) {
@@ -64,7 +64,7 @@ namespace garage {
     void Drive::Update() {
         m_RightEncoderPosition = m_RightEncoder.GetPosition();
         m_LeftEncoderPosition = m_LeftEncoder.GetPosition();
-        if (Robot::ShouldOutput) {
+        if (m_Robot->ShouldOutputMotors()) {
             m_LeftMaster.Set(m_LeftOutput);
             m_RightMaster.Set(m_RightOutput);
         }

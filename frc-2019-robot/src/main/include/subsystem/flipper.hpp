@@ -25,7 +25,6 @@
 #define FLIPPER_ALLOWABLE_ERROR 0.0
 #define FLIPPER_ANGLE_FF 0.05
 
-#define FLIPPER_VOLTAGE_COMPENSATION 11.0
 #define FLIPPER_CLOSED_LOOP_RAMP 0.1
 #define FLIPPER_SMART_MOTION_PID_SLOT 0
 
@@ -91,6 +90,8 @@ namespace garage {
     public:
         Flipper(std::shared_ptr<Robot>& robot);
 
+        void OnPostInitialize() override;
+
         void SetRawOutput(double output);
 
         void SetSetPoint(double setPoint);
@@ -102,7 +103,5 @@ namespace garage {
         double RawSetPointToAngle(double setPoint);
 
         double AngleToRawSetPoint(double angle);
-
-        void OnPostInitialize() override;
     };
 }

@@ -12,7 +12,7 @@ namespace garage {
             using Controller=SubsystemController<TSubsystem>;
         protected:
             std::vector<std::shared_ptr<Controller>> m_Controllers;
-            std::shared_ptr<Controller> m_Controller, m_UnlockedController;
+            std::shared_ptr<Controller> m_Controller, m_UnlockedController, m_ResetController;
 
             virtual bool SetController(std::shared_ptr<Controller> controller) {
                 const bool different = controller != m_Controller;
@@ -33,9 +33,12 @@ namespace garage {
                 m_Controllers.push_back(controller);
             }
 
-            virtual void AddUnlockedController(std::shared_ptr<Controller> controller) {
-                AddController(controller);
+            virtual void SetUnlockedController(std::shared_ptr<Controller> controller) {
                 m_UnlockedController = controller;
+            }
+
+            virtual void SetResetController(std::shared_ptr<Controller> controller) {
+                m_ResetController = controller;
             }
 
             void UpdateUnlocked(Command& command) override {
@@ -46,21 +49,27 @@ namespace garage {
                 }
             }
 
-            void OnUnlock() override {
-                SetController(m_UnlockedController);
+            void ResetUnlock() override {
+                if (m_ResetController) {
+                    SetController(m_ResetController);
+                } else {
+                    Subsystem::ResetUnlock();
+                }
             }
 
+        public:
+            using Subsystem::Subsystem;
+
             void Reset() override {
-                Subsystem::Reset();
                 for (auto& controller : m_Controllers) {
                     controller->Reset();
                 }
             }
 
-            virtual void OnReset() {}
-
-        public:
-            using Subsystem::Subsystem;
+            void Unlock() override {
+                Subsystem::Unlock();
+                SetController(m_UnlockedController);
+            }
         };
     }
 }

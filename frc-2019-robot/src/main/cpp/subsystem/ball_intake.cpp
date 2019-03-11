@@ -6,16 +6,16 @@
 
 namespace garage {
     BallIntake::BallIntake(std::shared_ptr<Robot>& robot) : lib::Subsystem(robot, "Ball Intake") {
-        m_LeftIntake.ConfigFactoryDefault();
-        m_RightIntake.ConfigFactoryDefault();
+        m_LeftIntake.ConfigFactoryDefault(CONFIG_TIMEOUT);
+        m_RightIntake.ConfigFactoryDefault(CONFIG_TIMEOUT);
         m_LeftIntake.SetNeutralMode(ctre::phoenix::motorcontrol::NeutralMode::Brake);
         m_RightIntake.SetNeutralMode(ctre::phoenix::motorcontrol::NeutralMode::Brake);
-    }
-
-    void BallIntake::OnReset() {
-        SetOutput(0.0);
-        m_LastOutput = 0.0;
-        m_HasBallCount = 0;
+        m_LeftIntake.ConfigVoltageCompSaturation(DEFAULT_VOLTAGE_COMPENSATION, CONFIG_TIMEOUT);
+        m_RightIntake.ConfigVoltageCompSaturation(DEFAULT_VOLTAGE_COMPENSATION, CONFIG_TIMEOUT);
+        m_LeftIntake.EnableVoltageCompensation(true);
+        m_RightIntake.EnableVoltageCompensation(true);
+        m_RightIntake.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, 0);
+        m_LeftIntake.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, 0);
     }
 
     void BallIntake::UpdateUnlocked(Command& command) {
@@ -46,11 +46,10 @@ namespace garage {
     }
 
     void BallIntake::ConfigOpenLoopRamp(double ramp) {
-        static double s_LastRamp = 0.0;
-        if (s_LastRamp != ramp) {
+        if (m_LastOpenLoopRamp != ramp) {
             auto leftError = m_LeftIntake.ConfigOpenloopRamp(ramp), rightError = m_RightIntake.ConfigOpenloopRamp(ramp);
             if (leftError == ctre::phoenix::OK && rightError == ctre::phoenix::OK)
-                s_LastRamp = ramp;
+                m_LastOpenLoopRamp = ramp;
             else
                 Log(lib::Logger::LogLevel::k_Error, lib::Logger::Format("Left Error: %d, Right Error: %d", leftError, rightError));
         }

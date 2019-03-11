@@ -39,7 +39,7 @@ namespace garage {
         m_ElevatorMaster.ConfigPeakCurrentLimit(ELEVATOR_PEAK_CURRENT_LIMIT, CONFIG_TIMEOUT);
         m_ElevatorMaster.ConfigPeakCurrentDuration(ELEVATOR_PEAK_CURRENT_DURATION, CONFIG_TIMEOUT);
         // Voltage compensation
-        m_ElevatorMaster.ConfigVoltageCompSaturation(ELEVATOR_VOLTAGE_SATURATION, CONFIG_TIMEOUT);
+        m_ElevatorMaster.ConfigVoltageCompSaturation(DEFAULT_VOLTAGE_COMPENSATION, CONFIG_TIMEOUT);
         // Configure following and inversion
         m_ElevatorSlaveOne.Follow(m_ElevatorMaster);
         m_ElevatorSlaveTwo.Follow(m_ElevatorMaster);
@@ -67,6 +67,8 @@ namespace garage {
         m_ElevatorMaster.EnableCurrentLimit(false);
         m_ElevatorMaster.OverrideSoftLimitsEnable(true);
         m_ElevatorMaster.OverrideLimitSwitchesEnable(false);
+
+        m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, 0.0);
     }
 
     void Elevator::OnPostInitialize() {
@@ -74,12 +76,10 @@ namespace garage {
         auto elevator = std::weak_ptr<Elevator>(shared_from_this());
         AddController(m_RawController = std::make_shared<RawElevatorController>(elevator));
         AddController(m_SetPointController = std::make_shared<SetPointElevatorController>(elevator));
-        AddUnlockedController(m_VelocityController = std::make_shared<VelocityElevatorController>(elevator));
+        AddController(m_VelocityController = std::make_shared<VelocityElevatorController>(elevator));
         AddController(m_SoftLandController = std::make_shared<SoftLandElevatorController>(elevator));
-    }
-
-    void Elevator::OnReset() {
-        m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, 0.0);
+        SetUnlockedController(m_VelocityController);
+        SetResetController(m_SoftLandController);
     }
 
     void Elevator::SetupNetworkTableEntries() {
@@ -174,7 +174,7 @@ namespace garage {
     void RawElevatorController::Control() {
         auto elevator = m_Subsystem.lock();
         Log(lib::Logger::LogLevel::k_Info, lib::Logger::Format("Input Value: %f, Output Value: %f", m_Input, m_Output));
-        if (Robot::ShouldOutput) {
+        if (elevator->m_Robot->ShouldOutputMotors()) {
             elevator->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, m_Output);
         }
     }
@@ -199,7 +199,7 @@ namespace garage {
             lib::Logger::Format("Wanted Set Point: %d, Feed Forward: %f", m_WantedSetPoint, elevator->m_FeedForward));
         if ((elevator->m_EncoderPosition > ELEVATOR_MIN_CLOSED_LOOP_HEIGHT || m_WantedSetPoint > 0) && elevator->m_EncoderPosition < ELEVATOR_MAX) {
             elevator->LogSample(lib::Logger::LogLevel::k_Info, "Theoretically Okay and Working");
-            if (Robot::ShouldOutput) {
+            if (elevator->m_Robot->ShouldOutputMotors()) {
                 elevator->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::MotionMagic,
                                                m_WantedSetPoint,
                                                ctre::phoenix::motorcontrol::DemandType::DemandType_ArbitraryFeedForward,
@@ -225,7 +225,7 @@ namespace garage {
         auto elevator = m_Subsystem.lock();
         if ((elevator->m_EncoderPosition > ELEVATOR_MIN_CLOSED_LOOP_HEIGHT || m_WantedVelocity > 0.01) && elevator->m_EncoderPosition < ELEVATOR_MAX) {
             Log(lib::Logger::LogLevel::k_Info, lib::Logger::Format("Wanted Velocity: %f", m_WantedVelocity));
-            if (Robot::ShouldOutput) {
+            if (elevator->m_Robot->ShouldOutputMotors()) {
                 elevator->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::Velocity,
                                                m_WantedVelocity,
                                                ctre::phoenix::motorcontrol::DemandType::DemandType_ArbitraryFeedForward,
@@ -244,7 +244,7 @@ namespace garage {
 
     void SoftLandElevatorController::Control() {
         auto elevator = m_Subsystem.lock();
-        if (Robot::ShouldOutput) {
+        if (elevator->m_Robot->ShouldOutputMotors()) {
             elevator->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput,
                                            elevator->m_EncoderPosition > 500 ? ELEVATOR_SAFE_DOWN : 0.0);
         }

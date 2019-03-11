@@ -12,16 +12,28 @@ namespace garage {
             Log(Logger::LogLevel::k_Info, "Subsystem Initialized");
         }
 
+        void Subsystem::PostInitialize() {
+            OnPostInitialize();
+            Reset();
+        }
+
+        void Subsystem::Reset() {
+            Log(lib::Logger::LogLevel::k_Info, "Resetting");
+            ResetUnlock();
+        }
+
         void Subsystem::Lock() {
-            Log(lib::Logger::LogLevel::k_Info, "Locked");
+            Log(lib::Logger::LogLevel::k_Info, "Locking");
             m_IsLocked = true;
-            OnLock();
         }
 
         void Subsystem::Unlock() {
-            Log(lib::Logger::LogLevel::k_Info, "Unlocked");
+            Log(lib::Logger::LogLevel::k_Info, "Unlocking");
             m_IsLocked = false;
-            OnUnlock();
+        }
+
+        void Subsystem::ResetUnlock() {
+            Unlock();
         }
 
         void Subsystem::Periodic() {
@@ -74,17 +86,6 @@ namespace garage {
                             Logger::Format("%s %s value %s to %f", success ? "Successfully set" : "Error in setting",
                                            FMT_STR(m_SubsystemName), FMT_STR(entryName), newValue));
                     }, NT_NOTIFY_UPDATE);
-        }
-
-        void Subsystem::Reset() {
-            Log(lib::Logger::LogLevel::k_Info, "Reset");
-            Unlock();
-            OnReset();
-        }
-
-        void Subsystem::PostInitialize() {
-            OnPostInitialize();
-            Reset();
         }
     }
 }

@@ -22,14 +22,16 @@ namespace garage {
         m_FlipperController.SetSmartMotionMaxAccel(FLIPPER_ACCELERATION, FLIPPER_SMART_MOTION_PID_SLOT);
         m_FlipperController.SetSmartMotionAllowedClosedLoopError(FLIPPER_ALLOWABLE_ERROR, FLIPPER_SMART_MOTION_PID_SLOT);
         m_FlipperController.SetSmartMotionAccelStrategy(rev::CANPIDController::AccelStrategy::kSCurve, FLIPPER_SMART_MOTION_PID_SLOT);
-        m_FlipperMaster.EnableVoltageCompensation(FLIPPER_VOLTAGE_COMPENSATION);
+        m_FlipperMaster.EnableVoltageCompensation(DEFAULT_VOLTAGE_COMPENSATION);
         m_LimitSwitch.EnableLimitSwitch(false);
+        m_FlipperMaster.Set(0.0);
     }
 
     void Flipper::OnPostInitialize() {
         auto flipper = std::weak_ptr<Flipper>(shared_from_this());
-        AddUnlockedController(m_RawController = std::make_shared<RawFlipperController>(flipper));
+        AddController(m_RawController = std::make_shared<RawFlipperController>(flipper));
         AddController(m_SetPointController = std::make_shared<SetPointFlipperController>(flipper));
+        SetUnlockedController(m_RawController);
     }
 
     void Flipper::Update() {
@@ -99,7 +101,7 @@ namespace garage {
 
     void RawFlipperController::Control() {
         auto flipper = m_Subsystem.lock();
-        if (Robot::ShouldOutput) {
+        if (flipper->m_Robot->ShouldOutputMotors()) {
             flipper->m_FlipperMaster.Set(m_Output);
         }
     }
@@ -127,7 +129,7 @@ namespace garage {
                     clampedSetPoint = math::clamp(m_SetPoint, FLIPPER_SET_POINT_LOWER, FLIPPER_SET_POINT_UPPER),
                     angle = flipper->RawSetPointToAngle(encoderPosition),
                     feedForward = std::cos(r2d(angle)) * FLIPPER_ANGLE_FF;
-            if (Robot::ShouldOutput) {
+            if (flipper->m_Robot->ShouldOutputMotors()) {
                 auto error = flipper->m_FlipperController.SetReference(clampedSetPoint, rev::ControlType::kSmartMotion,
                                                                        FLIPPER_SMART_MOTION_PID_SLOT, feedForward);
                 if (error == rev::CANError::kOK) {
@@ -138,7 +140,7 @@ namespace garage {
             }
         } else {
             flipper->LogSample(lib::Logger::LogLevel::k_Info, "Not doing anything");
-            if (Robot::ShouldOutput) {
+            if (flipper->m_Robot->ShouldOutputMotors()) {
                 flipper->m_FlipperMaster.Set(0.0);
             }
         }

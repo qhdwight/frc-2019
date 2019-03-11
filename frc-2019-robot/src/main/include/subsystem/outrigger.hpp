@@ -6,6 +6,8 @@
 
 #include <rev/CANSparkMax.h>
 
+#define OUTRIGGER_RAMPING 0.25
+
 namespace garage {
     class Outrigger : public lib::Subsystem {
     private:

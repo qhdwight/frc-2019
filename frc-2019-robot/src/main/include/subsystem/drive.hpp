@@ -12,6 +12,8 @@
 
 #include <memory>
 
+#define DRIVE_RAMPING 0.2
+
 namespace garage {
     class Drive : public lib::Subsystem {
     private:
@@ -33,8 +35,6 @@ namespace garage {
         void UpdateUnlocked(Command& command) override;
 
         void Update() override;
-
-        void OnReset() override;
 
     public:
         Drive(std::shared_ptr<Robot>& robot);

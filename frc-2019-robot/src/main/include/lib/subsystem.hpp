@@ -14,6 +14,7 @@
 #define DEFAULT_FREQUENCY 10
 
 #define DEFAULT_INPUT_THRESHOLD 0.09
+#define DEFAULT_VOLTAGE_COMPENSATION 11.0
 
 namespace garage {
     class Robot;
@@ -39,11 +40,7 @@ namespace garage {
 
             virtual void Update() {}
 
-            virtual void OnLock() {}
-
-            virtual void OnUnlock() {}
-
-            virtual void OnReset() {}
+            virtual void ResetUnlock();
 
             void AddNetworkTableListener(const std::string& entryName, const double defaultValue,
                                          std::function<bool(const double newValue)> callback);
@@ -63,9 +60,9 @@ namespace garage {
 
             void LogSample(Logger::LogLevel logLevel, const std::string& log, int frequency = DEFAULT_FREQUENCY);
 
-            void Lock();
+            virtual void Lock();
 
-            void Unlock();
+            virtual void Unlock();
 
             bool IsLocked() {
                 return m_IsLocked;

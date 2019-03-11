@@ -8,8 +8,6 @@
 #include <ctre/phoenix/motorcontrol/can/TalonSRX.h>
 #include <ctre/phoenix/motorcontrol/can/VictorSPX.h>
 
-#include <wpi/optional.h>
-
 #define ELEVATOR_MAX 250000 // Encoder ticks
 
 /* Gains and Motion Magic */
@@ -27,7 +25,6 @@
 #define ELEVATOR_MIN_CLOSED_LOOP_HEIGHT 4000 // Encoder ticks
 
 /* Energy Management */
-#define ELEVATOR_VOLTAGE_SATURATION 11.0 // Volts
 #define ELEVATOR_CONTINUOUS_CURRENT_LIMIT 40 // Amperes
 #define ELEVATOR_PEAK_CURRENT_LIMIT 300 // Amperes
 #define ELEVATOR_PEAK_CURRENT_DURATION 200 // Milliseconds
@@ -112,12 +109,12 @@ namespace garage {
         friend class SoftLandElevatorController;
 
     protected:
-        int m_EncoderPosition, m_EncoderVelocity;
+        int m_EncoderPosition = 0, m_EncoderVelocity = 0;
         double m_FeedForward = ELEVATOR_FF, m_MaxVelocity = ELEVATOR_VELOCITY;
         ctre::phoenix::motorcontrol::StickyFaults m_StickyFaults;
         ctre::phoenix::motorcontrol::can::TalonSRX m_ElevatorMaster{ELEVATOR_MASTER};
-        ctre::phoenix::motorcontrol::can::VictorSPX m_ElevatorSlaveOne{ELEVATOR_SLAVE_ONE}, m_ElevatorSlaveTwo{ELEVATOR_SLAVE_TWO},
-                m_ElevatorSlaveThree{ELEVATOR_SLAVE_THREE};
+        ctre::phoenix::motorcontrol::can::VictorSPX
+                m_ElevatorSlaveOne{ELEVATOR_SLAVE_ONE}, m_ElevatorSlaveTwo{ELEVATOR_SLAVE_TWO}, m_ElevatorSlaveThree{ELEVATOR_SLAVE_THREE};
         std::shared_ptr<RawElevatorController> m_RawController;
         std::shared_ptr<SetPointElevatorController> m_SetPointController;
         std::shared_ptr<VelocityElevatorController> m_VelocityController;
@@ -126,8 +123,6 @@ namespace garage {
         void ConfigSpeedControllers();
 
         void SetupNetworkTableEntries();
-
-        void OnReset() override;
 
         bool ShouldUnlock(Command& command) override;
 

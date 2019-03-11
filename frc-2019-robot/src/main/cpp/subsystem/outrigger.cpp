@@ -8,15 +8,19 @@ namespace garage {
         m_OutriggerMaster.RestoreFactoryDefaults();
         m_OutriggerSlave.RestoreFactoryDefaults();
         m_OutriggerWheel.RestoreFactoryDefaults();
-        m_OutriggerMaster.SetOpenLoopRampRate(0.25);
-        m_OutriggerWheel.SetOpenLoopRampRate(0.25);
+        m_OutriggerMaster.SetOpenLoopRampRate(OUTRIGGER_RAMPING);
+        m_OutriggerWheel.SetOpenLoopRampRate(OUTRIGGER_RAMPING);
         m_OutriggerMaster.SetIdleMode(rev::CANSparkMax::IdleMode::kBrake);
         m_OutriggerSlave.SetIdleMode(rev::CANSparkMax::IdleMode::kBrake);
         m_OutriggerSlave.Follow(m_OutriggerMaster, true);
+        m_OutriggerMaster.EnableVoltageCompensation(DEFAULT_VOLTAGE_COMPENSATION);
+        m_OutriggerWheel.EnableVoltageCompensation(DEFAULT_VOLTAGE_COMPENSATION);
+        m_OutriggerMaster.Set(0.0);
+        m_OutriggerWheel.Set(0.0);
     }
 
     void Outrigger::UpdateUnlocked(Command& command) {
-        m_Output = math::threshold(command.test, 0.05);
+        m_Output = math::threshold(command.test, DEFAULT_INPUT_THRESHOLD);
     }
 
     void Outrigger::Update() {

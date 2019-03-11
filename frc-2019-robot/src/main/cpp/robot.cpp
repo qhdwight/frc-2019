@@ -45,6 +45,7 @@ namespace garage {
             try {
                 auto json = wpi::json::parse(settingsFile);
                 lib::Logger::Log(lib::Logger::LogLevel::k_Info, lib::Logger::Format("Read settings: %s", FMT_STR(json.dump())));
+                m_ShouldOutputMotors = json.at("should_output_motors").get<bool>();
             } catch (wpi::detail::parse_error& error) {
                 lib::Logger::Log(lib::Logger::LogLevel::k_Error, lib::Logger::Format("Error parsing robot settings: %s", error.what()));
             }
@@ -99,9 +100,11 @@ namespace garage {
     void Robot::MatchPeriodic() {
         // See if we are taking too much time and not getting fifty updates a second
         auto now = std::chrono::system_clock::now();
-        auto delta = std::chrono::duration_cast<std::chrono::milliseconds>(now - m_LastPeriodicTime);
-        if (delta > std::chrono::milliseconds(std::lround(m_period * 1000.0))) {
-            lib::Logger::Log(lib::Logger::LogLevel::k_Warning, lib::Logger::Format("Loop was too long, took %d milliseconds", delta));
+        if (m_LastPeriodicTime) {
+            auto delta = std::chrono::duration_cast<std::chrono::milliseconds>(now - m_LastPeriodicTime.value());
+            if (delta > std::chrono::milliseconds(std::lround(m_period * 1000.0))) {
+                lib::Logger::Log(lib::Logger::LogLevel::k_Warning, lib::Logger::Format("Loop was too long, took %d milliseconds", delta));
+            }
         }
         m_LastPeriodicTime = now;
         // Get our most up to date command from the controllers
@@ -176,38 +179,6 @@ namespace garage {
             m_Elevator->SoftLand();
         }
         m_Command.elevatorInput = -m_Controller.GetY(frc::GenericHID::kRightHand);
-    }
-
-    Command Robot::GetLatestCommand() {
-        return m_Command;
-    }
-
-    std::shared_ptr<NetworkTable> Robot::GetNetworkTable() const {
-        return m_NetworkTable;
-    }
-
-    std::shared_ptr<Elevator> Robot::GetElevator() {
-        return m_Elevator;
-    }
-
-    std::shared_ptr<Drive> Robot::GetDrive() {
-        return m_Drive;
-    }
-
-    std::shared_ptr<Outrigger> Robot::GetOutrigger() {
-        return m_Outrigger;
-    }
-
-    std::shared_ptr<BallIntake> Robot::GetBallIntake() {
-        return m_BallIntake;
-    }
-
-    std::shared_ptr<Flipper> Robot::GetFlipper() {
-        return m_Flipper;
-    }
-
-    std::shared_ptr<lib::RoutineManager> Robot::GetRoutineManager() {
-        return m_RoutineManager;
     }
 }
 

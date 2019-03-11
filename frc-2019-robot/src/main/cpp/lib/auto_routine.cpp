@@ -37,9 +37,6 @@ namespace garage {
             m_Drive->Log(Logger::LogLevel::k_Info, "Generated Trajectory");
             pathfinder_modify_tank(trajectory.data(), length, m_LeftTrajectory.data(), m_RightTrajectory.data(), WHEELBASE_DISTANCE);
             m_Drive->Log(Logger::LogLevel::k_Info, Logger::Format("%d", trajectory.size()));
-            for (auto& meme : trajectory) {
-                m_Drive->Log(Logger::LogLevel::k_Info, Logger::Format("%f, %f", meme.x, meme.velocity));
-            }
             m_Drive->Log(Logger::LogLevel::k_Info, "Modified Trajectory for Tank Drive");
             auto stop = std::chrono::high_resolution_clock::now();
             auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);

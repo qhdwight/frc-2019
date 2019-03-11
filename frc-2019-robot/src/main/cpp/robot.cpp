@@ -30,8 +30,8 @@ namespace garage {
             lib::Logger::SetLogLevel(logLevel);
             lib::Logger::Log(lib::Logger::LogLevel::k_Info, lib::Logger::Format("Updated log level to: %d", logLevel));
         }, NT_NOTIFY_UPDATE);
-        AddSubsystem(m_Elevator = std::make_shared<Elevator>(m_Pointer));
-//        AddSubsystem(m_Drive = std::make_shared<Drive>(m_Pointer));
+//        AddSubsystem(m_Elevator = std::make_shared<Elevator>(m_Pointer));
+        AddSubsystem(m_Drive = std::make_shared<Drive>(m_Pointer));
 //        AddSubsystem(m_Flipper = std::make_shared<Flipper>(m_Pointer));
 //        AddSubsystem(m_BallIntake = std::make_shared<BallIntake>(m_Pointer));
 //        AddSubsystem(m_HatchIntake = std::make_shared<HatchIntake>(m_Pointer));
@@ -46,7 +46,7 @@ namespace garage {
             lib::Logger::Log(lib::Logger::LogLevel::k_Error, lib::Logger::Format("Error reading robot settings: %s", error.what()));
         }
         m_DriveForwardRoutine = std::make_shared<lib::DriveForwardAutoRoutine>(m_Pointer, "Drive Straight");
-//        m_DriveForwardRoutine->CalculatePath();
+        m_DriveForwardRoutine->CalculatePath();
     }
 
     void Robot::AddSubsystem(std::shared_ptr<lib::Subsystem> subsystem) {
@@ -128,8 +128,8 @@ namespace garage {
 ////        }
         if (m_Controller.GetAButtonPressed()) {
             m_RoutineManager->TerminateAllRoutines();
-//            m_Command.routines.push_back(m_DriveForwardRoutine);
-            m_Command.routines.push_back(std::make_shared<SetElevatorPositionRoutine>(m_Pointer, "Elevator 10000", 0));
+            m_Command.routines.push_back(m_DriveForwardRoutine);
+//            m_Command.routines.push_back(std::make_shared<SetElevatorPositionRoutine>(m_Pointer, "Elevator 10000", 0));
         }
         if (m_Controller.GetBButtonPressed()) {
             m_RoutineManager->TerminateAllRoutines();
@@ -146,10 +146,12 @@ namespace garage {
         if (m_Controller.GetBumperPressed(frc::GenericHID::kRightHand)) {
             m_RoutineManager->TerminateAllRoutines();
 //            m_Command.routines.push_back(std::make_shared<MeasureElevatorSpeed>(m_Pointer, "Measure Elevator Speed", 0.325));
+            m_Elevator->Unlock();
             m_Elevator->SetManual();
         }
         if (m_Controller.GetBumperPressed(frc::GenericHID::kLeftHand)) {
             m_RoutineManager->TerminateAllRoutines();
+            m_Elevator->Unlock();
             m_Elevator->SoftLand();
         }
         m_Command.elevatorInput = -m_Controller.GetY(frc::GenericHID::kRightHand);

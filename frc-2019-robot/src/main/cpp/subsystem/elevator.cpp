@@ -16,7 +16,7 @@ namespace garage {
         m_ElevatorSlaveThree.ConfigFactoryDefault(CONFIG_TIMEOUT);
 
         /* Sensors and Limits */
-        m_ElevatorMaster.ConfigSelectedFeedbackSensor(ctre::phoenix::motorcontrol::FeedbackDevice::QuadEncoder, SET_POINT_SLOT_INDEX, CONFIG_TIMEOUT);
+        m_ElevatorMaster.ConfigSelectedFeedbackSensor(ctre::phoenix::motorcontrol::FeedbackDevice::QuadEncoder, ELEVATOR_MOTION_MAGIC_PID_SLOT, CONFIG_TIMEOUT);
         // Soft limit
         m_ElevatorMaster.ConfigForwardSoftLimitThreshold(ELEVATOR_MAX, CONFIG_TIMEOUT);
         m_ElevatorMaster.ConfigForwardSoftLimitEnable(true, CONFIG_TIMEOUT);
@@ -51,16 +51,16 @@ namespace garage {
         // Gains and Motion profiling
         m_ElevatorMaster.ConfigMotionAcceleration(ELEVATOR_ACCELERATION, CONFIG_TIMEOUT);
         m_ElevatorMaster.ConfigMotionCruiseVelocity(ELEVATOR_VELOCITY, CONFIG_TIMEOUT);
-        m_ElevatorMaster.Config_kP(SET_POINT_SLOT_INDEX, ELEVATOR_P, CONFIG_TIMEOUT);
-        m_ElevatorMaster.Config_kD(SET_POINT_SLOT_INDEX, ELEVATOR_D, CONFIG_TIMEOUT);
-        m_ElevatorMaster.Config_kI(SET_POINT_SLOT_INDEX, ELEVATOR_I, CONFIG_TIMEOUT);
-        m_ElevatorMaster.ConfigMaxIntegralAccumulator(SET_POINT_SLOT_INDEX, ELEVATOR_MAX_I, CONFIG_TIMEOUT);
-        m_ElevatorMaster.Config_IntegralZone(SET_POINT_SLOT_INDEX, ELEVATOR_I_ZONE, CONFIG_TIMEOUT);
-        m_ElevatorMaster.Config_kF(SET_POINT_SLOT_INDEX, ELEVATOR_F, CONFIG_TIMEOUT);
+        m_ElevatorMaster.Config_kP(ELEVATOR_MOTION_MAGIC_PID_SLOT, ELEVATOR_P, CONFIG_TIMEOUT);
+        m_ElevatorMaster.Config_kD(ELEVATOR_MOTION_MAGIC_PID_SLOT, ELEVATOR_D, CONFIG_TIMEOUT);
+        m_ElevatorMaster.Config_kI(ELEVATOR_MOTION_MAGIC_PID_SLOT, ELEVATOR_I, CONFIG_TIMEOUT);
+        m_ElevatorMaster.ConfigMaxIntegralAccumulator(ELEVATOR_MOTION_MAGIC_PID_SLOT, ELEVATOR_MAX_I, CONFIG_TIMEOUT);
+        m_ElevatorMaster.Config_IntegralZone(ELEVATOR_MOTION_MAGIC_PID_SLOT, ELEVATOR_I_ZONE, CONFIG_TIMEOUT);
+        m_ElevatorMaster.Config_kF(ELEVATOR_MOTION_MAGIC_PID_SLOT, ELEVATOR_F, CONFIG_TIMEOUT);
         m_ElevatorMaster.ConfigMotionSCurveStrength(ELEVATOR_S_CURVE_STRENGTH, CONFIG_TIMEOUT);
         // Safety
-        m_ElevatorMaster.ConfigClosedLoopPeakOutput(SET_POINT_SLOT_INDEX, 0.75, CONFIG_TIMEOUT);
-        m_ElevatorMaster.ConfigAllowableClosedloopError(SET_POINT_SLOT_INDEX, ELEVATOR_ALLOWABLE_CLOSED_LOOP_ERROR, CONFIG_TIMEOUT);
+        m_ElevatorMaster.ConfigClosedLoopPeakOutput(ELEVATOR_MOTION_MAGIC_PID_SLOT, 0.75, CONFIG_TIMEOUT);
+        m_ElevatorMaster.ConfigAllowableClosedloopError(ELEVATOR_MOTION_MAGIC_PID_SLOT, ELEVATOR_ALLOWABLE_CLOSED_LOOP_ERROR, CONFIG_TIMEOUT);
 
         /* Final enabling */
         m_ElevatorMaster.EnableVoltageCompensation(true);
@@ -89,11 +89,12 @@ namespace garage {
             return error == ctre::phoenix::OK;
         });
         AddNetworkTableListener("Velocity", ELEVATOR_VELOCITY, [this](const int velocity) {
+            m_MaxVelocity = velocity;
             auto error = m_ElevatorMaster.ConfigMotionCruiseVelocity(velocity, CONFIG_TIMEOUT);
             return error == ctre::phoenix::OK;
         });
         AddNetworkTableListener("F", ELEVATOR_F, [this](const double f) {
-            auto error = m_ElevatorMaster.Config_kF(SET_POINT_SLOT_INDEX, f, CONFIG_TIMEOUT);
+            auto error = m_ElevatorMaster.Config_kF(ELEVATOR_MOTION_MAGIC_PID_SLOT, f, CONFIG_TIMEOUT);
             return error == ctre::phoenix::OK;
         });
         AddNetworkTableListener("FF", ELEVATOR_FF, [this](const double ff) {
@@ -101,11 +102,11 @@ namespace garage {
             return true;
         });
         AddNetworkTableListener("P", ELEVATOR_P, [this](const double p) {
-            auto error = m_ElevatorMaster.Config_kP(SET_POINT_SLOT_INDEX, p, CONFIG_TIMEOUT);
+            auto error = m_ElevatorMaster.Config_kP(ELEVATOR_MOTION_MAGIC_PID_SLOT, p, CONFIG_TIMEOUT);
             return error == ctre::phoenix::OK;
         });
         AddNetworkTableListener("D", ELEVATOR_D, [this](const double d) {
-            auto error = m_ElevatorMaster.Config_kD(SET_POINT_SLOT_INDEX, d, CONFIG_TIMEOUT);
+            auto error = m_ElevatorMaster.Config_kD(ELEVATOR_MOTION_MAGIC_PID_SLOT, d, CONFIG_TIMEOUT);
             return error == ctre::phoenix::OK;
         });
     }
@@ -130,8 +131,8 @@ namespace garage {
                                  lib::Logger::Format("Sticky Faults: %s", FMT_STR(m_StickyFaults.ToString())));
             m_ElevatorMaster.ClearStickyFaults();
         }
-        m_EncoderPosition = m_ElevatorMaster.GetSelectedSensorPosition(SET_POINT_SLOT_INDEX);
-        m_EncoderVelocity = m_ElevatorMaster.GetSelectedSensorVelocity(SET_POINT_SLOT_INDEX);
+        m_EncoderPosition = m_ElevatorMaster.GetSelectedSensorPosition(ELEVATOR_MOTION_MAGIC_PID_SLOT);
+        m_EncoderVelocity = m_ElevatorMaster.GetSelectedSensorVelocity(ELEVATOR_MOTION_MAGIC_PID_SLOT);
         if (m_Controller) {
             m_Controller->Control();
         } else {
@@ -203,10 +204,10 @@ namespace garage {
 
     void SetPointElevatorController::Control() {
         auto elevator = m_Subsystem.lock();
-        m_WantedSetPoint = math::clamp(m_WantedSetPoint, ELEVATOR_MIN_CLOSED_LOOP_HEIGHT, ELEVATOR_MAX);
+        m_WantedSetPoint = math::clamp(m_WantedSetPoint, 0, ELEVATOR_MAX);
         Log(lib::Logger::LogLevel::k_Info,
             lib::Logger::Format("Wanted Set Point: %d, Feed Forward: %f", m_WantedSetPoint, elevator->m_FeedForward));
-        if (elevator->m_EncoderPosition < ELEVATOR_MAX) {
+        if ((elevator->m_EncoderPosition > ELEVATOR_MIN_CLOSED_LOOP_HEIGHT || m_WantedSetPoint > 0) && elevator->m_EncoderPosition < ELEVATOR_MAX) {
             elevator->LogSample(lib::Logger::LogLevel::k_Info, "Theoretically Okay and Working");
             if (Robot::ShouldOutput) {
                 elevator->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::MotionMagic,
@@ -215,7 +216,7 @@ namespace garage {
                                                elevator->m_FeedForward);
             }
         } else {
-            elevator->Log(lib::Logger::LogLevel::k_Error, "Too High");
+            elevator->Log(lib::Logger::LogLevel::k_Error, "Not in closed loop range");
             elevator->SetController(elevator->m_SoftLandController);
         }
     }
@@ -226,13 +227,14 @@ namespace garage {
 
     void VelocityElevatorController::ProcessCommand(Command& command) {
         // TODO add too high checking
+        auto elevator = m_Subsystem.lock();
         m_Input = math::threshold(command.elevatorInput, DEFAULT_INPUT_THRESHOLD);
-        m_WantedVelocity = m_Input * ELEVATOR_VELOCITY;
+        m_WantedVelocity = m_Input * elevator->m_MaxVelocity;
     }
 
     void VelocityElevatorController::Control() {
         auto elevator = m_Subsystem.lock();
-        if (elevator->m_EncoderPosition < ELEVATOR_MAX && elevator->m_EncoderPosition > ELEVATOR_MIN_CLOSED_LOOP_HEIGHT) {
+        if ((elevator->m_EncoderPosition > ELEVATOR_MIN_CLOSED_LOOP_HEIGHT || m_WantedVelocity > 0.01) && elevator->m_EncoderPosition < ELEVATOR_MAX) {
             Log(lib::Logger::LogLevel::k_Info, lib::Logger::Format("Wanted Velocity: %f", m_WantedVelocity));
             if (Robot::ShouldOutput) {
                 elevator->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::Velocity,
@@ -241,7 +243,7 @@ namespace garage {
                                                elevator->m_FeedForward);
             }
         } else {
-            elevator->Log(lib::Logger::LogLevel::k_Error, "Too High");
+            elevator->Log(lib::Logger::LogLevel::k_Error, "Not in closed loop range");
             elevator->SetController(elevator->m_SoftLandController);
         }
     }
@@ -255,7 +257,7 @@ namespace garage {
         auto elevator = m_Subsystem.lock();
         if (Robot::ShouldOutput) {
             elevator->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput,
-                                           elevator->m_EncoderPosition > 1000 ? SAFE_ELEVATOR_DOWN : 0.0);
+                                           elevator->m_EncoderPosition > 500 ? ELEVATOR_SAFE_DOWN : 0.0);
         }
     }
 }

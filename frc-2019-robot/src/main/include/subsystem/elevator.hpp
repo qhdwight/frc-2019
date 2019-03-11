@@ -38,9 +38,9 @@
 #define ELEVATOR_OPEN_LOOP_RAMP 0.4 // Seconds
 #define ELEVATOR_CLOSED_LOOP_RAMP 0.1 // Seconds
 
-#define SAFE_ELEVATOR_DOWN 0.15 // Percent output
+#define ELEVATOR_SAFE_DOWN 0.175 // Percent output
 
-#define SET_POINT_SLOT_INDEX 0
+#define ELEVATOR_MOTION_MAGIC_PID_SLOT 0
 
 namespace garage {
     class Elevator;
@@ -113,7 +113,7 @@ namespace garage {
 
     protected:
         int m_EncoderPosition, m_EncoderVelocity;
-        double m_FeedForward = ELEVATOR_FF;
+        double m_FeedForward = ELEVATOR_FF, m_MaxVelocity = ELEVATOR_VELOCITY;
         ctre::phoenix::motorcontrol::StickyFaults m_StickyFaults;
         ctre::phoenix::motorcontrol::can::TalonSRX m_ElevatorMaster{ELEVATOR_MASTER};
         ctre::phoenix::motorcontrol::can::VictorSPX m_ElevatorSlaveOne{ELEVATOR_SLAVE_ONE}, m_ElevatorSlaveTwo{ELEVATOR_SLAVE_TWO},

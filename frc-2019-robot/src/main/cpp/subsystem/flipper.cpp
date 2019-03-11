@@ -11,17 +11,17 @@ namespace garage {
         m_FlipperMaster.RestoreFactoryDefaults();
         m_FlipperMaster.SetIdleMode(rev::CANSparkMax::IdleMode::kBrake);
         m_FlipperMaster.SetOpenLoopRampRate(FLIPPER_CLOSED_LOOP_RAMP);
-        m_FlipperController.SetP(FLIPPER_P);
-        m_FlipperController.SetI(FLIPPER_I);
-        m_FlipperController.SetD(FLIPPER_D);
-        m_FlipperController.SetIZone(FLIPPER_I_ZONE);
-        m_FlipperController.SetFF(FLIPPER_FF);
-        m_FlipperController.SetOutputRange(-1.0, 1.0);
-        m_FlipperController.SetSmartMotionMaxVelocity(FLIPPER_VELOCITY);
-        m_FlipperController.SetSmartMotionMinOutputVelocity(0.0);
-        m_FlipperController.SetSmartMotionMaxAccel(FLIPPER_ACCELERATION);
-        m_FlipperController.SetSmartMotionAllowedClosedLoopError(FLIPPER_ALLOWABLE_ERROR);
-        m_FlipperController.SetSmartMotionAccelStrategy(rev::CANPIDController::AccelStrategy::kSCurve);
+        m_FlipperController.SetP(FLIPPER_P, FLIPPER_SMART_MOTION_PID_SLOT);
+        m_FlipperController.SetI(FLIPPER_I, FLIPPER_SMART_MOTION_PID_SLOT);
+        m_FlipperController.SetD(FLIPPER_D, FLIPPER_SMART_MOTION_PID_SLOT);
+        m_FlipperController.SetIZone(FLIPPER_I_ZONE, FLIPPER_SMART_MOTION_PID_SLOT);
+        m_FlipperController.SetFF(FLIPPER_FF, FLIPPER_SMART_MOTION_PID_SLOT);
+        m_FlipperController.SetOutputRange(-1.0, 1.0, FLIPPER_SMART_MOTION_PID_SLOT);
+        m_FlipperController.SetSmartMotionMaxVelocity(FLIPPER_VELOCITY, FLIPPER_SMART_MOTION_PID_SLOT);
+        m_FlipperController.SetSmartMotionMinOutputVelocity(0.0, FLIPPER_SMART_MOTION_PID_SLOT);
+        m_FlipperController.SetSmartMotionMaxAccel(FLIPPER_ACCELERATION, FLIPPER_SMART_MOTION_PID_SLOT);
+        m_FlipperController.SetSmartMotionAllowedClosedLoopError(FLIPPER_ALLOWABLE_ERROR, FLIPPER_SMART_MOTION_PID_SLOT);
+        m_FlipperController.SetSmartMotionAccelStrategy(rev::CANPIDController::AccelStrategy::kSCurve, FLIPPER_SMART_MOTION_PID_SLOT);
         m_FlipperMaster.EnableVoltageCompensation(FLIPPER_VOLTAGE_COMPENSATION);
         m_LimitSwitch.EnableLimitSwitch(false);
     }
@@ -77,14 +77,7 @@ namespace garage {
 
     void Flipper::SetSetPoint(double setPoint) {
         SetController(m_SetPointController);
-        if (Robot::ShouldOutput) {
-            auto error = m_FlipperController.SetReference(setPoint, rev::ControlType::kSmartMotion);
-            if (error == rev::CANError::kOK) {
-                Log(lib::Logger::LogLevel::k_Info, lib::Logger::Format("Setting set point to: %d", setPoint));
-            } else {
-                Log(lib::Logger::LogLevel::k_Error, lib::Logger::Format("CAN Error: %d", error));
-            }
-        }
+        m_SetPointController->SetSetPoint(setPoint);
     }
 
     /* =============================================================== Controllers ===============================================================
@@ -122,11 +115,24 @@ namespace garage {
             (encoderPosition > FLIPPER_SET_POINT_UPPER && m_SetPoint < FLIPPER_SET_POINT_UPPER))
             wantingToGoOtherWay = true;
         if (inMiddle || wantingToGoOtherWay) {
-            const double clampedSetPoint = math::clamp(m_SetPoint, FLIPPER_SET_POINT_LOWER, FLIPPER_SET_POINT_UPPER);
-            flipper->SetSetPoint(clampedSetPoint);
+            const double
+                    clampedSetPoint = math::clamp(m_SetPoint, FLIPPER_SET_POINT_LOWER, FLIPPER_SET_POINT_UPPER),
+                    angle = math::map(encoderPosition, 0.0, 40.0, 0.0, 180.0),
+                    feedForward = std::cos(angle) * FLIPPER_ANGLE_FF;
+            if (Robot::ShouldOutput) {
+                auto error = flipper->m_FlipperController.SetReference(clampedSetPoint, rev::ControlType::kSmartMotion,
+                                                                       FLIPPER_SMART_MOTION_PID_SLOT, feedForward);
+                if (error == rev::CANError::kOK) {
+                    Log(lib::Logger::LogLevel::k_Info, lib::Logger::Format("Setting set point to: %d", clampedSetPoint));
+                } else {
+                    Log(lib::Logger::LogLevel::k_Error, lib::Logger::Format("CAN Error: %d", error));
+                }
+            }
         } else {
             flipper->LogSample(lib::Logger::LogLevel::k_Info, "Not doing anything");
-            flipper->m_FlipperMaster.Set(0.0);
+            if (Robot::ShouldOutput) {
+                flipper->m_FlipperMaster.Set(0.0);
+            }
         }
     }
 

@@ -83,6 +83,7 @@ namespace garage {
     void Robot::DisabledPeriodic() {}
 
     void Robot::AutonomousInit() {
+        Reset();
     }
 
     void Robot::AutonomousPeriodic() {

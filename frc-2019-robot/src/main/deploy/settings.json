@@ -1,3 +1,9 @@
 {
-
+  "should_output_motors": true,
+  "enable_elevator": true,
+  "enable_drive": true,
+  "enable_flipper": true,
+  "enable_ball_intake": true,
+  "enable_hatch_intake": true,
+  "enable_outrigger": true
 }

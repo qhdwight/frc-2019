@@ -38,6 +38,7 @@ namespace garage {
         wpi::sys::path::append(deployDirectory, "settings.json");
         std::error_code errorCode;
         wpi::raw_fd_istream settingsFile(deployDirectory, errorCode);
+        bool enableElevator = true, enableDrive = true, enableFlipper = true, enableBallIntake = true, enableHatchIntake = true, enableOutrigger = true;
         if (errorCode) {
             lib::Logger::Log(lib::Logger::LogLevel::k_Error,
                              lib::Logger::Format("Error reading robot settings file: %s", FMT_STR(errorCode.message())));
@@ -46,17 +47,24 @@ namespace garage {
                 auto json = wpi::json::parse(settingsFile);
                 lib::Logger::Log(lib::Logger::LogLevel::k_Info, lib::Logger::Format("Read settings: %s", FMT_STR(json.dump())));
                 m_ShouldOutputMotors = json.at("should_output_motors").get<bool>();
+                enableElevator = json.at("enable_elevator").get<bool>();
+                enableDrive = json.at("enable_drive").get<bool>();
+                enableFlipper = json.at("enable_flipper").get<bool>();
+                enableBallIntake = json.at("enable_ball_intake").get<bool>();
+                enableHatchIntake = json.at("enable_hatch_intake").get<bool>();
+                enableOutrigger = json.at("enable_outrigger").get<bool>();
             } catch (wpi::detail::parse_error& error) {
                 lib::Logger::Log(lib::Logger::LogLevel::k_Error, lib::Logger::Format("Error parsing robot settings: %s", error.what()));
             }
+            settingsFile.close();
         }
         // Manage subsystems
-        AddSubsystem(m_Elevator = std::make_shared<Elevator>(m_Pointer));
-        AddSubsystem(m_Drive = std::make_shared<Drive>(m_Pointer));
-        AddSubsystem(m_Flipper = std::make_shared<Flipper>(m_Pointer));
-        AddSubsystem(m_BallIntake = std::make_shared<BallIntake>(m_Pointer));
-        AddSubsystem(m_HatchIntake = std::make_shared<HatchIntake>(m_Pointer));
-        AddSubsystem(m_Outrigger = std::make_shared<Outrigger>(m_Pointer));
+        if (enableElevator) AddSubsystem(m_Elevator = std::make_shared<Elevator>(m_Pointer));
+        if (enableDrive) AddSubsystem(m_Drive = std::make_shared<Drive>(m_Pointer));
+        if (enableFlipper) AddSubsystem(m_Flipper = std::make_shared<Flipper>(m_Pointer));
+        if (enableBallIntake) AddSubsystem(m_BallIntake = std::make_shared<BallIntake>(m_Pointer));
+        if (enableHatchIntake) AddSubsystem(m_HatchIntake = std::make_shared<HatchIntake>(m_Pointer));
+        if (enableOutrigger) AddSubsystem(m_Outrigger = std::make_shared<Outrigger>(m_Pointer));
         // Render drive trajectory in initialization because it takes a couple of seconds
         m_DriveForwardRoutine = std::make_shared<lib::DriveForwardAutoRoutine>(m_Pointer, "Drive Straight");
         m_DriveForwardRoutine->CalculatePath();

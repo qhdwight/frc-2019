@@ -6,13 +6,19 @@
 
 #include <vector>
 
-#define MAX_SPEED 15.0
-#define MAX_ACCELERATION 10.0
-#define MAX_JERK 60.0
-#define TIME_STEP (1.0 / 50.0)
-#define WHEELBASE_DISTANCE 0.6731
-#define WHEEL_CIRCUMFERENCE 0.4787787204060999
-#define TICKS_PER_REVOLUTION 600
+#define AUTO_P 1.0
+#define AUTO_I 0.0
+#define AUTO_D 0.0
+#define AUTO_V 0.0
+#define AUTO_A 0.0
+#define AUTO_MAX_SPEED 15.0
+#define AUTO_MAX_ACCELERATION 10.0
+#define AUTO_MAX_JERK 60.0
+
+#define AUTO_TIME_STEP (1.0 / 50.0)
+#define AUTO_WHEELBASE_DISTANCE 0.6731
+#define AUTO_WHEEL_CIRCUMFERENCE 0.4787787204060999
+#define AUTO_TICKS_PER_REVOLUTION 600
 
 namespace garage {
     class Drive;

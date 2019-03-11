@@ -14,7 +14,6 @@ namespace garage {
 
     bool SetElevatorPositionRoutine::CheckFinished() {
         // TODO change back
-        return false;
-//        return m_Subsystem->WithinPosition(m_SetPoint);
+        return m_Subsystem->WithinPosition(m_SetPoint);
     }
 }

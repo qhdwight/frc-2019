@@ -19,7 +19,7 @@ namespace garage {
         public:
             RoutineManager(std::shared_ptr<Robot>& robot);
 
-            void AddRoutine(std::shared_ptr<Routine>& routine);
+            void AddRoutine(std::shared_ptr<Routine> routine);
 
             void AddRoutinesFromCommand(Command& command);
 
@@ -28,6 +28,8 @@ namespace garage {
             void Update();
 
             void TerminateAllRoutines();
+
+            void TerminateActiveRoutine();
         };
     }
 }

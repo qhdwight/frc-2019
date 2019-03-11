@@ -1,10 +1,18 @@
 #pragma once
 
-#include <lib/routine.hpp>
+#include <lib/subsystem_routine.hpp>
+
+#include <memory>
 
 namespace garage {
-    class LowerElevatorRoutine : lib::Routine {
+    class Elevator;
+    class LowerElevatorRoutine : public lib::SubsystemRoutine<Elevator> {
     public:
         LowerElevatorRoutine(std::shared_ptr<Robot>& robot);
+
+    private:
+        void Begin() override;
+
+        void Terminate() override;
     };
 }

@@ -74,8 +74,8 @@ namespace garage {
         auto elevator = std::weak_ptr<Elevator>(shared_from_this());
         AddController(m_RawController = std::make_shared<RawElevatorController>(elevator));
         AddController(m_SetPointController = std::make_shared<SetPointElevatorController>(elevator));
-        AddController(m_VelocityController = std::make_shared<VelocityElevatorController>(elevator));
-        AddDefaultController(m_SoftLandController = std::make_shared<SoftLandElevatorController>(elevator));
+        AddDefaultController(m_VelocityController = std::make_shared<VelocityElevatorController>(elevator));
+        AddController(m_SoftLandController = std::make_shared<SoftLandElevatorController>(elevator));
     }
 
     void Elevator::OnReset() {
@@ -111,18 +111,8 @@ namespace garage {
         });
     }
 
-    void Elevator::UpdateUnlocked(Command& command) {
-//        if (command.elevatorSoftLand) {
-//            SetController(m_SoftLandController);
-//        } else if (math::abs(command.elevatorInput) > DEFAULT_INPUT_THRESHOLD) {
-//            SetController(m_RawController);
-//        }
-        if (m_Controller)
-            m_Controller->ProcessCommand(command);
-    }
-
     void Elevator::Update() {
-        // TODO add brownout detection and smart current monitoring, check sticky faults
+        // TODO add brownout detection and smart current monitoring
         m_ElevatorMaster.GetStickyFaults(m_StickyFaults);
         if (m_StickyFaults.HasAnyFault()) {
             // Don't log reverse limit switch error
@@ -217,7 +207,8 @@ namespace garage {
             }
         } else {
             elevator->Log(lib::Logger::LogLevel::k_Error, "Not in closed loop range");
-            elevator->SetController(elevator->m_SoftLandController);
+            elevator->Lock();
+            elevator->SoftLand();
         }
     }
 
@@ -226,7 +217,6 @@ namespace garage {
     }
 
     void VelocityElevatorController::ProcessCommand(Command& command) {
-        // TODO add too high checking
         auto elevator = m_Subsystem.lock();
         m_Input = math::threshold(command.elevatorInput, DEFAULT_INPUT_THRESHOLD);
         m_WantedVelocity = m_Input * elevator->m_MaxVelocity;
@@ -244,7 +234,8 @@ namespace garage {
             }
         } else {
             elevator->Log(lib::Logger::LogLevel::k_Error, "Not in closed loop range");
-            elevator->SetController(elevator->m_SoftLandController);
+            elevator->Lock();
+            elevator->SoftLand();
         }
     }
 

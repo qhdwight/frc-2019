@@ -12,8 +12,7 @@ namespace garage {
             using Controller=SubsystemController<TSubsystem>;
         protected:
             std::vector<std::shared_ptr<Controller>> m_Controllers;
-            std::shared_ptr<Controller> m_Controller;
-            std::shared_ptr<Controller> m_DefaultController;
+            std::shared_ptr<Controller> m_Controller, m_DefaultController;
 
             virtual bool SetController(std::shared_ptr<Controller> controller) {
                 const bool different = controller != m_Controller;
@@ -34,6 +33,14 @@ namespace garage {
             virtual void AddDefaultController(std::shared_ptr<Controller> controller) {
                 AddController(controller);
                 m_DefaultController = controller;
+            }
+
+            void UpdateUnlocked(Command& command) override {
+                if (m_Controller) {
+                    m_Controller->ProcessCommand(command);
+                } else {
+                    LogSample(lib::Logger::LogLevel::k_Warning, "No controller detected");
+                }
             }
 
             void OnUnlock() override {

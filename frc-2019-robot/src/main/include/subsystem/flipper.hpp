@@ -12,6 +12,8 @@
 
 #define FLIPPER_LOWER 0.0
 #define FLIPPER_UPPER 40.0
+#define FLIPPER_LOWER_ANGLE 0.0
+#define FLIPPER_UPPER_ANGLE 180.0
 
 #define FLIPPER_P 4e-5
 #define FLIPPER_I 1e-7
@@ -82,8 +84,6 @@ namespace garage {
         std::shared_ptr<SetPointFlipperController> m_SetPointController;
 
     protected:
-        void UpdateUnlocked(Command& command) override;
-
         void Update() override;
 
         void SpacedUpdate(Command& command) override;
@@ -94,6 +94,14 @@ namespace garage {
         void SetRawOutput(double output);
 
         void SetSetPoint(double setPoint);
+
+        void SetAngle(double angle);
+
+        void Stow();
+
+        double RawSetPointToAngle(double setPoint);
+
+        double AngleToRawSetPoint(double angle);
 
         void OnPostInitialize() override;
     };

@@ -18,14 +18,6 @@ namespace garage {
         IntakeBallThenStowRoutine(std::shared_ptr<Robot>& robot);
     };
 
-    class StowRoutine : public lib::Routine {
-    private:
-        std::shared_ptr<Flipper> m_Flipper;
-
-    public:
-        StowRoutine(std::shared_ptr<Robot>& robot);
-    };
-
     class BallIntakeRoutine : lib::SequentialRoutine {
     public:
         BallIntakeRoutine(std::shared_ptr<Robot>& robot);

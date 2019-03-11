@@ -20,6 +20,7 @@
 #include <networktables/NetworkTable.h>
 #include <networktables/NetworkTableInstance.h>
 
+#include <chrono>
 #include <memory>
 
 namespace garage {
@@ -44,6 +45,7 @@ namespace garage {
         std::shared_ptr<HatchIntake> m_HatchIntake;
         std::vector<std::shared_ptr<lib::Subsystem>> m_Subsystems;
         std::shared_ptr<lib::DriveForwardAutoRoutine> m_DriveForwardRoutine;
+        std::chrono::system_clock::time_point m_LastPeriodicTime;
 
     public:
         static constexpr bool ShouldOutput = true;
@@ -73,6 +75,8 @@ namespace garage {
         Command GetLatestCommand();
 
         std::shared_ptr<NetworkTable> GetNetworkTable() const;
+
+        std::shared_ptr<lib::RoutineManager> GetRoutineManager();
 
         std::shared_ptr<Elevator> GetElevator();
 

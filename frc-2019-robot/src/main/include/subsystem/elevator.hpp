@@ -20,7 +20,7 @@
 #define ELEVATOR_MAX_I 0.0
 #define ELEVATOR_I_ZONE 0 // Encoder ticks
 #define ELEVATOR_D 0.0
-#define ELEVATOR_S_CURVE_STRENGTH 2 // Value between 1-8 which determines how curved the trapazoidal motion profile is
+#define ELEVATOR_S_CURVE_STRENGTH 2 // Value between 1-8 which determines how curved the trapezoidal motion profile is
 //#define ELEVATOR_D ELEVATOR_P * 3.3
 #define ELEVATOR_F 0.0 // Multiplied by velocity calculated by motion magic and added to output, does most of work
 #define ELEVATOR_FF 0.0 // Percent output - Output required to hold elevator at a position, always added to motor output in closed loop
@@ -38,7 +38,7 @@
 #define ELEVATOR_OPEN_LOOP_RAMP 0.4 // Seconds
 #define ELEVATOR_CLOSED_LOOP_RAMP 0.1 // Seconds
 
-#define ELEVATOR_SAFE_DOWN 0.175 // Percent output
+#define ELEVATOR_SAFE_DOWN 0.17 // Percent output
 
 #define ELEVATOR_MOTION_MAGIC_PID_SLOT 0
 
@@ -130,8 +130,6 @@ namespace garage {
         void OnReset() override;
 
         bool ShouldUnlock(Command& command) override;
-
-        void UpdateUnlocked(Command& command) override;
 
         void Update() override;
 

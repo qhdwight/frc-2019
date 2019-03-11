@@ -32,14 +32,6 @@ namespace garage {
         AddController(m_SetPointController = std::make_shared<SetPointFlipperController>(flipper));
     }
 
-    void Flipper::UpdateUnlocked(Command& command) {
-        if (m_Controller) {
-            m_Controller->ProcessCommand(command);
-        } else {
-            LogSample(lib::Logger::LogLevel::k_Warning, "No controller detected");
-        }
-    }
-
     void Flipper::Update() {
         m_IsLimitSwitchDown = m_LimitSwitch.Get();
         if (m_IsLimitSwitchDown && m_FirstLimitSwitchHit) {
@@ -80,6 +72,22 @@ namespace garage {
         m_SetPointController->SetSetPoint(setPoint);
     }
 
+    void Flipper::SetAngle(double angle) {
+        SetSetPoint(AngleToRawSetPoint(angle));
+    }
+
+    void Flipper::Stow() {
+        SetAngle(90.0);
+    }
+
+    double Flipper::RawSetPointToAngle(double setPoint) {
+        return math::map(setPoint, FLIPPER_LOWER, FLIPPER_UPPER, FLIPPER_LOWER_ANGLE, FLIPPER_UPPER_ANGLE);
+    }
+
+    double Flipper::AngleToRawSetPoint(double angle) {
+        return math::map(angle, FLIPPER_LOWER_ANGLE, FLIPPER_UPPER_ANGLE, FLIPPER_LOWER, FLIPPER_UPPER);
+    }
+
     /* =============================================================== Controllers ===============================================================
 
        =========================================================================================================================================== */
@@ -117,8 +125,8 @@ namespace garage {
         if (inMiddle || wantingToGoOtherWay) {
             const double
                     clampedSetPoint = math::clamp(m_SetPoint, FLIPPER_SET_POINT_LOWER, FLIPPER_SET_POINT_UPPER),
-                    angle = math::map(encoderPosition, 0.0, 40.0, 0.0, 180.0),
-                    feedForward = std::cos(angle) * FLIPPER_ANGLE_FF;
+                    angle = flipper->RawSetPointToAngle(encoderPosition),
+                    feedForward = std::cos(r2d(angle)) * FLIPPER_ANGLE_FF;
             if (Robot::ShouldOutput) {
                 auto error = flipper->m_FlipperController.SetReference(clampedSetPoint, rev::ControlType::kSmartMotion,
                                                                        FLIPPER_SMART_MOTION_PID_SLOT, feedForward);

@@ -11,7 +11,8 @@
 #include <lib/logger.hpp>
 #include <lib/subsystem.hpp>
 #include <lib/routine_manager.hpp>
-#include <lib/drive_forward_auto_routine.hpp>
+#include <test/test_drive_auto_routine.hpp>
+#include <routine/set_elevator_position_routine.hpp>
 
 #include <networktables/NetworkTable.h>
 #include <networktables/NetworkTableInstance.h>
@@ -46,9 +47,15 @@ namespace garage {
         std::shared_ptr<BallIntake> m_BallIntake;
         std::shared_ptr<HatchIntake> m_HatchIntake;
         std::vector<std::shared_ptr<lib::Subsystem>> m_Subsystems;
-        std::shared_ptr<lib::DriveForwardAutoRoutine> m_DriveForwardRoutine;
         wpi::optional<std::chrono::system_clock::time_point> m_LastPeriodicTime;
         bool m_ShouldOutputMotors = true;
+        std::chrono::milliseconds m_Period;
+        // Routines
+        std::shared_ptr<test::TestDriveAutoRoutine> m_DriveForwardRoutine;
+        std::shared_ptr<SetElevatorPositionRoutine>
+                m_LowerElevatorRoutine,
+                m_BottomHatchRoutine, m_MiddleHatchRoutine, m_TopHatchRoutine,
+                m_BottomBallRoutine, m_MiddleBallRoutine, m_TopBallRoutine;
 
     public:
         void RobotInit() override;

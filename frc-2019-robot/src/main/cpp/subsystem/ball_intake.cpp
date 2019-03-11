@@ -29,11 +29,14 @@ namespace garage {
         SetMode(intakeMode, absoluteInput);
     }
 
-    bool BallIntake::GetHasBall() {
+    void BallIntake::SpacedUpdate(Command& command) {
         if (m_RightIntake.GetOutputCurrent() > HAS_BALL_STALL_CURRENT)
             m_HasBallCount++;
         else if (m_HasBallCount > 0)
             m_HasBallCount = 0;
+    }
+
+    bool BallIntake::HasBall() {
         return m_HasBallCount > HAS_BALL_COUNTS_REQUIRED;
     }
 

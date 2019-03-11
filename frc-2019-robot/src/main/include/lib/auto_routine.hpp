@@ -11,7 +11,7 @@
 #define AUTO_D 0.0
 #define AUTO_V 0.0
 #define AUTO_A 0.0
-#define AUTO_MAX_SPEED 15.0
+#define AUTO_MAX_VELOCITY 15.0
 #define AUTO_MAX_ACCELERATION 10.0
 #define AUTO_MAX_JERK 60.0
 
@@ -27,6 +27,7 @@ namespace garage {
         protected:
             std::shared_ptr<Drive> m_Drive;
             std::vector<Waypoint> m_Waypoints;
+            int m_TrajectorySize;
             std::vector<Segment> m_LeftTrajectory, m_RightTrajectory;
             EncoderConfig m_LeftEncoderConfig, m_RightEncoderConfig;
             EncoderFollower m_LeftFollower, m_RightFollower;

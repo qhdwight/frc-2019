@@ -1,10 +1,5 @@
 #include <robot.hpp>
 
-#include <routine/climb_hab_routine.hpp>
-#include <routine/ball_intake_routine.hpp>
-#include <routine/measure_elevator_speed.hpp>
-#include <routine/set_elevator_position_routine.hpp>
-
 #include <lib/wait_routine.hpp>
 
 #include <wpi/json.h>
@@ -17,6 +12,7 @@
 namespace garage {
     void Robot::RobotInit() {
         lib::Logger::Log(lib::Logger::LogLevel::k_Info, "Start robot initialization");
+        m_Period = std::chrono::milliseconds(std::lround(m_period * 1000.0));
         // Setup network tables
         m_NetworkTableInstance = nt::NetworkTableInstance::GetDefault();
         m_NetworkTable = m_NetworkTableInstance.GetTable("Garage Robotics");
@@ -65,9 +61,19 @@ namespace garage {
         if (enableBallIntake) AddSubsystem(m_BallIntake = std::make_shared<BallIntake>(m_Pointer));
         if (enableHatchIntake) AddSubsystem(m_HatchIntake = std::make_shared<HatchIntake>(m_Pointer));
         if (enableOutrigger) AddSubsystem(m_Outrigger = std::make_shared<Outrigger>(m_Pointer));
+        /* Create routines */
         // Render drive trajectory in initialization because it takes a couple of seconds
-        m_DriveForwardRoutine = std::make_shared<lib::DriveForwardAutoRoutine>(m_Pointer, "Drive Straight");
+        m_DriveForwardRoutine = std::make_shared<test::TestDriveAutoRoutine>(m_Pointer, "Test Drive");
         m_DriveForwardRoutine->CalculatePath();
+        m_LowerElevatorRoutine = std::make_shared<SetElevatorPositionRoutine>(m_Pointer, 0, "Lower Elevator");
+        // Hatch routines
+        m_BottomHatchRoutine = std::make_shared<SetElevatorPositionRoutine>(m_Pointer, 10000, "Bottom Hatch");
+        m_MiddleHatchRoutine = std::make_shared<SetElevatorPositionRoutine>(m_Pointer, 50000, "Middle Hatch");
+        m_TopHatchRoutine = std::make_shared<SetElevatorPositionRoutine>(m_Pointer, 100000, "Top Hatch");
+        // Ball routines
+        m_BottomHatchRoutine = std::make_shared<SetElevatorPositionRoutine>(m_Pointer, 10000, "Bottom Ball");
+        m_MiddleHatchRoutine = std::make_shared<SetElevatorPositionRoutine>(m_Pointer, 50000, "Middle Ball");
+        m_TopHatchRoutine = std::make_shared<SetElevatorPositionRoutine>(m_Pointer, 100000, "Top Ball");
         lib::Logger::Log(lib::Logger::LogLevel::k_Info, "End robot initialization");
     }
 
@@ -111,8 +117,9 @@ namespace garage {
         auto now = std::chrono::system_clock::now();
         if (m_LastPeriodicTime) {
             auto delta = std::chrono::duration_cast<std::chrono::milliseconds>(now - m_LastPeriodicTime.value());
-            if (delta > std::chrono::milliseconds(std::lround(m_period * 1000.0))) {
-                lib::Logger::Log(lib::Logger::LogLevel::k_Warning, lib::Logger::Format("Loop was too long, took %d milliseconds", delta));
+            if (delta > m_Period * 1.05) {
+                lib::Logger::Log(lib::Logger::LogLevel::k_Warning,
+                                 lib::Logger::Format("Loop was more than 5% of expected, took %d milliseconds", delta));
             }
         }
         m_LastPeriodicTime = now;
@@ -142,14 +149,12 @@ namespace garage {
 //        m_Command.flipper = math::axis<double>(
 //                m_Controller.GetBumper(frc::GenericHID::JoystickHand::kRightHand),
 //                m_Controller.GetBumper(frc::GenericHID::JoystickHand::kLeftHand));
-//        const int pov = m_Controller.GetPOV();
-//        const bool up = pov == 0,
-//                down = pov == 180;
-//        const auto elevatorInput = math::axis<double>(up, down);
-//        m_Command.elevatorInput = elevatorInput;
-//        if (pov == 90) m_Command.elevatorSetPoint = 20000;
-//        if (pov == 270) m_Command.elevatorSetPoint = 185000;
-//        m_Command.test = m_Controller.GetY(frc::GenericHID::JoystickHand::kLeftHand);
+        const int pov = m_Controller.GetPOV();
+        const bool
+                elevatorHatch = pov == 90,
+                elevatorDown = pov == 180,
+                elevatorBall = pov == 270,
+                elevatorSoftLand = pov == 0;
         m_Command.routines.clear();
 //        if (m_Controller.GetAButtonPressed()) {
 //            m_Command.routines.push_back(std::make_shared<test::SetElevatorPositionRoutine>(m_Pointer, "Elevator Up", 100000.0));
@@ -164,26 +169,20 @@ namespace garage {
         if (m_Controller.GetAButtonPressed()) {
             m_RoutineManager->TerminateAllRoutines();
             m_Command.routines.push_back(m_DriveForwardRoutine);
-//            m_Command.routines.push_back(std::make_shared<SetElevatorPositionRoutine>(m_Pointer, "Elevator 10000", 0));
         }
-        if (m_Controller.GetBButtonPressed()) {
+        if (elevatorDown) {
             m_RoutineManager->TerminateAllRoutines();
-            m_Command.routines.push_back(std::make_shared<SetElevatorPositionRoutine>(m_Pointer, "Elevator 50000", 50000));
+            m_Command.routines.push_back(m_LowerElevatorRoutine);
         }
-        if (m_Controller.GetYButtonPressed()) {
+        if (elevatorBall) {
             m_RoutineManager->TerminateAllRoutines();
-            m_Command.routines.push_back(std::make_shared<SetElevatorPositionRoutine>(m_Pointer, "Elevator 100000", 100000));
+            m_Command.routines.push_back(m_BottomBallRoutine);
         }
-        if (m_Controller.GetXButtonPressed()) {
+        if (elevatorHatch) {
             m_RoutineManager->TerminateAllRoutines();
-            m_Command.routines.push_back(std::make_shared<SetElevatorPositionRoutine>(m_Pointer, "Elevator 200000", 200000));
+            m_Command.routines.push_back(m_BottomHatchRoutine);
         }
-        if (m_Controller.GetBumperPressed(frc::GenericHID::kRightHand)) {
-            m_RoutineManager->TerminateAllRoutines();
-//            m_Command.routines.push_back(std::make_shared<MeasureElevatorSpeed>(m_Pointer, "Measure Elevator Speed", 0.325));
-            m_Elevator->SetManual();
-        }
-        if (m_Controller.GetBumperPressed(frc::GenericHID::kLeftHand)) {
+        if (elevatorSoftLand) {
             m_RoutineManager->TerminateAllRoutines();
             m_Elevator->SoftLand();
         }

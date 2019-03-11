@@ -16,7 +16,8 @@ namespace garage {
         m_ElevatorSlaveThree.ConfigFactoryDefault(CONFIG_TIMEOUT);
 
         /* Sensors and Limits */
-        m_ElevatorMaster.ConfigSelectedFeedbackSensor(ctre::phoenix::motorcontrol::FeedbackDevice::QuadEncoder, ELEVATOR_MOTION_MAGIC_PID_SLOT, CONFIG_TIMEOUT);
+        m_ElevatorMaster.ConfigSelectedFeedbackSensor(ctre::phoenix::motorcontrol::FeedbackDevice::QuadEncoder, ELEVATOR_MOTION_MAGIC_PID_SLOT,
+                                                      CONFIG_TIMEOUT);
         // Soft limit
         m_ElevatorMaster.ConfigForwardSoftLimitThreshold(ELEVATOR_MAX, CONFIG_TIMEOUT);
         m_ElevatorMaster.ConfigForwardSoftLimitEnable(true, CONFIG_TIMEOUT);
@@ -194,7 +195,7 @@ namespace garage {
 
     void SetPointElevatorController::Control() {
         auto elevator = m_Subsystem.lock();
-        m_WantedSetPoint = math::clamp(m_WantedSetPoint, 0, ELEVATOR_MAX);
+        m_WantedSetPoint = math::clamp(m_WantedSetPoint, 0, ELEVATOR_MAX_CLOSED_LOOP_HEIGHT);
         Log(lib::Logger::LogLevel::k_Info,
             lib::Logger::Format("Wanted Set Point: %d, Feed Forward: %f", m_WantedSetPoint, elevator->m_FeedForward));
         if ((elevator->m_EncoderPosition > ELEVATOR_MIN_CLOSED_LOOP_HEIGHT || m_WantedSetPoint > 0) && elevator->m_EncoderPosition < ELEVATOR_MAX) {
@@ -223,13 +224,18 @@ namespace garage {
 
     void VelocityElevatorController::Control() {
         auto elevator = m_Subsystem.lock();
-        if ((elevator->m_EncoderPosition > ELEVATOR_MIN_CLOSED_LOOP_HEIGHT || m_WantedVelocity > 0.01) && elevator->m_EncoderPosition < ELEVATOR_MAX) {
-            Log(lib::Logger::LogLevel::k_Info, lib::Logger::Format("Wanted Velocity: %f", m_WantedVelocity));
-            if (elevator->m_Robot->ShouldOutputMotors()) {
-                elevator->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::Velocity,
-                                               m_WantedVelocity,
-                                               ctre::phoenix::motorcontrol::DemandType::DemandType_ArbitraryFeedForward,
-                                               elevator->m_FeedForward);
+        if ((elevator->m_EncoderPosition > ELEVATOR_MIN_CLOSED_LOOP_HEIGHT || m_WantedVelocity > 0.01) &&
+            elevator->m_EncoderPosition < ELEVATOR_MAX) {
+            if (elevator->m_EncoderPosition < ELEVATOR_MAX_CLOSED_LOOP_HEIGHT || m_WantedVelocity < -0.01) {
+                Log(lib::Logger::LogLevel::k_Info, lib::Logger::Format("Wanted Velocity: %f", m_WantedVelocity));
+                if (elevator->m_Robot->ShouldOutputMotors()) {
+                    elevator->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::Velocity,
+                                                   m_WantedVelocity,
+                                                   ctre::phoenix::motorcontrol::DemandType::DemandType_ArbitraryFeedForward,
+                                                   elevator->m_FeedForward);
+                }
+            } else {
+                elevator->Log(lib::Logger::LogLevel::k_Warning, "Trying to go too high");
             }
         } else {
             elevator->Log(lib::Logger::LogLevel::k_Error, "Not in closed loop range");

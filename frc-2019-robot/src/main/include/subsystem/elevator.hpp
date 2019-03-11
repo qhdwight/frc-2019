@@ -8,7 +8,7 @@
 #include <ctre/phoenix/motorcontrol/can/TalonSRX.h>
 #include <ctre/phoenix/motorcontrol/can/VictorSPX.h>
 
-#define ELEVATOR_MAX 250000 // Encoder ticks
+#define ELEVATOR_MAX 300000 // Encoder ticks
 
 /* Gains and Motion Magic */
 #define ELEVATOR_VELOCITY 0 // Encoder ticks per 100 ms
@@ -22,7 +22,8 @@
 //#define ELEVATOR_D ELEVATOR_P * 3.3
 #define ELEVATOR_F 0.0 // Multiplied by velocity calculated by motion magic and added to output, does most of work
 #define ELEVATOR_FF 0.0 // Percent output - Output required to hold elevator at a position, always added to motor output in closed loop
-#define ELEVATOR_MIN_CLOSED_LOOP_HEIGHT 4000 // Encoder ticks
+#define ELEVATOR_MAX_CLOSED_LOOP_HEIGHT (ELEVATOR_MAX - 10000)
+#define ELEVATOR_MIN_CLOSED_LOOP_HEIGHT 5000 // Encoder ticks
 
 /* Energy Management */
 #define ELEVATOR_CONTINUOUS_CURRENT_LIMIT 40 // Amperes

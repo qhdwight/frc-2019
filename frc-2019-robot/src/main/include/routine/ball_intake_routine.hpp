@@ -1,21 +1,23 @@
 #pragma once
 
-#include <robot.hpp>
-
-#include <lib/routine.hpp>
+#include <lib/subsystem_routine.hpp>
 #include <lib/sequential_routine.hpp>
 
 #include <memory>
 
 namespace garage {
-    class IntakeBallThenStowRoutine : public lib::Routine {
+    class Robot;
+    class BallIntake;
+    class IntakeBallUntilIn : public lib::SubsystemRoutine<BallIntake> {
     private:
-        std::shared_ptr<BallIntake> m_BallIntake;
-
         void Begin() override;
 
     public:
-        IntakeBallThenStowRoutine(std::shared_ptr<Robot>& robot);
+        IntakeBallUntilIn(std::shared_ptr<Robot>& robot);
+
+        bool CheckFinished() override;
+
+        void Terminate() override;
     };
 
     class BallIntakeRoutine : lib::SequentialRoutine {

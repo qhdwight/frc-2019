@@ -4,7 +4,7 @@
 
 #include <lib/routine.hpp>
 
-#include <queue>
+#include <deque>
 #include <memory>
 #include <utility>
 
@@ -14,7 +14,7 @@ namespace garage {
         class RoutineManager {
         private:
             std::shared_ptr<Robot> m_Robot;
-            std::queue<std::shared_ptr<Routine>> m_QueuedRoutines;
+            std::deque<std::shared_ptr<Routine>> m_QueuedRoutines;
             std::shared_ptr<Routine> m_ActiveRoutine;
         public:
             RoutineManager(std::shared_ptr<Robot>& robot);

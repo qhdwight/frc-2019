@@ -14,7 +14,10 @@ namespace garage {
         }
 
         void RoutineManager::AddRoutine(std::shared_ptr<Routine> routine) {
-            m_QueuedRoutines.push(routine);
+            // Make sure we are not adding the same exact routine twice
+            if (std::find(m_QueuedRoutines.begin(), m_QueuedRoutines.end(), routine) == m_QueuedRoutines.end()) {
+                m_QueuedRoutines.push_back(routine);
+            }
         }
 
         void RoutineManager::Update() {
@@ -28,7 +31,7 @@ namespace garage {
             if (!m_QueuedRoutines.empty() && !m_ActiveRoutine) {
                 m_ActiveRoutine = m_QueuedRoutines.front();
                 m_ActiveRoutine->Begin();
-                m_QueuedRoutines.pop();
+                m_QueuedRoutines.pop_front();
             }
         }
 
@@ -37,15 +40,13 @@ namespace garage {
             while (!m_QueuedRoutines.empty()) {
                 auto routine = m_QueuedRoutines.front();
                 routine->Terminate();
-                m_QueuedRoutines.pop();
+                m_QueuedRoutines.pop_front();
             }
         }
 
         void RoutineManager::Reset() {
             m_ActiveRoutine.reset();
-            while (!m_QueuedRoutines.empty()) {
-                m_QueuedRoutines.pop();
-            }
+            m_QueuedRoutines.clear();
         }
 
         void RoutineManager::TerminateActiveRoutine() {

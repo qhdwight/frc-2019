@@ -3,17 +3,17 @@
 #include <robot.hpp>
 
 namespace garage {
-    LowerElevatorRoutine::LowerElevatorRoutine(std::shared_ptr<Robot>& robot)
+    SoftLandElevatorRoutine::SoftLandElevatorRoutine(std::shared_ptr<Robot>& robot)
             : SubsystemRoutine(robot, robot->GetElevator(), "Lower Elevator") {
 
     }
 
-    void LowerElevatorRoutine::Begin() {
+    void SoftLandElevatorRoutine::Begin() {
         Routine::Begin();
         m_Subsystem->SoftLand();
     }
 
-    void LowerElevatorRoutine::Terminate() {
+    void SoftLandElevatorRoutine::Terminate() {
         Routine::Terminate();
         m_Subsystem->Unlock();
     }

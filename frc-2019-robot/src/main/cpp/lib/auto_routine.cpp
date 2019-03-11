@@ -24,10 +24,10 @@ namespace garage {
             auto start = std::chrono::high_resolution_clock::now();
             TrajectoryCandidate trajectoryCandidate;
             pathfinder_prepare(m_Waypoints.data(), static_cast<int>(m_Waypoints.size()), FIT_HERMITE_QUINTIC, PATHFINDER_SAMPLES_HIGH,
-                               AUTO_TIME_STEP, AUTO_MAX_SPEED, AUTO_MAX_ACCELERATION, AUTO_MAX_JERK, &trajectoryCandidate);
+                               AUTO_TIME_STEP, AUTO_MAX_VELOCITY, AUTO_MAX_ACCELERATION, AUTO_MAX_JERK, &trajectoryCandidate);
             m_Drive->Log(Logger::LogLevel::k_Info, "Prepared Points");
-            const int length = trajectoryCandidate.length;
-            const auto reserveLength = static_cast<const unsigned long>(length);
+            m_TrajectorySize = trajectoryCandidate.length;
+            const auto reserveLength = static_cast<const unsigned long>(m_TrajectorySize);
             m_Drive->Log(Logger::LogLevel::k_Info, Logger::Format("Trajectory has %d points", reserveLength));
             std::vector<Segment> trajectory;
             trajectory.resize(reserveLength);
@@ -35,7 +35,7 @@ namespace garage {
             m_RightTrajectory.resize(reserveLength);
             pathfinder_generate(&trajectoryCandidate, trajectory.data());
             m_Drive->Log(Logger::LogLevel::k_Info, "Generated Trajectory");
-            pathfinder_modify_tank(trajectory.data(), length, m_LeftTrajectory.data(), m_RightTrajectory.data(), AUTO_WHEELBASE_DISTANCE);
+            pathfinder_modify_tank(trajectory.data(), m_TrajectorySize, m_LeftTrajectory.data(), m_RightTrajectory.data(), AUTO_WHEELBASE_DISTANCE);
             m_Drive->Log(Logger::LogLevel::k_Info, Logger::Format("%d", trajectory.size()));
             m_Drive->Log(Logger::LogLevel::k_Info, "Modified Trajectory for Tank Drive");
             auto stop = std::chrono::high_resolution_clock::now();
@@ -48,7 +48,7 @@ namespace garage {
                                                           AUTO_TICKS_PER_REVOLUTION, // Ticks per revolution
                                                           AUTO_WHEEL_CIRCUMFERENCE, // Wheel circumference in meters
                                                           AUTO_P, AUTO_I, AUTO_D, // P, I, D
-                                                          1.0 / AUTO_MAX_SPEED, // Velocity factor
+                                                          1.0 / AUTO_MAX_VELOCITY, // Velocity factor
                                                           AUTO_A}; // Acceleration factor
         }
 
@@ -59,11 +59,10 @@ namespace garage {
 
         void AutoRoutine::Update() {
             const int
-                    leftEncoder = m_Drive->GetDiscreteLeftEncoderTicks(), rightEncoder = m_Drive->GetDiscreteRightEncoderTicks(),
-                    size = static_cast<int>(m_LeftTrajectory.size());
+                    leftEncoder = m_Drive->GetDiscreteLeftEncoderTicks(), rightEncoder = m_Drive->GetDiscreteRightEncoderTicks();
             const double
-                    leftOutput = pathfinder_follow_encoder(m_LeftEncoderConfig, &m_LeftFollower, m_LeftTrajectory.data(), size, leftEncoder),
-                    rightOutput = pathfinder_follow_encoder(m_RightEncoderConfig, &m_RightFollower, m_RightTrajectory.data(), size, rightEncoder),
+                    leftOutput = pathfinder_follow_encoder(m_LeftEncoderConfig, &m_LeftFollower, m_LeftTrajectory.data(), m_TrajectorySize, leftEncoder),
+                    rightOutput = pathfinder_follow_encoder(m_RightEncoderConfig, &m_RightFollower, m_RightTrajectory.data(), m_TrajectorySize, rightEncoder),
                     heading = m_Robot->GetDrive()->GetHeading(),
                     desiredHeading = r2d(m_LeftFollower.heading);
             double headingDelta = std::fmod(desiredHeading - heading, 360.0);

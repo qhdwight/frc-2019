@@ -5,10 +5,11 @@
 #include <memory>
 
 namespace garage {
+    class Robot;
     class Elevator;
-    class LowerElevatorRoutine : public lib::SubsystemRoutine<Elevator> {
+    class SoftLandElevatorRoutine : public lib::SubsystemRoutine<Elevator> {
     public:
-        LowerElevatorRoutine(std::shared_ptr<Robot>& robot);
+        SoftLandElevatorRoutine(std::shared_ptr<Robot>& robot);
 
     private:
         void Begin() override;

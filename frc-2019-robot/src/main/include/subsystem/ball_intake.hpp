@@ -33,11 +33,13 @@ namespace garage {
     protected:
         void UpdateUnlocked(Command& command) override;
 
+        void SpacedUpdate(Command& command) override;
+
     public:
         BallIntake(std::shared_ptr<Robot>& robot);
 
         void SetMode(IntakeMode intakeMode, double strength = 0.0);
 
-        bool GetHasBall();
+        bool HasBall();
     };
 }

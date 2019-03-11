@@ -1,9 +1,16 @@
 #include <routine/set_elevator_position_routine.hpp>
 
+#include <robot.hpp>
+
 namespace garage {
+    SetElevatorPositionRoutine::SetElevatorPositionRoutine(std::shared_ptr<Robot>& robot, int setPoint, const std::string& name)
+            : SubsystemRoutine(robot, robot->GetElevator(), name), m_SetPoint(setPoint) {
+
+    }
+
     void SetElevatorPositionRoutine::Begin() {
         lib::Routine::Begin();
-        m_Robot->GetElevator()->SetWantedSetPoint(m_SetPoint);
+        m_Subsystem->SetWantedSetPoint(m_SetPoint);
     }
 
     void SetElevatorPositionRoutine::Terminate() {
@@ -12,7 +19,6 @@ namespace garage {
     }
 
     bool SetElevatorPositionRoutine::CheckFinished() {
-        // TODO change back
         return m_Subsystem->WithinPosition(m_SetPoint);
     }
 }

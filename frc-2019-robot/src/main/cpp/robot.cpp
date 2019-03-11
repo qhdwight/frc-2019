@@ -52,7 +52,6 @@ namespace garage {
             } catch (wpi::detail::parse_error& error) {
                 lib::Logger::Log(lib::Logger::LogLevel::k_Error, lib::Logger::Format("Error parsing robot settings: %s", error.what()));
             }
-            settingsFile.close();
         }
         // Manage subsystems
         if (enableElevator) AddSubsystem(m_Elevator = std::make_shared<Elevator>(m_Pointer));

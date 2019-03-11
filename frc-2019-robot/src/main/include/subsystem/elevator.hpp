@@ -38,7 +38,7 @@
 #define ELEVATOR_OPEN_LOOP_RAMP 0.4 // Seconds
 #define ELEVATOR_CLOSED_LOOP_RAMP 0.1 // Seconds
 
-#define SAFE_ELEVATOR_DOWN 0.13 // Percent output
+#define SAFE_ELEVATOR_DOWN 0.15 // Percent output
 
 #define SET_POINT_SLOT_INDEX 0
 

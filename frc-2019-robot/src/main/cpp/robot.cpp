@@ -26,12 +26,12 @@ namespace garage {
         m_RoutineManager = std::make_shared<lib::RoutineManager>(m_Pointer);
         m_NetworkTable->PutNumber("Log Level", static_cast<double>(defaultLogLevel));
         m_NetworkTable->GetEntry("Log Level").AddListener([&](const nt::EntryNotification& notification) {
-            auto logLevel = static_cast<lib::Logger::LogLevel>(std::round(notification.value->GetDouble()));
+            auto logLevel = static_cast<lib::Logger::LogLevel>(std::lround(notification.value->GetDouble()));
             lib::Logger::SetLogLevel(logLevel);
             lib::Logger::Log(lib::Logger::LogLevel::k_Info, lib::Logger::Format("Updated log level to: %d", logLevel));
         }, NT_NOTIFY_UPDATE);
         AddSubsystem(m_Elevator = std::make_shared<Elevator>(m_Pointer));
-        AddSubsystem(m_Drive = std::make_shared<Drive>(m_Pointer));
+//        AddSubsystem(m_Drive = std::make_shared<Drive>(m_Pointer));
 //        AddSubsystem(m_Flipper = std::make_shared<Flipper>(m_Pointer));
 //        AddSubsystem(m_BallIntake = std::make_shared<BallIntake>(m_Pointer));
 //        AddSubsystem(m_HatchIntake = std::make_shared<HatchIntake>(m_Pointer));
@@ -39,8 +39,14 @@ namespace garage {
         wpi::SmallString<256> deployDirectory;
         frc::filesystem::GetDeployDirectory(deployDirectory);
         wpi::sys::path::append(deployDirectory, "settings.json");
-        auto json = wpi::json::parse(deployDirectory);
-        lib::Logger::Log(lib::Logger::LogLevel::k_Info, lib::Logger::Format("Settings: %s", FMT_STR(json.dump())));
+        try {
+            auto json = wpi::json::parse(deployDirectory);
+            lib::Logger::Log(lib::Logger::LogLevel::k_Info, lib::Logger::Format("Settings: %s", FMT_STR(json.dump())));
+        } catch (wpi::detail::parse_error& error) {
+            lib::Logger::Log(lib::Logger::LogLevel::k_Error, lib::Logger::Format("Error reading robot settings: %s", error.what()));
+        }
+        m_DriveForwardRoutine = std::make_shared<lib::DriveForwardAutoRoutine>(m_Pointer, "Drive Straight");
+//        m_DriveForwardRoutine->CalculatePath();
     }
 
     void Robot::AddSubsystem(std::shared_ptr<lib::Subsystem> subsystem) {
@@ -54,18 +60,22 @@ namespace garage {
 
     void Robot::DisabledPeriodic() {}
 
-    void Robot::AutonomousInit() {}
+    void Robot::AutonomousInit() {
+    }
 
-    void Robot::AutonomousPeriodic() {}
+    void Robot::AutonomousPeriodic() {
+        MatchPeriodic();
+    }
 
     void Robot::Reset() {
+        m_Command = {};
         m_RoutineManager->Reset();
         for (const auto& subsystem : m_Subsystems)
             subsystem->Reset();
     }
 
     void Robot::TeleopInit() {
-        m_Command = {};
+        Reset();
 //        auto r1 = std::dynamic_pointer_cast<lib::Routine>(std::make_shared<lib::WaitRoutine>(m_Pointer, "Wait One", 2.0));
 //        auto r2 = std::dynamic_pointer_cast<lib::Routine>(std::make_shared<lib::WaitRoutine>(m_Pointer, "Wait Two", 4.0));
 //        std::vector<std::shared_ptr<lib::Routine>> routines{r1, r2};
@@ -73,13 +83,17 @@ namespace garage {
 //        m_RoutineManager->AddRoutine(seq);
     }
 
-    void Robot::TeleopPeriodic() {
+    void Robot::MatchPeriodic() {
         UpdateCommand();
         if (m_RoutineManager)
             m_RoutineManager->AddRoutinesFromCommand(m_Command);
         m_RoutineManager->Update();
         for (const auto& subsystem : m_Subsystems)
             subsystem->Periodic();
+    }
+
+    void Robot::TeleopPeriodic() {
+        MatchPeriodic();
     }
 
     void Robot::UpdateCommand() {
@@ -114,7 +128,8 @@ namespace garage {
 ////        }
         if (m_Controller.GetAButtonPressed()) {
             m_RoutineManager->TerminateAllRoutines();
-            m_Command.routines.push_back(std::make_shared<SetElevatorPositionRoutine>(m_Pointer, "Elevator 10000", 10000));
+//            m_Command.routines.push_back(m_DriveForwardRoutine);
+            m_Command.routines.push_back(std::make_shared<SetElevatorPositionRoutine>(m_Pointer, "Elevator 10000", 0));
         }
         if (m_Controller.GetBButtonPressed()) {
             m_RoutineManager->TerminateAllRoutines();
@@ -131,10 +146,11 @@ namespace garage {
         if (m_Controller.GetBumperPressed(frc::GenericHID::kRightHand)) {
             m_RoutineManager->TerminateAllRoutines();
 //            m_Command.routines.push_back(std::make_shared<MeasureElevatorSpeed>(m_Pointer, "Measure Elevator Speed", 0.325));
-            m_Elevator->SetRawOutput(0.0);
+            m_Elevator->SetManual();
         }
         if (m_Controller.GetBumperPressed(frc::GenericHID::kLeftHand)) {
             m_RoutineManager->TerminateAllRoutines();
+            m_Elevator->SoftLand();
         }
         m_Command.elevatorInput = -m_Controller.GetY(frc::GenericHID::kRightHand);
     }

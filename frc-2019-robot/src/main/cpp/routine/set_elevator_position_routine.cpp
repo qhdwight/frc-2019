@@ -1,7 +1,5 @@
 #include <routine/set_elevator_position_routine.hpp>
 
-#include <robot.hpp>
-
 namespace garage {
     void SetElevatorPositionRoutine::Begin() {
         lib::Routine::Begin();

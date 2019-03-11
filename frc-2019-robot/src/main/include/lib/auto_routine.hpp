@@ -9,15 +9,17 @@
 #define MAX_SPEED 15.0
 #define MAX_ACCELERATION 10.0
 #define MAX_JERK 60.0
-#define TIME_STEP 1.0 / 50.0
+#define TIME_STEP (1.0 / 50.0)
 #define WHEELBASE_DISTANCE 0.6731
 #define WHEEL_CIRCUMFERENCE 0.4787787204060999
-#define TICKS_PER_REVOLUTION 4096
+#define TICKS_PER_REVOLUTION 600
 
 namespace garage {
+    class Drive;
     namespace lib {
         class AutoRoutine : public Routine {
         protected:
+            std::shared_ptr<Drive> m_Drive;
             std::vector<Waypoint> m_Waypoints;
             std::vector<Segment> m_LeftTrajectory, m_RightTrajectory;
             EncoderConfig m_LeftEncoderConfig, m_RightEncoderConfig;
@@ -31,6 +33,8 @@ namespace garage {
 
         public:
             AutoRoutine(std::shared_ptr<Robot>& robot, const std::string& name);
+
+            void CalculatePath();
 
             void Begin() override;
 

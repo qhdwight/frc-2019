@@ -4,12 +4,12 @@ namespace garage {
     namespace lib {
         void WaitRoutine::Begin() {
             Routine::Begin();
-            m_StartTime = frc::Timer::GetFPGATimestamp();
-            m_EndTime = m_StartTime + m_Duration;
+            m_StartTime = std::chrono::system_clock::now();
+            m_EndTime = m_StartTime + m_DurationMilliseconds;
         }
 
         bool WaitRoutine::CheckFinished() {
-            return frc::Timer::GetFPGATimestamp() > m_EndTime;
+            return std::chrono::system_clock::now() > m_EndTime;
         }
     }
 }

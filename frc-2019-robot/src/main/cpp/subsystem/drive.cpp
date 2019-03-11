@@ -7,7 +7,6 @@
 #include <cmath>
 
 namespace garage {
-    // TODO fix pigeon heading
     Drive::Drive(std::shared_ptr<Robot>& robot) : lib::Subsystem(robot, "Drive") {
         m_LeftSlave.RestoreFactoryDefaults();
         m_RightSlave.RestoreFactoryDefaults();
@@ -46,10 +45,10 @@ namespace garage {
 
     void Drive::SpacedUpdate(Command& command) {
         const double
-            leftOutput = m_LeftMaster.GetAppliedOutput(),
-            rightOutput = m_RightMaster.GetAppliedOutput(),
-            leftCurrent = m_LeftMaster.GetOutputCurrent(),
-            rightCurrent = m_RightMaster.GetOutputCurrent();
+                leftOutput = m_LeftMaster.GetAppliedOutput(),
+                rightOutput = m_RightMaster.GetAppliedOutput(),
+                leftCurrent = m_LeftMaster.GetOutputCurrent(),
+                rightCurrent = m_RightMaster.GetOutputCurrent();
 //        m_NetworkTable->PutNumber("Gyro", m_Pigeon.GetFusedHeading());
         m_NetworkTable->PutNumber("Left Output", leftOutput);
         m_NetworkTable->PutNumber("Right Output", rightOutput);
@@ -63,6 +62,8 @@ namespace garage {
     }
 
     void Drive::Update() {
+        m_RightEncoderPosition = m_RightEncoder.GetPosition();
+        m_LeftEncoderPosition = m_LeftEncoder.GetPosition();
         if (Robot::ShouldOutput) {
             m_LeftMaster.Set(m_LeftOutput);
             m_RightMaster.Set(m_RightOutput);
@@ -70,12 +71,11 @@ namespace garage {
     }
 
     double Drive::GetHeading() {
-        return 0.0;
-//        return m_Pigeon.GetFusedHeading();
+        return m_Pigeon.GetFusedHeading();
     }
 
     void Drive::ResetGyroAndEncoders() {
-//        m_Pigeon.SetFusedHeading(0.0);
+        m_Pigeon.SetFusedHeading(0.0);
         m_LeftEncoder.SetPosition(0.0);
         m_RightEncoder.SetPosition(0.0);
     }
@@ -86,9 +86,16 @@ namespace garage {
     }
 
     double Drive::GetTilt() {
-        return 0.0;
-//        double angles[3];
-//        m_Pigeon.GetYawPitchRoll(angles);
-//        return angles[1];
+        double angles[3];
+        m_Pigeon.GetYawPitchRoll(angles);
+        return angles[1];
+    }
+
+    int Drive::GetDiscreteRightEncoderTicks() {
+        return std::lround(m_RightEncoderPosition * 100.0);
+    }
+
+    int Drive::GetDiscreteLeftEncoderTicks() {
+        return std::lround(m_LeftEncoderPosition * 100.0);
     }
 }

@@ -59,7 +59,7 @@ namespace garage {
         m_ElevatorMaster.Config_kF(SET_POINT_SLOT_INDEX, ELEVATOR_F, CONFIG_TIMEOUT);
         m_ElevatorMaster.ConfigMotionSCurveStrength(ELEVATOR_S_CURVE_STRENGTH, CONFIG_TIMEOUT);
         // Safety
-        m_ElevatorMaster.ConfigClosedLoopPeakOutput(SET_POINT_SLOT_INDEX, 0.5, CONFIG_TIMEOUT);
+        m_ElevatorMaster.ConfigClosedLoopPeakOutput(SET_POINT_SLOT_INDEX, 0.75, CONFIG_TIMEOUT);
         m_ElevatorMaster.ConfigAllowableClosedloopError(SET_POINT_SLOT_INDEX, ELEVATOR_ALLOWABLE_CLOSED_LOOP_ERROR, CONFIG_TIMEOUT);
 
         /* Final enabling */

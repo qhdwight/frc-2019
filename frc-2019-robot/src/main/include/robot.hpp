@@ -11,6 +11,7 @@
 #include <lib/logger.hpp>
 #include <lib/subsystem.hpp>
 #include <lib/routine_manager.hpp>
+#include <lib/drive_forward_auto_routine.hpp>
 
 #include <frc/Joystick.h>
 #include <frc/TimedRobot.h>
@@ -42,6 +43,7 @@ namespace garage {
         std::shared_ptr<BallIntake> m_BallIntake;
         std::shared_ptr<HatchIntake> m_HatchIntake;
         std::vector<std::shared_ptr<lib::Subsystem>> m_Subsystems;
+        std::shared_ptr<lib::DriveForwardAutoRoutine> m_DriveForwardRoutine;
 
     public:
         static constexpr bool ShouldOutput = true;
@@ -65,6 +67,8 @@ namespace garage {
         void TeleopPeriodic() override;
 
         void AddSubsystem(std::shared_ptr<lib::Subsystem> subsystem);
+
+        void MatchPeriodic();
 
         Command GetLatestCommand();
 

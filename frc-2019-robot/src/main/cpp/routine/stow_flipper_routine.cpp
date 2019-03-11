@@ -8,7 +8,6 @@ namespace garage {
 
     void StowRoutine::Begin() {
         Routine::Begin();
-        m_Subsystem->Lock();
         m_Subsystem->Stow();
     }
 

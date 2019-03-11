@@ -55,7 +55,6 @@ namespace garage {
         void AutoRoutine::Begin() {
             m_LeftFollower = m_RightFollower = {0.0, 0.0, 0.0, 0, 0};
             Routine::Begin();
-            m_Robot->GetDrive()->Lock();
         }
 
         void AutoRoutine::Update() {

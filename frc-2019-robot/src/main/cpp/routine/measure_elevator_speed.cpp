@@ -6,7 +6,6 @@
 namespace garage {
     void MeasureElevatorSpeed::Begin() {
         Routine::Begin();
-        m_Subsystem->Lock();
         m_Subsystem->SetRawOutput(m_Output);
     }
 

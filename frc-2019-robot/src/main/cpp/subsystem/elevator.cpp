@@ -74,7 +74,7 @@ namespace garage {
         auto elevator = std::weak_ptr<Elevator>(shared_from_this());
         AddController(m_RawController = std::make_shared<RawElevatorController>(elevator));
         AddController(m_SetPointController = std::make_shared<SetPointElevatorController>(elevator));
-        AddDefaultController(m_VelocityController = std::make_shared<VelocityElevatorController>(elevator));
+        AddUnlockedController(m_VelocityController = std::make_shared<VelocityElevatorController>(elevator));
         AddController(m_SoftLandController = std::make_shared<SoftLandElevatorController>(elevator));
     }
 
@@ -207,7 +207,6 @@ namespace garage {
             }
         } else {
             elevator->Log(lib::Logger::LogLevel::k_Error, "Not in closed loop range");
-            elevator->Lock();
             elevator->SoftLand();
         }
     }
@@ -234,7 +233,6 @@ namespace garage {
             }
         } else {
             elevator->Log(lib::Logger::LogLevel::k_Error, "Not in closed loop range");
-            elevator->Lock();
             elevator->SoftLand();
         }
     }

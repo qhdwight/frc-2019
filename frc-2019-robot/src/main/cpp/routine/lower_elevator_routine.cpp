@@ -10,7 +10,6 @@ namespace garage {
 
     void LowerElevatorRoutine::Begin() {
         Routine::Begin();
-        m_Subsystem->Lock();
         m_Subsystem->SoftLand();
     }
 

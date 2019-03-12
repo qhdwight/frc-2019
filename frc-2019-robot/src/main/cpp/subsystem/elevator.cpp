@@ -120,19 +120,20 @@ namespace garage {
         m_ElevatorMaster.GetStickyFaults(m_StickyFaults);
         if (m_StickyFaults.HasAnyFault()) {
             // Don't log reverse limit switch error
-            if ((m_StickyFaults.ToBitfield() & ~(1 << 2)) != 0)
+            if ((m_StickyFaults.ToBitfield() & ~(1 << 2)) != 0) {
                 lib::Logger::Log(lib::Logger::LogLevel::k_Error,
                                  lib::Logger::Format("Sticky Faults: %s", FMT_STR(m_StickyFaults.ToString())));
-            m_ElevatorMaster.ClearStickyFaults();
+                m_ElevatorMaster.ClearStickyFaults();
+            }
         }
         m_EncoderPosition = m_ElevatorMaster.GetSelectedSensorPosition(ELEVATOR_MOTION_MAGIC_PID_SLOT);
         m_EncoderVelocity = m_ElevatorMaster.GetSelectedSensorVelocity(ELEVATOR_MOTION_MAGIC_PID_SLOT);
-        auto& driverStation = frc::DriverStation::GetInstance();
-        const double timeRemaining = driverStation.GetMatchTime();
-        const bool isTest = driverStation.IsTest();
-        if (timeRemaining < ELEVATOR_LAND_TIME && !isTest) {
-            SetWantedSetPoint(0);
-        }
+//        auto& driverStation = frc::DriverStation::GetInstance();
+//        const double timeRemaining = driverStation.GetMatchTime();
+//        const bool isTest = driverStation.IsTest();
+//        if (timeRemaining < ELEVATOR_LAND_TIME && !isTest) {
+//            SetWantedSetPoint(0);
+//        }
         if (m_Controller) {
             m_Controller->Control();
         } else {
@@ -160,12 +161,14 @@ namespace garage {
     }
 
     bool Elevator::ShouldUnlock(Command& command) {
-        auto& driverStation = frc::DriverStation::GetInstance();
-        const double timeRemaining = driverStation.GetMatchTime();
-        const bool isTest = driverStation.IsTest();
-        return (timeRemaining > ELEVATOR_LAND_TIME && !isTest) &&
-               (command.elevatorInput > DEFAULT_INPUT_THRESHOLD ||
-               (command.elevatorInput < -DEFAULT_INPUT_THRESHOLD && m_EncoderPosition >= ELEVATOR_MIN_CLOSED_LOOP_HEIGHT));
+//        auto& driverStation = frc::DriverStation::GetInstance();
+//        const double timeRemaining = driverStation.GetMatchTime();
+//        const bool isTest = driverStation.IsTest();
+//        return (timeRemaining > ELEVATOR_LAND_TIME && !isTest) &&
+//               (command.elevatorInput > DEFAULT_INPUT_THRESHOLD ||
+//                (command.elevatorInput < -DEFAULT_INPUT_THRESHOLD && m_EncoderPosition >= ELEVATOR_MIN_CLOSED_LOOP_HEIGHT));
+        return (command.elevatorInput > DEFAULT_INPUT_THRESHOLD ||
+                (command.elevatorInput < -DEFAULT_INPUT_THRESHOLD && m_EncoderPosition >= ELEVATOR_MIN_CLOSED_LOOP_HEIGHT));
     }
 
     void Elevator::SetRawOutput(double output) {

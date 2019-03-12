@@ -40,6 +40,8 @@
 
 #define ELEVATOR_MOTION_MAGIC_PID_SLOT 0
 
+#define ELEVATOR_LAND_TIME 3.0 // Seconds left in match when elevator tries to land to avoid damage
+
 namespace garage {
     class Elevator;
 

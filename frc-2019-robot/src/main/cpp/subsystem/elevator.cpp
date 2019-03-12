@@ -4,6 +4,8 @@
 
 #include <garage_math/garage_math.hpp>
 
+#include <frc/DriverStation.h>
+
 namespace garage {
     Elevator::Elevator(std::shared_ptr<Robot>& robot) : lib::ControllableSubsystem<Elevator>(robot, "Elevator") {
         ConfigSpeedControllers();
@@ -124,6 +126,10 @@ namespace garage {
         }
         m_EncoderPosition = m_ElevatorMaster.GetSelectedSensorPosition(ELEVATOR_MOTION_MAGIC_PID_SLOT);
         m_EncoderVelocity = m_ElevatorMaster.GetSelectedSensorVelocity(ELEVATOR_MOTION_MAGIC_PID_SLOT);
+        const double timeRemaining = frc::DriverStation::GetInstance().GetMatchTime();
+        if (timeRemaining < ELEVATOR_LAND_TIME) {
+            SetWantedSetPoint(0);
+        }
         if (m_Controller) {
             m_Controller->Control();
         } else {
@@ -151,8 +157,10 @@ namespace garage {
     }
 
     bool Elevator::ShouldUnlock(Command& command) {
-        return command.elevatorInput > DEFAULT_INPUT_THRESHOLD ||
-               (command.elevatorInput < -DEFAULT_INPUT_THRESHOLD && m_EncoderPosition >= ELEVATOR_MIN_CLOSED_LOOP_HEIGHT);
+        const double timeRemaining = frc::DriverStation::GetInstance().GetMatchTime();
+        return timeRemaining > ELEVATOR_LAND_TIME && (command.elevatorInput > DEFAULT_INPUT_THRESHOLD ||
+                                                      (command.elevatorInput < -DEFAULT_INPUT_THRESHOLD &&
+                                                       m_EncoderPosition >= ELEVATOR_MIN_CLOSED_LOOP_HEIGHT));
     }
 
     void Elevator::SetRawOutput(double output) {

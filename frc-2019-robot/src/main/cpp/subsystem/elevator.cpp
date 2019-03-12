@@ -151,7 +151,8 @@ namespace garage {
     }
 
     bool Elevator::ShouldUnlock(Command& command) {
-        return math::absolute(command.elevatorInput) > DEFAULT_INPUT_THRESHOLD;
+        return command.elevatorInput > DEFAULT_INPUT_THRESHOLD ||
+               (command.elevatorInput < -DEFAULT_INPUT_THRESHOLD && m_EncoderPosition >= ELEVATOR_MIN_CLOSED_LOOP_HEIGHT);
     }
 
     void Elevator::SetRawOutput(double output) {
@@ -207,7 +208,7 @@ namespace garage {
                                                elevator->m_FeedForward);
             }
         } else {
-            elevator->Log(lib::Logger::LogLevel::k_Error, "Not in closed loop range");
+            elevator->Log(lib::Logger::LogLevel::k_Error, "Not in closed loop range for set point");
             elevator->SoftLand();
         }
     }
@@ -238,7 +239,7 @@ namespace garage {
                 elevator->Log(lib::Logger::LogLevel::k_Warning, "Trying to go too high");
             }
         } else {
-            elevator->Log(lib::Logger::LogLevel::k_Error, "Not in closed loop range");
+            elevator->Log(lib::Logger::LogLevel::k_Error, "Not in closed loop range for velocity");
             elevator->SoftLand();
         }
     }

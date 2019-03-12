@@ -46,12 +46,12 @@ namespace garage {
             if (m_SequenceNumber % SPACED_UPDATE_INTERVAL == 0) {
                 SpacedUpdate(command);
             }
-            Update();
             if (m_IsLocked) {
                 UpdateLocked();
             } else {
                 UpdateUnlocked(command);
             }
+            Update();
             m_LastCommand = command;
         }
 

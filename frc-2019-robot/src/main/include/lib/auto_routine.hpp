@@ -1,19 +1,22 @@
 #pragma once
 
-#include <lib/routine.hpp>
+#include <lib/subsystem_routine.hpp>
 
 #include <pathfinder.h>
 
 #include <vector>
 
-#define AUTO_P 1.0
+//#define AUTO_MAX_VELOCITY 5.0
+//#define AUTO_MAX_ACCELERATION 10.0
+//#define AUTO_MAX_JERK 60.0
+#define AUTO_MAX_VELOCITY 5.0
+#define AUTO_MAX_ACCELERATION 2.0
+#define AUTO_MAX_JERK 15.0
+#define AUTO_P 0.0000001
 #define AUTO_I 0.0
 #define AUTO_D 0.0
-#define AUTO_V 0.0
+#define AUTO_V (1.0 / (AUTO_MAX_VELOCITY * 5.0))
 #define AUTO_A 0.0
-#define AUTO_MAX_VELOCITY 15.0
-#define AUTO_MAX_ACCELERATION 10.0
-#define AUTO_MAX_JERK 60.0
 
 #define AUTO_TIME_STEP (1.0 / 50.0)
 #define AUTO_WHEELBASE_DISTANCE 0.6731
@@ -23,9 +26,8 @@
 namespace garage {
     class Drive;
     namespace lib {
-        class AutoRoutine : public Routine {
+        class AutoRoutine : public SubsystemRoutine<Drive> {
         protected:
-            std::shared_ptr<Drive> m_Drive;
             std::vector<Waypoint> m_Waypoints;
             int m_TrajectorySize;
             std::vector<Segment> m_LeftTrajectory, m_RightTrajectory;

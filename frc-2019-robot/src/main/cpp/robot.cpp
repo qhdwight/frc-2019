@@ -68,11 +68,11 @@ namespace garage {
         // Hatch routines
         m_BottomHatchRoutine = std::make_shared<SetElevatorPositionRoutine>(m_Pointer, 10000, "Bottom Hatch");
         m_MiddleHatchRoutine = std::make_shared<SetElevatorPositionRoutine>(m_Pointer, 50000, "Middle Hatch");
-        m_TopHatchRoutine = std::make_shared<SetElevatorPositionRoutine>(m_Pointer, 100000, "Top Hatch");
+        m_TopHatchRoutine = std::make_shared<SetElevatorPositionRoutine>(m_Pointer, 150000, "Top Hatch");
         // Ball routines
-        m_BottomHatchRoutine = std::make_shared<SetElevatorPositionRoutine>(m_Pointer, 10000, "Bottom Ball");
-        m_MiddleHatchRoutine = std::make_shared<SetElevatorPositionRoutine>(m_Pointer, 50000, "Middle Ball");
-        m_TopHatchRoutine = std::make_shared<SetElevatorPositionRoutine>(m_Pointer, 100000, "Top Ball");
+        m_BottomBallRoutine = std::make_shared<SetElevatorPositionRoutine>(m_Pointer, 30000, "Bottom Ball");
+        m_MiddleBallRoutine = std::make_shared<SetElevatorPositionRoutine>(m_Pointer, 70000, "Middle Ball");
+        m_TopBallRoutine = std::make_shared<SetElevatorPositionRoutine>(m_Pointer, 170000, "Top Ball");
         lib::Logger::Log(lib::Logger::LogLevel::k_Info, "End robot initialization");
     }
 
@@ -118,15 +118,14 @@ namespace garage {
             auto delta = std::chrono::duration_cast<std::chrono::milliseconds>(now - m_LastPeriodicTime.value());
             if (delta > m_Period * 1.05) {
                 lib::Logger::Log(lib::Logger::LogLevel::k_Warning,
-                                 lib::Logger::Format("Loop was more than 5% of expected, took %d milliseconds", delta));
+                                 lib::Logger::Format("Loop was more than five percent of expected, took %d milliseconds", delta));
             }
         }
         m_LastPeriodicTime = now;
         // Get our most up to date command from the controllers
         UpdateCommand();
         // Make sure our routine manager updates
-        if (m_RoutineManager)
-            m_RoutineManager->AddRoutinesFromCommand(m_Command);
+        m_RoutineManager->AddRoutinesFromCommand(m_Command);
         m_RoutineManager->Update();
         // Update each subsystem
         for (const auto& subsystem : m_Subsystems)
@@ -138,10 +137,11 @@ namespace garage {
     }
 
     void Robot::UpdateCommand() {
+        if (m_Controller.GetStickButtonPressed(frc::GenericHID::kRightHand)) {
+            m_Command.drivePrescisionEnabled = !m_Command.drivePrescisionEnabled;
+        }
         m_Command.driveForward = -m_Controller.GetY(frc::GenericHID::JoystickHand::kRightHand);
         m_Command.driveTurn = m_Controller.GetX(frc::GenericHID::JoystickHand::kRightHand);
-        m_Command.driveForwardFine = -m_Controller.GetY(frc::GenericHID::JoystickHand::kLeftHand);
-        m_Command.driveTurnFine = m_Controller.GetX(frc::GenericHID::JoystickHand::kLeftHand);
 //        m_Command.ballIntake = m_Controller.GetTriggerAxis(frc::GenericHID::JoystickHand::kRightHand) -
 //                               m_Controller.GetTriggerAxis(frc::GenericHID::JoystickHand::kLeftHand);
 //        m_Command.hatchIntakeDown = m_Controller.GetYButtonPressed();
@@ -166,26 +166,36 @@ namespace garage {
 //                m_RoutineManager->TerminateAllRoutines();
 //        }
         if (m_Controller.GetAButtonPressed()) {
-            m_RoutineManager->TerminateAllRoutines();
-            m_Command.routines.push_back(m_DriveForwardRoutine);
+            if (elevatorBall) {
+                m_Command.routines.push_back(m_BottomBallRoutine);
+            } else if (elevatorHatch) {
+                m_Command.routines.push_back(m_BottomHatchRoutine);
+            } else {
+                m_Command.routines.push_back(m_DriveForwardRoutine);
+            }
+        }
+        if (m_Controller.GetBButtonPressed()) {
+            if (elevatorBall) {
+                m_Command.routines.push_back(m_MiddleBallRoutine);
+            } else if (elevatorHatch) {
+                m_Command.routines.push_back(m_MiddleHatchRoutine);
+            }
+        }
+        if (m_Controller.GetYButtonPressed()) {
+            if (elevatorBall) {
+                m_Command.routines.push_back(m_TopBallRoutine);
+            } else if (elevatorHatch) {
+                m_Command.routines.push_back(m_TopHatchRoutine);
+            }
         }
         if (elevatorDown) {
             m_RoutineManager->TerminateAllRoutines();
             m_Command.routines.push_back(m_LowerElevatorRoutine);
-        }
-        if (elevatorBall) {
-            m_RoutineManager->TerminateAllRoutines();
-            m_Command.routines.push_back(m_BottomBallRoutine);
-        }
-        if (elevatorHatch) {
-            m_RoutineManager->TerminateAllRoutines();
-            m_Command.routines.push_back(m_BottomHatchRoutine);
-        }
-        if (elevatorSoftLand) {
+        } else if (elevatorSoftLand) {
             m_RoutineManager->TerminateAllRoutines();
             m_Elevator->SoftLand();
         }
-        m_Command.elevatorInput = -m_Controller.GetY(frc::GenericHID::kRightHand);
+        m_Command.elevatorInput = -m_Controller.GetY(frc::GenericHID::kLeftHand);
     }
 }
 

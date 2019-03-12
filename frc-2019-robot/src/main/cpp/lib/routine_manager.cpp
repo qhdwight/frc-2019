@@ -15,17 +15,20 @@ namespace garage {
 
         void RoutineManager::AddRoutine(std::shared_ptr<Routine> routine) {
             // Make sure we are not adding the same exact routine twice
-            if (std::find(m_QueuedRoutines.begin(), m_QueuedRoutines.end(), routine) == m_QueuedRoutines.end()) {
-                m_QueuedRoutines.push_back(routine);
+            for (auto& existingRoutine : m_QueuedRoutines) {
+                if (routine == existingRoutine) {
+                    return;
+                }
             }
+            m_QueuedRoutines.push_back(routine);
         }
 
         void RoutineManager::Update() {
+            Logger::Log(Logger::LogLevel::k_Info, std::to_string(m_ActiveRoutine == nullptr));
             if (m_ActiveRoutine) {
                 m_ActiveRoutine->Update();
                 if (m_ActiveRoutine->CheckFinished()) {
-                    m_ActiveRoutine->Terminate();
-                    m_ActiveRoutine.reset();
+                    TerminateActiveRoutine();
                 }
             }
             if (!m_QueuedRoutines.empty() && !m_ActiveRoutine) {

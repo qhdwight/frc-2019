@@ -36,6 +36,8 @@ namespace garage {
 
         void Update() override;
 
+        bool ShouldUnlock(Command& command) override;
+
     public:
         Drive(std::shared_ptr<Robot>& robot);
 

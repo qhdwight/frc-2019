@@ -17,7 +17,7 @@ namespace garage {
             virtual bool SetController(std::shared_ptr<Controller> controller) {
                 const bool different = controller != m_Controller;
                 if (different) {
-                    if (m_Controller != m_UnlockedController) {
+                    if (controller != m_UnlockedController) {
                         Lock();
                     }
                     if (m_Controller) m_Controller->OnDisable();
@@ -61,6 +61,7 @@ namespace garage {
             using Subsystem::Subsystem;
 
             void Reset() override {
+                Subsystem::Reset();
                 for (auto& controller : m_Controllers) {
                     controller->Reset();
                 }

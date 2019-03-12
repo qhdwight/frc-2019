@@ -9,7 +9,7 @@ namespace garage {
     struct Command {
     public:
         double driveForward, driveTurn, flipper, ballIntake, test, elevatorInput;
-        bool hatchIntakeDown, drivePrescisionEnabled;
+        bool hatchIntakeDown, drivePrescisionEnabled, elevatorOpenLoopEnabled;
         std::vector<std::shared_ptr<lib::Routine>> routines;
     };
 }

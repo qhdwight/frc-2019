@@ -9,6 +9,7 @@
 #include <subsystem/hatch_intake.hpp>
 
 #include <lib/logger.hpp>
+#include <lib/routine.hpp>
 #include <lib/subsystem.hpp>
 #include <lib/routine_manager.hpp>
 #include <test/test_drive_auto_routine.hpp>
@@ -56,6 +57,7 @@ namespace garage {
                 m_LowerElevatorRoutine,
                 m_BottomHatchRoutine, m_MiddleHatchRoutine, m_TopHatchRoutine,
                 m_BottomBallRoutine, m_MiddleBallRoutine, m_TopBallRoutine;
+        std::shared_ptr<lib::Routine> m_TestRoutine;
 
     public:
         void RobotInit() override;
@@ -78,7 +80,7 @@ namespace garage {
 
         void AddSubsystem(std::shared_ptr<lib::Subsystem> subsystem);
 
-        void MatchPeriodic();
+        void ControllablePeriodic();
 
         bool ShouldOutputMotors() const {
             return m_ShouldOutputMotors;
@@ -115,5 +117,9 @@ namespace garage {
         std::shared_ptr<lib::RoutineManager> GetRoutineManager() {
             return m_RoutineManager;
         }
+
+        void TestInit() override;
+
+        void TestPeriodic() override;
     };
 }

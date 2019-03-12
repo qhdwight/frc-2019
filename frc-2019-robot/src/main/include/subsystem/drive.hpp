@@ -41,6 +41,8 @@ namespace garage {
     public:
         Drive(std::shared_ptr<Robot>& robot);
 
+        void StopMotors();
+
         double GetHeading();
 
         double GetTilt();
@@ -52,6 +54,8 @@ namespace garage {
         void ResetGyroAndEncoders();
 
         void SetDriveOutput(double left, double right);
+
+        void Reset() override;
     };
 }
 

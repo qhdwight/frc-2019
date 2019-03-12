@@ -1,6 +1,7 @@
 #include <robot.hpp>
 
 #include <lib/wait_routine.hpp>
+#include <lib/sequential_routine.hpp>
 
 #include <wpi/json.h>
 #include <wpi/Path.h>
@@ -73,6 +74,7 @@ namespace garage {
         m_BottomBallRoutine = std::make_shared<SetElevatorPositionRoutine>(m_Pointer, 30000, "Bottom Ball");
         m_MiddleBallRoutine = std::make_shared<SetElevatorPositionRoutine>(m_Pointer, 70000, "Middle Ball");
         m_TopBallRoutine = std::make_shared<SetElevatorPositionRoutine>(m_Pointer, 170000, "Top Ball");
+        m_TestRoutine = std::make_shared<lib::SequentialRoutine>(m_Pointer, "Test Routine", lib::RoutineVector{m_DriveForwardRoutine});
         lib::Logger::Log(lib::Logger::LogLevel::k_Info, "End robot initialization");
     }
 
@@ -92,7 +94,7 @@ namespace garage {
     }
 
     void Robot::AutonomousPeriodic() {
-        MatchPeriodic();
+        ControllablePeriodic();
     }
 
     void Robot::Reset() {
@@ -111,7 +113,7 @@ namespace garage {
 //        m_RoutineManager->AddRoutine(seq);
     }
 
-    void Robot::MatchPeriodic() {
+    void Robot::ControllablePeriodic() {
         // See if we are taking too much time and not getting fifty updates a second
         auto now = std::chrono::system_clock::now();
         if (m_LastPeriodicTime) {
@@ -133,12 +135,15 @@ namespace garage {
     }
 
     void Robot::TeleopPeriodic() {
-        MatchPeriodic();
+        ControllablePeriodic();
     }
 
     void Robot::UpdateCommand() {
         if (m_Controller.GetStickButtonPressed(frc::GenericHID::kRightHand)) {
             m_Command.drivePrescisionEnabled = !m_Command.drivePrescisionEnabled;
+        }
+        if (m_Controller.GetStickButtonPressed(frc::GenericHID::kLeftHand)) {
+            m_Command.elevatorOpenLoopEnabled = !m_Command.elevatorOpenLoopEnabled;
         }
         m_Command.driveForward = -m_Controller.GetY(frc::GenericHID::JoystickHand::kRightHand);
         m_Command.driveTurn = m_Controller.GetX(frc::GenericHID::JoystickHand::kRightHand);
@@ -196,6 +201,14 @@ namespace garage {
             m_Elevator->SoftLand();
         }
         m_Command.elevatorInput = -m_Controller.GetY(frc::GenericHID::kLeftHand);
+    }
+
+    void Robot::TestInit() {
+        Reset();
+    }
+
+    void Robot::TestPeriodic() {
+        ControllablePeriodic();
     }
 }
 

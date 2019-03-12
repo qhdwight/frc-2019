@@ -19,6 +19,15 @@ namespace garage {
         m_RightSlave.SetOpenLoopRampRate(DRIVE_RAMPING);
         m_LeftMaster.EnableVoltageCompensation(DEFAULT_VOLTAGE_COMPENSATION);
         m_RightMaster.EnableVoltageCompensation(DEFAULT_VOLTAGE_COMPENSATION);
+        StopMotors();
+    }
+
+    void Drive::Reset() {
+        Subsystem::Reset();
+        StopMotors();
+    }
+
+    void Drive::StopMotors() {
         m_LeftMaster.Set(0.0);
         m_RightMaster.Set(0.0);
     }
@@ -59,9 +68,9 @@ namespace garage {
         m_NetworkTable->PutNumber("Left Output", leftOutput);
         m_NetworkTable->PutNumber("Right Output", rightOutput);
         m_NetworkTable->PutNumber("Left Encoder", m_LeftEncoder.GetPosition());
-        m_NetworkTable->PutNumber("Left Amperage", leftCurrent);
+        m_NetworkTable->PutNumber("Left Current", leftCurrent);
         m_NetworkTable->PutNumber("Right Encoder", m_RightEncoder.GetPosition());
-        m_NetworkTable->PutNumber("Right Amperage", rightCurrent);
+        m_NetworkTable->PutNumber("Right Current", rightCurrent);
         LogSample(lib::Logger::LogLevel::k_Info, lib::Logger::Format(
                 "Left Output: %f, Right Output: %f, Left Current: %f, Right Current: %f",
                 leftOutput, rightOutput, leftCurrent, rightCurrent));

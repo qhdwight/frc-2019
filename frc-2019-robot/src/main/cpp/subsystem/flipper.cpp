@@ -32,6 +32,10 @@ namespace garage {
         AddController(m_RawController = std::make_shared<RawFlipperController>(flipper));
         AddController(m_SetPointController = std::make_shared<SetPointFlipperController>(flipper));
         SetUnlockedController(m_RawController);
+        AddNetworkTableListener("Angle FF", FLIPPER_ANGLE_FF, [this](const double angleFF) {
+            m_AngleFeedForward = angleFF;
+            return true;
+        });
     }
 
     void Flipper::Update() {
@@ -128,7 +132,8 @@ namespace garage {
             const double
                     clampedSetPoint = math::clamp(m_SetPoint, FLIPPER_SET_POINT_LOWER, FLIPPER_SET_POINT_UPPER),
                     angle = flipper->RawSetPointToAngle(encoderPosition),
-                    feedForward = std::cos(r2d(angle)) * FLIPPER_ANGLE_FF;
+                    angleFeedForward = std::cos(r2d(angle)) * flipper->m_AngleFeedForward,
+                    feedForward = angleFeedForward;
             if (flipper->m_Robot->ShouldOutputMotors()) {
                 auto error = flipper->m_FlipperController.SetReference(clampedSetPoint, rev::ControlType::kSmartMotion,
                                                                        FLIPPER_SMART_MOTION_PID_SLOT, feedForward);
@@ -140,9 +145,7 @@ namespace garage {
             }
         } else {
             flipper->LogSample(lib::Logger::LogLevel::k_Info, "Not doing anything");
-            if (flipper->m_Robot->ShouldOutputMotors()) {
-                flipper->m_FlipperMaster.Set(0.0);
-            }
+            flipper->m_FlipperMaster.Set(0.0);
         }
     }
 

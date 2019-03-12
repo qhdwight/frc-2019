@@ -15,6 +15,14 @@ namespace garage {
         m_OutriggerSlave.Follow(m_OutriggerMaster, true);
         m_OutriggerMaster.EnableVoltageCompensation(DEFAULT_VOLTAGE_COMPENSATION);
         m_OutriggerWheel.EnableVoltageCompensation(DEFAULT_VOLTAGE_COMPENSATION);
+    }
+
+    void Outrigger::Reset() {
+        Subsystem::Reset();
+        StopMotors();
+    }
+
+    void Outrigger::StopMotors() {
         m_OutriggerMaster.Set(0.0);
         m_OutriggerWheel.Set(0.0);
     }

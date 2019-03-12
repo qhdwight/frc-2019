@@ -61,9 +61,10 @@ namespace garage {
         m_ElevatorMaster.Config_IntegralZone(ELEVATOR_MOTION_MAGIC_PID_SLOT, ELEVATOR_I_ZONE, CONFIG_TIMEOUT);
         m_ElevatorMaster.Config_kF(ELEVATOR_MOTION_MAGIC_PID_SLOT, ELEVATOR_F, CONFIG_TIMEOUT);
         m_ElevatorMaster.ConfigMotionSCurveStrength(ELEVATOR_S_CURVE_STRENGTH, CONFIG_TIMEOUT);
+        m_ElevatorMaster.ConfigAllowableClosedloopError(ELEVATOR_MOTION_MAGIC_PID_SLOT, ELEVATOR_ALLOWABLE_CLOSED_LOOP_ERROR, CONFIG_TIMEOUT);
         // Safety
         m_ElevatorMaster.ConfigClosedLoopPeakOutput(ELEVATOR_MOTION_MAGIC_PID_SLOT, 0.75, CONFIG_TIMEOUT);
-        m_ElevatorMaster.ConfigAllowableClosedloopError(ELEVATOR_MOTION_MAGIC_PID_SLOT, ELEVATOR_ALLOWABLE_CLOSED_LOOP_ERROR, CONFIG_TIMEOUT);
+        m_ElevatorMaster.ConfigPeakOutputReverse(-0.2, CONFIG_TIMEOUT);
 
         /* Final enabling */
         m_ElevatorMaster.EnableVoltageCompensation(true);
@@ -75,7 +76,6 @@ namespace garage {
     }
 
     void Elevator::OnPostInitialize() {
-        SetupNetworkTableEntries();
         auto elevator = std::weak_ptr<Elevator>(shared_from_this());
         AddController(m_RawController = std::make_shared<RawElevatorController>(elevator));
         AddController(m_SetPointController = std::make_shared<SetPointElevatorController>(elevator));
@@ -83,6 +83,7 @@ namespace garage {
         AddController(m_SoftLandController = std::make_shared<SoftLandElevatorController>(elevator));
         SetUnlockedController(m_VelocityController);
         SetResetController(m_SoftLandController);
+        SetupNetworkTableEntries();
     }
 
     void Elevator::SetupNetworkTableEntries() {
@@ -126,8 +127,10 @@ namespace garage {
         }
         m_EncoderPosition = m_ElevatorMaster.GetSelectedSensorPosition(ELEVATOR_MOTION_MAGIC_PID_SLOT);
         m_EncoderVelocity = m_ElevatorMaster.GetSelectedSensorVelocity(ELEVATOR_MOTION_MAGIC_PID_SLOT);
-        const double timeRemaining = frc::DriverStation::GetInstance().GetMatchTime();
-        if (timeRemaining < ELEVATOR_LAND_TIME) {
+        auto& driverStation = frc::DriverStation::GetInstance();
+        const double timeRemaining = driverStation.GetMatchTime();
+        const bool isTest = driverStation.IsTest();
+        if (timeRemaining < ELEVATOR_LAND_TIME && !isTest) {
             SetWantedSetPoint(0);
         }
         if (m_Controller) {
@@ -157,10 +160,12 @@ namespace garage {
     }
 
     bool Elevator::ShouldUnlock(Command& command) {
-        const double timeRemaining = frc::DriverStation::GetInstance().GetMatchTime();
-        return timeRemaining > ELEVATOR_LAND_TIME && (command.elevatorInput > DEFAULT_INPUT_THRESHOLD ||
-                                                      (command.elevatorInput < -DEFAULT_INPUT_THRESHOLD &&
-                                                       m_EncoderPosition >= ELEVATOR_MIN_CLOSED_LOOP_HEIGHT));
+        auto& driverStation = frc::DriverStation::GetInstance();
+        const double timeRemaining = driverStation.GetMatchTime();
+        const bool isTest = driverStation.IsTest();
+        return (timeRemaining > ELEVATOR_LAND_TIME && !isTest) &&
+               (command.elevatorInput > DEFAULT_INPUT_THRESHOLD ||
+               (command.elevatorInput < -DEFAULT_INPUT_THRESHOLD && m_EncoderPosition >= ELEVATOR_MIN_CLOSED_LOOP_HEIGHT));
     }
 
     void Elevator::SetRawOutput(double output) {

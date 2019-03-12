@@ -22,11 +22,15 @@ namespace garage {
     protected:
         void UpdateUnlocked(Command& command) override;
 
+        void StopMotors();
+
         void Update() override;
 
     public:
         Outrigger(std::shared_ptr<Robot>& robot);
 
         void SetOutput(double output);
+
+        void Reset() override;
     };
 }

@@ -96,6 +96,7 @@ namespace garage {
     }
 
     void Drive::SetDriveOutput(double left, double right) {
+        Lock();
         m_LeftOutput = left;
         m_RightOutput = right;
     }

@@ -7,7 +7,7 @@ namespace garage {
     public:
         OutriggerAutoLevelRoutine(std::shared_ptr<Robot>& robot);
 
-        void Begin() override;
+        void Start() override;
 
         void Terminate() override;
 
@@ -18,7 +18,7 @@ namespace garage {
     public:
         ElevatorRaiseRoutine(std::shared_ptr<Robot>& robot);
 
-        void Begin() override;
+        void Start() override;
 
         void Terminate() override;
 

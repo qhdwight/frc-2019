@@ -4,16 +4,16 @@
 
 namespace garage {
     namespace lib {
-        void ParallelRoutine::Begin() {
-            Routine::Begin();
+        void ParallelRoutine::Start() {
+            Routine::Start();
             for (auto& routine : m_SubRoutines)
-                routine->Begin();
+                routine->Start();
         }
 
         void ParallelRoutine::Update() {
             Routine::Update();
             for (auto& routine : m_SubRoutines)
-                routine->Update();
+                routine->Periodic();
         }
 
         bool ParallelRoutine::CheckFinished() {

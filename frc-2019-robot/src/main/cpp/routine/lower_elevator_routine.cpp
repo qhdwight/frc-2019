@@ -8,8 +8,8 @@ namespace garage {
 
     }
 
-    void SoftLandElevatorRoutine::Begin() {
-        Routine::Begin();
+    void SoftLandElevatorRoutine::Start() {
+        Routine::Start();
         m_Subsystem->SoftLand();
     }
 

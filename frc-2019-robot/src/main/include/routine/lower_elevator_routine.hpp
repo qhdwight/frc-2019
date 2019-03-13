@@ -12,7 +12,7 @@ namespace garage {
         SoftLandElevatorRoutine(std::shared_ptr<Robot>& robot);
 
     private:
-        void Begin() override;
+        void Start() override;
 
         void Terminate() override;
     };

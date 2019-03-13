@@ -8,8 +8,8 @@ namespace garage {
 
     }
 
-    void SetFlipperAngleRoutine::Begin() {
-        Routine::Begin();
+    void SetFlipperAngleRoutine::Start() {
+        Routine::Start();
         m_Subsystem->SetAngle(m_Angle);
     }
 

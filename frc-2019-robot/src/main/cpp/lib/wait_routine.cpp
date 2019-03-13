@@ -2,8 +2,8 @@
 
 namespace garage {
     namespace lib {
-        void WaitRoutine::Begin() {
-            Routine::Begin();
+        void WaitRoutine::Start() {
+            Routine::Start();
             m_StartTime = std::chrono::system_clock::now();
             m_EndTime = m_StartTime + m_DurationMilliseconds;
         }

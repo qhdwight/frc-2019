@@ -12,7 +12,7 @@ namespace garage {
     public:
         SetFlipperAngleRoutine(std::shared_ptr<Robot>& robot, double angle, const std::string& name);
 
-        void Begin() override;
+        void Start() override;
 
         void Terminate() override;
     };

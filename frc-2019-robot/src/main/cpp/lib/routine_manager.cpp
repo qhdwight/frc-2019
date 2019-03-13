@@ -25,14 +25,14 @@ namespace garage {
 
         void RoutineManager::Update() {
             if (m_ActiveRoutine) {
-                m_ActiveRoutine->Update();
+                m_ActiveRoutine->Periodic();
                 if (m_ActiveRoutine->CheckFinished()) {
                     TerminateActiveRoutine();
                 }
             }
             if (!m_QueuedRoutines.empty() && !m_ActiveRoutine) {
                 m_ActiveRoutine = m_QueuedRoutines.front();
-                m_ActiveRoutine->Begin();
+                m_ActiveRoutine->Start();
                 m_QueuedRoutines.pop_front();
             }
         }

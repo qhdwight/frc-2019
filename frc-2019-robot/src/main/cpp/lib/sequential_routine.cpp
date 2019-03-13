@@ -2,23 +2,23 @@
 
 namespace garage {
     namespace lib {
-        void SequentialRoutine::Begin() {
-            Routine::Begin();
+        void SequentialRoutine::Start() {
+            Routine::Start();
             if (!m_SubRoutines.empty()) {
-                m_SubRoutines.front()->Begin();
+                m_SubRoutines.front()->Start();
             }
         }
 
         void SequentialRoutine::Update() {
             if (m_CurrentRoutineIndex < m_SubRoutines.size()) {
                 auto& currentRoutine = m_SubRoutines[m_CurrentRoutineIndex];
-                currentRoutine->Update();
+                currentRoutine->Periodic();
                 if (currentRoutine->CheckFinished()) {
                     currentRoutine->Terminate();
                     m_CurrentRoutineIndex++;
                     if (m_CurrentRoutineIndex < m_SubRoutines.size()) {
                         auto& nextRoutine = m_SubRoutines[m_CurrentRoutineIndex];
-                        nextRoutine->Begin();
+                        nextRoutine->Start();
                     } else {
                         Terminate();
                     }

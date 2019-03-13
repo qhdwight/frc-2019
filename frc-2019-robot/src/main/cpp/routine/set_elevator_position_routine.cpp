@@ -8,8 +8,8 @@ namespace garage {
 
     }
 
-    void SetElevatorPositionRoutine::Begin() {
-        lib::Routine::Begin();
+    void SetElevatorPositionRoutine::Start() {
+        lib::Routine::Start();
         m_Subsystem->SetWantedSetPoint(m_SetPoint);
     }
 

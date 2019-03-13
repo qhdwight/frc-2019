@@ -14,7 +14,7 @@ namespace garage {
     public:
         SetElevatorPositionRoutine(std::shared_ptr<Robot>& robot, int setPoint, const std::string& name);
 
-        void Begin() override;
+        void Start() override;
 
         void Terminate() override;
 

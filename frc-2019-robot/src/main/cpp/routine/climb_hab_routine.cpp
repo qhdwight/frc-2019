@@ -9,8 +9,8 @@ namespace garage {
 
     }
 
-    void OutriggerAutoLevelRoutine::Begin() {
-        Routine::Begin();
+    void OutriggerAutoLevelRoutine::Start() {
+        Routine::Start();
     }
 
     void OutriggerAutoLevelRoutine::Update() {
@@ -29,8 +29,8 @@ namespace garage {
 
     }
 
-    void ElevatorRaiseRoutine::Begin() {
-        Routine::Begin();
+    void ElevatorRaiseRoutine::Start() {
+        Routine::Start();
         m_Robot->GetElevator()->SetWantedSetPoint(150000);
     }
 

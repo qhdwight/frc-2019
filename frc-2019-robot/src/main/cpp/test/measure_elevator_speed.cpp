@@ -5,8 +5,8 @@
 
 namespace garage {
     namespace test {
-        void MeasureElevatorSpeed::Begin() {
-            Routine::Begin();
+        void MeasureElevatorSpeed::Start() {
+            Routine::Start();
             m_Subsystem->SetRawOutput(m_Output);
         }
 

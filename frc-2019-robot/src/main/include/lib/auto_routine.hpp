@@ -45,7 +45,7 @@ namespace garage {
 
             void CalculatePath();
 
-            void Begin() override;
+            void Start() override;
 
             bool CheckFinished() override;
 

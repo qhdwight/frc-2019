@@ -10,8 +10,8 @@ namespace garage {
 
     }
 
-    void IntakeBallUntilIn::Begin() {
-        Routine::Begin();
+    void IntakeBallUntilIn::Start() {
+        Routine::Start();
         m_Subsystem->SetMode(IntakeMode::k_Intaking, 1.0);
     }
 

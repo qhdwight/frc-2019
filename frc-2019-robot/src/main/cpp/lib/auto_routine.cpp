@@ -67,9 +67,8 @@ namespace garage {
 //                                                                  m_RightEncoderConfig.kv, m_RightEncoderConfig.ka));
         }
 
-        void AutoRoutine::Begin() {
-            Routine::Begin();
-            m_Subsystem->Lock();
+        void AutoRoutine::Start() {
+            Routine::Start();
             m_LeftFollower = m_RightFollower = {0.0, 0.0, 0.0, 0, 0};
         }
 

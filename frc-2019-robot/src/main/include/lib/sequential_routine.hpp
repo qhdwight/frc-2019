@@ -10,7 +10,7 @@ namespace garage {
         public:
             using MultiRoutine::MultiRoutine;
 
-            void Begin() override;
+            void Start() override;
 
             void Update() override;
 

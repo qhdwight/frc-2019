@@ -16,7 +16,7 @@ namespace garage {
         bool CheckFinished() override;
 
     public:
-        SetElevatorPositionRoutine(std::shared_ptr<Robot>& robot, int setPoint, const std::string& name = "Set Elevator Position");
+        SetElevatorPositionRoutine(std::shared_ptr<Robot> robot, int setPoint, const std::string& name = "Set Elevator Position");
 
         void Start() override;
 

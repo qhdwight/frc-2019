@@ -9,13 +9,11 @@ namespace garage {
 
     class Elevator;
 
-    class BallPlacementRoutine : public ElevatorAndFlipperRoutine {
-    protected:
-
+    class BallPlacementRoutine : public lib::SequentialRoutine {
     public:
-        BallPlacementRoutine(std::shared_ptr<Robot>& robot, int setPoint, double angle, const std::string& name)
+        BallPlacementRoutine(std::shared_ptr<Robot> robot, int setPoint, double angle, const std::string& name = "Ball Placement")
                 : lib::SequentialRoutine(robot, name, {
-                std::make_shared<SetElevatorPositionRoutine>(robot, setPoint, angle, name),
+                std::make_shared<ElevatorAndFlipperRoutine>(robot, setPoint, angle, name),
         }) {
 
         }

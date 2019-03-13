@@ -231,7 +231,7 @@ namespace garage {
         }
         if (elevatorDown) {
             m_RoutineManager->TerminateAllRoutines();
-            m_Command.routines.push_back(m_LowerElevatorRoutine);
+            m_Command.routines.push_back(m_ResetRoutine);
         } else if (elevatorSoftLand) {
             m_RoutineManager->TerminateAllRoutines();
             m_Elevator->SoftLand();

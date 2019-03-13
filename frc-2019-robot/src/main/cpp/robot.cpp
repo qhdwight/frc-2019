@@ -67,14 +67,14 @@ namespace garage {
         m_DriveForwardRoutine->CalculatePath();
         m_LowerElevatorRoutine = std::make_shared<SetElevatorPositionRoutine>(m_Pointer, 0, "Lower Elevator");
         // Hatch routines
-        m_BottomHatchRoutine = std::make_shared<SetElevatorPositionRoutine>(m_Pointer, 10000, "Bottom Hatch");
-        m_MiddleHatchRoutine = std::make_shared<SetElevatorPositionRoutine>(m_Pointer, 50000, "Middle Hatch");
-        m_TopHatchRoutine = std::make_shared<SetElevatorPositionRoutine>(m_Pointer, 150000, "Top Hatch");
+        m_BottomHatchRoutine = std::make_shared<SetElevatorPositionRoutine>(m_Pointer, 6625, "Bottom Hatch");
+        m_MiddleHatchRoutine = std::make_shared<SetElevatorPositionRoutine>(m_Pointer, 177100, "Middle Hatch");
+        m_TopHatchRoutine = std::make_shared<SetElevatorPositionRoutine>(m_Pointer, 336951, "Top Hatch");
         // Ball routines
         m_BottomBallRoutine = std::make_shared<SetElevatorPositionRoutine>(m_Pointer, 30000, "Bottom Ball");
         m_MiddleBallRoutine = std::make_shared<SetElevatorPositionRoutine>(m_Pointer, 70000, "Middle Ball");
         m_TopBallRoutine = std::make_shared<SetElevatorPositionRoutine>(m_Pointer, 170000, "Top Ball");
-        m_TestRoutine = std::make_shared<lib::SequentialRoutine>(m_Pointer, "Test Routine", lib::RoutineVector{m_DriveForwardRoutine});
+        m_TestRoutine = std::make_shared<lib::SequentialRoutine>(m_Pointer, "Test Routine", lib::RoutineVector{m_DriveForwardRoutine, m_MiddleBallRoutine, m_LowerElevatorRoutine});
         lib::Logger::Log(lib::Logger::LogLevel::k_Info, "End robot initialization");
     }
 
@@ -192,6 +192,9 @@ namespace garage {
             } else if (elevatorHatch) {
                 m_Command.routines.push_back(m_TopHatchRoutine);
             }
+        }
+        if (m_Controller.GetXButtonPressed()) {
+            m_Command.routines.push_back(m_TestRoutine);
         }
         if (elevatorDown) {
             m_RoutineManager->TerminateAllRoutines();

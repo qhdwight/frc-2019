@@ -95,7 +95,7 @@ namespace garage {
         }
 
         bool AutoRoutine::CheckFinished() {
-            return false;
+            return m_LeftFollower.finished && m_RightFollower.finished;
         }
 
         void AutoRoutine::Terminate() {

@@ -8,20 +8,20 @@
 #include <ctre/phoenix/motorcontrol/can/TalonSRX.h>
 #include <ctre/phoenix/motorcontrol/can/VictorSPX.h>
 
-#define ELEVATOR_MAX 300000 // Encoder ticks
+#define ELEVATOR_MAX 350000 // Encoder ticks
 
 /* Gains and Motion Magic */
 #define ELEVATOR_VELOCITY 20000 // Encoder ticks per 100 ms
-#define ELEVATOR_ACCELERATION 10000 // Encoder ticks per 100 ms per 100 ms
-#define ELEVATOR_P 0.015
+#define ELEVATOR_ACCELERATION 22500 // Encoder ticks per 100 ms per 100 ms
+#define ELEVATOR_P 0.01
 #define ELEVATOR_I 0.0
 #define ELEVATOR_MAX_I 0.0
 #define ELEVATOR_I_ZONE 0 // Encoder ticks
-#define ELEVATOR_D 1.5
+#define ELEVATOR_D 0.5
 #define ELEVATOR_S_CURVE_STRENGTH 3 // Value between 1-8 which determines how curved the trapezoidal motion profile is
 //#define ELEVATOR_D ELEVATOR_P * 3.3
-#define ELEVATOR_F 0.0125 // Multiplied by velocity calculated by motion magic and added to output, does most of work
-#define ELEVATOR_FF 0.31 // Percent output - Output required to hold elevator at a position, always added to motor output in closed loop
+#define ELEVATOR_F 0.03 // Multiplied by velocity calculated by motion magic and added to output, does most of work
+#define ELEVATOR_FF 0.32 // Percent output - Output required to hold elevator at a position, always added to motor output in closed loop
 #define ELEVATOR_MAX_CLOSED_LOOP_HEIGHT (ELEVATOR_MAX - 10000)
 #define ELEVATOR_MIN_CLOSED_LOOP_HEIGHT 5000 // Encoder ticks
 
@@ -31,12 +31,12 @@
 #define ELEVATOR_PEAK_CURRENT_DURATION 200 // Milliseconds
 
 #define ELEVATOR_ALLOWABLE_CLOSED_LOOP_ERROR 0 // Encoder ticks - Zero is always try to get to value and do not stop
-#define ELEVATOR_WITHIN_SET_POINT_AMOUNT 2500 // Encoder ticks
+#define ELEVATOR_WITHIN_SET_POINT_AMOUNT 1200 // Encoder ticks
 
 #define ELEVATOR_OPEN_LOOP_RAMP 0.4 // Seconds
 #define ELEVATOR_CLOSED_LOOP_RAMP 0.1 // Seconds
 
-#define ELEVATOR_SAFE_DOWN 0.17 // Percent output
+#define ELEVATOR_SAFE_DOWN 0.22 // Percent output
 
 #define ELEVATOR_MOTION_MAGIC_PID_SLOT 0
 

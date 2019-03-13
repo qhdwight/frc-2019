@@ -24,7 +24,6 @@ namespace garage {
         }
 
         void RoutineManager::Update() {
-            Logger::Log(Logger::LogLevel::k_Info, std::to_string(m_ActiveRoutine == nullptr));
             if (m_ActiveRoutine) {
                 m_ActiveRoutine->Update();
                 if (m_ActiveRoutine->CheckFinished()) {

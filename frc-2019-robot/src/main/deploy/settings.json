@@ -1,6 +1,6 @@
 {
   "should_output_motors": true,
-  "enable_elevator": false,
+  "enable_elevator": true,
   "enable_drive": true,
   "enable_flipper": false,
   "enable_ball_intake": false,

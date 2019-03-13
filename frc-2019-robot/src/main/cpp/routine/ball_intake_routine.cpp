@@ -12,7 +12,7 @@ namespace garage {
 
     void IntakeBallUntilIn::Start() {
         Routine::Start();
-        m_Subsystem->SetMode(IntakeMode::k_Intaking, 1.0);
+        m_Subsystem->Intake();
     }
 
     bool IntakeBallUntilIn::CheckFinished() {

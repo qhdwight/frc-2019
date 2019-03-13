@@ -1,9 +1,28 @@
 {
   "should_output_motors": true,
-  "enable_elevator": true,
-  "enable_drive": true,
-  "enable_flipper": false,
-  "enable_ball_intake": false,
-  "enable_hatch_intake": false,
-  "enable_outrigger": false
+  "subsystems": {
+    "enable_elevator": true,
+    "enable_drive": true,
+    "enable_flipper": false,
+    "enable_ball_intake": false,
+    "enable_hatch_intake": false,
+    "enable_outrigger": false
+  },
+  "routines": {
+    "elevator": {
+      "ball": {
+        "bottom_set_point": 0,
+        "middle_set_point": 0,
+        "top_set_point": 0,
+        "bottom_angle": 0.0,
+        "middle_angle": 0.0,
+        "top_angle": 0.0
+      },
+      "hatch": {
+        "bottom": 6625,
+        "middle": 177100,
+        "top": 336951
+      }
+    }
+  }
 }

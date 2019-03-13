@@ -4,7 +4,7 @@
 
 namespace garage {
     SetFlipperAngleRoutine::SetFlipperAngleRoutine(std::shared_ptr<Robot>& robot, double angle, const std::string& name)
-            : SubsystemRoutine(robot, robot->GetFlipper(), "Stow Flipper"), m_Angle(angle) {
+            : SubsystemRoutine(robot, robot->GetFlipper(), name), m_Angle(angle) {
 
     }
 

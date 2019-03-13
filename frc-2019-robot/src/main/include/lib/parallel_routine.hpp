@@ -5,14 +5,15 @@
 namespace garage {
     namespace lib {
         class ParallelRoutine : public MultiRoutine {
+        protected:
+            void Update() override;
+
+            bool CheckFinished() override;
+
         public:
             using MultiRoutine::MultiRoutine;
 
             void Start() override;
-
-            void Update() override;
-
-            bool CheckFinished() override;
 
             void Terminate() override;
         };

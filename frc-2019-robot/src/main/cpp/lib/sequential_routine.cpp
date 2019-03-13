@@ -12,9 +12,7 @@ namespace garage {
         void SequentialRoutine::Update() {
             if (m_CurrentRoutineIndex < m_SubRoutines.size()) {
                 auto& currentRoutine = m_SubRoutines[m_CurrentRoutineIndex];
-                currentRoutine->Periodic();
-                if (currentRoutine->CheckFinished()) {
-                    currentRoutine->Terminate();
+                if (currentRoutine->Periodic()) {
                     m_CurrentRoutineIndex++;
                     if (m_CurrentRoutineIndex < m_SubRoutines.size()) {
                         auto& nextRoutine = m_SubRoutines[m_CurrentRoutineIndex];

@@ -17,7 +17,7 @@
 
 namespace garage {
     enum class IntakeMode {
-        k_Idle, k_Intaking, k_Expelling
+        k_Intaking, k_Expelling
     };
 
     class BallIntake : public lib::Subsystem {
@@ -35,10 +35,18 @@ namespace garage {
 
         void SpacedUpdate(Command& command) override;
 
+        void SetIntakeMode(IntakeMode intakeMode, double strength = 0.0);
+
+        bool ShouldUnlock(Command& command) override;
+
     public:
         BallIntake(std::shared_ptr<Robot>& robot);
 
-        void SetMode(IntakeMode intakeMode, double strength = 0.0);
+        void Expell(double strength = 1.0);
+
+        void Intake(double strength = 1.0);
+
+        void Stop();
 
         bool HasBall();
     };

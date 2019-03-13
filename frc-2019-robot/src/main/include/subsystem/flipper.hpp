@@ -5,6 +5,8 @@
 #include <lib/subsystem_controller.hpp>
 #include <lib/controllable_subsystem.hpp>
 
+#include <frc/Servo.h>
+
 #include <rev/CANSparkMax.h>
 
 #define FLIPPER_SET_POINT_LOWER 3.0
@@ -27,6 +29,12 @@
 
 #define FLIPPER_CLOSED_LOOP_RAMP 0.1
 #define FLIPPER_SMART_MOTION_PID_SLOT 0
+
+#define CAMERA_SERVO_LOWER 500
+#define CAMERA_SERVO_UPPER 1500
+
+#define LOCK_SERVO_LOWER 500
+#define LOCK_SERVO_UPPER 1500
 
 namespace garage {
     class Flipper;
@@ -72,7 +80,7 @@ namespace garage {
 
         friend class SetPointFlipperController;
 
-    private:
+    protected:
         rev::CANSparkMax m_FlipperMaster{FLIPPER, rev::CANSparkMax::MotorType::kBrushless};
         rev::CANPIDController m_FlipperController = m_FlipperMaster.GetPIDController();
         rev::CANEncoder m_Encoder = m_FlipperMaster.GetEncoder();
@@ -82,11 +90,14 @@ namespace garage {
         double m_AngleFeedForward = FLIPPER_ANGLE_FF;
         std::shared_ptr<RawFlipperController> m_RawController;
         std::shared_ptr<SetPointFlipperController> m_SetPointController;
+        frc::Servo m_CameraServo{CAMERA_SERVO}, m_LockServo{LOCK_SERVO};
+        uint16_t m_CameraServoOutput = CAMERA_SERVO_LOWER, m_LockServoOutput = LOCK_SERVO_LOWER;
 
-    protected:
         void Update() override;
 
         void SpacedUpdate(Command& command) override;
+
+        bool ShouldUnlock(Command& command) override;
 
     public:
         Flipper(std::shared_ptr<Robot>& robot);

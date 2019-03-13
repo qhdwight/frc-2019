@@ -151,7 +151,7 @@ namespace garage {
         m_NetworkTable->PutNumber("Encoder", m_EncoderPosition);
         m_NetworkTable->PutNumber("Current", current);
         m_NetworkTable->PutNumber("Output", output);
-        Log(lib::Logger::LogLevel::k_Info, lib::Logger::Format(
+        Log(lib::Logger::LogLevel::k_Debug, lib::Logger::Format(
                 "Output: %f, Current: %f, Encoder Position: %d, Encoder Velocity: %d",
                 output, current, m_EncoderPosition, m_EncoderVelocity));
     }
@@ -191,8 +191,8 @@ namespace garage {
 
     void RawElevatorController::Control() {
         auto elevator = m_Subsystem.lock();
-        Log(lib::Logger::LogLevel::k_Info, lib::Logger::Format("Input Value: %f, Output Value: %f", m_Input, m_Output));
-        if (elevator->m_Robot->ShouldOutputMotors()) {
+        Log(lib::Logger::LogLevel::k_Debug, lib::Logger::Format("Input Value: %f, Output Value: %f", m_Input, m_Output));
+        if (elevator->m_Robot->ShouldOutput()) {
             elevator->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, m_Output);
         }
     }
@@ -212,12 +212,13 @@ namespace garage {
 
     void SetPointElevatorController::Control() {
         auto elevator = m_Subsystem.lock();
-        m_WantedSetPoint = math::clamp(m_WantedSetPoint, 0, ELEVATOR_MAX_CLOSED_LOOP_HEIGHT);
-        Log(lib::Logger::LogLevel::k_Info,
+        m_WantedSetPoint = math::clamp(m_WantedSetPoint, ELEVATOR_MIN, ELEVATOR_MAX_CLOSED_LOOP_HEIGHT);
+        Log(lib::Logger::LogLevel::k_Debug,
             lib::Logger::Format("Wanted Set Point: %d, Feed Forward: %f", m_WantedSetPoint, elevator->m_FeedForward));
-        if ((elevator->m_EncoderPosition > ELEVATOR_MIN_CLOSED_LOOP_HEIGHT || m_WantedSetPoint > 0) && elevator->m_EncoderPosition < ELEVATOR_MAX) {
-            elevator->LogSample(lib::Logger::LogLevel::k_Info, "Theoretically Okay and Working");
-            if (elevator->m_Robot->ShouldOutputMotors()) {
+        if ((elevator->m_EncoderPosition > ELEVATOR_MIN_CLOSED_LOOP_HEIGHT || m_WantedSetPoint > ELEVATOR_MIN) &&
+            elevator->m_EncoderPosition < ELEVATOR_MAX) {
+            elevator->LogSample(lib::Logger::LogLevel::k_Debug, "Theoretically Okay and Working");
+            if (elevator->m_Robot->ShouldOutput()) {
                 elevator->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::MotionMagic,
                                                m_WantedSetPoint,
                                                ctre::phoenix::motorcontrol::DemandType::DemandType_ArbitraryFeedForward,
@@ -244,8 +245,8 @@ namespace garage {
         if ((elevator->m_EncoderPosition > ELEVATOR_MIN_CLOSED_LOOP_HEIGHT || m_WantedVelocity > 0.01) &&
             elevator->m_EncoderPosition < ELEVATOR_MAX) {
             if (elevator->m_EncoderPosition < ELEVATOR_MAX_CLOSED_LOOP_HEIGHT || m_WantedVelocity < -0.01) {
-                Log(lib::Logger::LogLevel::k_Info, lib::Logger::Format("Wanted Velocity: %f", m_WantedVelocity));
-                if (elevator->m_Robot->ShouldOutputMotors()) {
+                Log(lib::Logger::LogLevel::k_Debug, lib::Logger::Format("Wanted Velocity: %f", m_WantedVelocity));
+                if (elevator->m_Robot->ShouldOutput()) {
                     elevator->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::Velocity,
                                                    m_WantedVelocity,
                                                    ctre::phoenix::motorcontrol::DemandType::DemandType_ArbitraryFeedForward,
@@ -267,7 +268,7 @@ namespace garage {
 
     void SoftLandElevatorController::Control() {
         auto elevator = m_Subsystem.lock();
-        if (elevator->m_Robot->ShouldOutputMotors()) {
+        if (elevator->m_Robot->ShouldOutput()) {
             elevator->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput,
                                            elevator->m_EncoderPosition > 500 ? ELEVATOR_SAFE_DOWN : 0.0);
         }

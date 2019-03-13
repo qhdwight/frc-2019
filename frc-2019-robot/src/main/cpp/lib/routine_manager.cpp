@@ -15,6 +15,7 @@ namespace garage {
 
         void RoutineManager::AddRoutine(std::shared_ptr<Routine> routine) {
             // Make sure we are not adding the same exact routine twice
+            // TODO std function?
             for (auto& existingRoutine : m_QueuedRoutines) {
                 if (routine == existingRoutine) {
                     return;
@@ -25,9 +26,8 @@ namespace garage {
 
         void RoutineManager::Update() {
             if (m_ActiveRoutine) {
-                m_ActiveRoutine->Periodic();
-                if (m_ActiveRoutine->CheckFinished()) {
-                    TerminateActiveRoutine();
+                if (m_ActiveRoutine->Periodic()) {
+                    m_ActiveRoutine.reset();
                 }
             }
             if (!m_QueuedRoutines.empty() && !m_ActiveRoutine) {

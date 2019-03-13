@@ -40,6 +40,10 @@ namespace garage {
 
             void PrepareEncoder();
 
+            bool CheckFinished() override;
+
+            void Update() override;
+
         public:
             AutoRoutine(std::shared_ptr<Robot>& robot, const std::string& name);
 
@@ -47,11 +51,7 @@ namespace garage {
 
             void Start() override;
 
-            bool CheckFinished() override;
-
             void Terminate() override;
-
-            void Update() override;
         };
     }
 }

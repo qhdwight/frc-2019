@@ -7,14 +7,15 @@ namespace garage {
         class SequentialRoutine : public MultiRoutine {
         protected:
             unsigned int m_CurrentRoutineIndex = 0;
-        public:
-            using MultiRoutine::MultiRoutine;
-
-            void Start() override;
 
             void Update() override;
 
             bool CheckFinished() override;
+
+        public:
+            using MultiRoutine::MultiRoutine;
+
+            void Start() override;
 
             void Terminate() override;
         };

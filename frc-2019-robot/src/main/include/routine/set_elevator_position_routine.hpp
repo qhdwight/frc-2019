@@ -6,18 +6,20 @@
 
 namespace garage {
     class Robot;
+
     class Elevator;
+
     class SetElevatorPositionRoutine : public lib::SubsystemRoutine<Elevator> {
-    private:
-        int m_SetPoint;
+    protected:
+        int m_SetPoint = 0;
+
+        bool CheckFinished() override;
 
     public:
-        SetElevatorPositionRoutine(std::shared_ptr<Robot>& robot, int setPoint, const std::string& name);
+        SetElevatorPositionRoutine(std::shared_ptr<Robot>& robot, int setPoint, const std::string& name = "Set Elevator Position");
 
         void Start() override;
 
         void Terminate() override;
-
-        bool CheckFinished() override;
     };
 }

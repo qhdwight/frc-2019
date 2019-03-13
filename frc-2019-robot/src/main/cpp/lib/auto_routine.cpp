@@ -69,6 +69,7 @@ namespace garage {
 
         void AutoRoutine::Start() {
             Routine::Start();
+            m_Subsystem->ResetGyroAndEncoders();
             m_LeftFollower = m_RightFollower = {0.0, 0.0, 0.0, 0, 0};
         }
 
@@ -82,10 +83,7 @@ namespace garage {
                                                             rightEncoder),
                     heading = m_Robot->GetDrive()->GetHeading(),
                     desiredHeading = r2d(m_LeftFollower.heading);
-            double headingDelta = std::fmod(desiredHeading - heading, 360.0);
-            if (std::fabs(headingDelta) > 180.0) {
-                headingDelta = (headingDelta > 0) ? (headingDelta - 360.0) : (headingDelta + 360.0);
-            }
+            const double headingDelta = math::fixAngle(desiredHeading - heading);
             const double turn = 0.8 * (-1.0 / 80.0) * headingDelta;
             m_Subsystem->Log(Logger::LogLevel::k_Info,
                          Logger::Format("Left Output: %f, Right Output: %f, Left Encoder: %d, Right Encoder %d, Heading: %f, Heading Delta: %f",

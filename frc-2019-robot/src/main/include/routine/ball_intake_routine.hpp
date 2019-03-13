@@ -7,15 +7,17 @@
 
 namespace garage {
     class Robot;
+
     class BallIntake;
+
     class IntakeBallUntilIn : public lib::SubsystemRoutine<BallIntake> {
-    private:
+    protected:
         void Start() override;
+
+        bool CheckFinished() override;
 
     public:
         IntakeBallUntilIn(std::shared_ptr<Robot>& robot);
-
-        bool CheckFinished() override;
 
         void Terminate() override;
     };

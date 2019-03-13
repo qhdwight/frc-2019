@@ -13,7 +13,9 @@
 #include <lib/subsystem.hpp>
 #include <lib/routine_manager.hpp>
 #include <test/test_drive_auto_routine.hpp>
-#include <routine/set_elevator_position_routine.hpp>
+#include <routine/reset_routine.hpp>
+#include <routine/ball_placement_routine.hpp>
+#include <routine/elevator_and_flipper_routine.hpp>
 
 #include <networktables/NetworkTable.h>
 #include <networktables/NetworkTableInstance.h>
@@ -27,7 +29,15 @@
 #include <chrono>
 #include <memory>
 
+#define PATH_LENGTH 256
+
 namespace garage {
+    struct RobotConfig {
+        bool shouldOutput = true, enableElevator = true, enableDrive = true, enableFlipper = true, enableBallIntake = true, enableHatchIntake = true, enableOutrigger = true;
+        int bottomBallHeight, middleBallHeight, topBallHeight, bottomHatchHeight, middleHatchHeight, topHatchHeight;
+        double bottomBallAngle, middleBallAngle, topBallAngle;
+    };
+
     class Robot : public frc::TimedRobot {
     private:
         std::shared_ptr<Robot> m_Pointer;
@@ -49,18 +59,19 @@ namespace garage {
         std::shared_ptr<HatchIntake> m_HatchIntake;
         std::vector<std::shared_ptr<lib::Subsystem>> m_Subsystems;
         wpi::optional<std::chrono::system_clock::time_point> m_LastPeriodicTime;
-        bool m_ShouldOutputMotors = true;
+        RobotConfig m_Config = RobotConfig();
         std::chrono::milliseconds m_Period;
         // Routines
-        std::shared_ptr<test::TestDriveAutoRoutine> m_DriveForwardRoutine;
-        std::shared_ptr<SetElevatorPositionRoutine>
-                m_LowerElevatorRoutine,
+//        std::shared_ptr<test::TestDriveAutoRoutine> m_DriveForwardRoutine;
+        std::shared_ptr<lib::Routine>
+                m_TestRoutine, m_ResetRoutine,
                 m_BottomHatchRoutine, m_MiddleHatchRoutine, m_TopHatchRoutine,
                 m_BottomBallRoutine, m_MiddleBallRoutine, m_TopBallRoutine;
-        std::shared_ptr<lib::Routine> m_TestRoutine;
 
     public:
         void RobotInit() override;
+
+        void ReadConfig();
 
         void Reset();
 
@@ -82,8 +93,12 @@ namespace garage {
 
         void ControllablePeriodic();
 
-        bool ShouldOutputMotors() const {
-            return m_ShouldOutputMotors;
+        bool ShouldOutput() const {
+            return m_Config.shouldOutput;
+        }
+
+        RobotConfig& GetConfig() {
+            return m_Config;
         }
 
         Command GetLatestCommand() {

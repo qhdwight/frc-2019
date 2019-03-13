@@ -38,6 +38,10 @@ namespace garage {
         });
     }
 
+    bool Flipper::ShouldUnlock(Command& command) {
+        return std::fabs(command.flipper) > DEFAULT_INPUT_THRESHOLD;
+    }
+
     void Flipper::Update() {
         m_IsLimitSwitchDown = m_LimitSwitch.Get();
         if (m_IsLimitSwitchDown && m_FirstLimitSwitchHit) {
@@ -105,7 +109,7 @@ namespace garage {
 
     void RawFlipperController::Control() {
         auto flipper = m_Subsystem.lock();
-        if (flipper->m_Robot->ShouldOutputMotors()) {
+        if (flipper->m_Robot->ShouldOutput()) {
             flipper->m_FlipperMaster.Set(m_Output);
         }
     }
@@ -134,7 +138,7 @@ namespace garage {
                     angle = flipper->RawSetPointToAngle(encoderPosition),
                     angleFeedForward = std::cos(r2d(angle)) * flipper->m_AngleFeedForward,
                     feedForward = angleFeedForward;
-            if (flipper->m_Robot->ShouldOutputMotors()) {
+            if (flipper->m_Robot->ShouldOutput()) {
                 auto error = flipper->m_FlipperController.SetReference(clampedSetPoint, rev::ControlType::kSmartMotion,
                                                                        FLIPPER_SMART_MOTION_PID_SLOT, feedForward);
                 if (error == rev::CANError::kOK) {

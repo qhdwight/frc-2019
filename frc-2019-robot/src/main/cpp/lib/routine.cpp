@@ -12,17 +12,24 @@ namespace garage {
 
         void Routine::Start() {
             Logger::Log(Logger::LogLevel::k_Info, Logger::Format("[%s] Starting routine", FMT_STR(m_Name)));
-            m_Running = true;
+            m_IsFinished = false;
         }
 
         void Routine::Terminate() {
             Logger::Log(Logger::LogLevel::k_Info, Logger::Format("[%s] Terminating routine", FMT_STR(m_Name)));
-            m_Running = false;
+            m_IsFinished = true;
         }
 
-        void Routine::Periodic() {
-            if (m_Running) {
+        bool Routine::Periodic() {
+            if (m_IsFinished) {
+                return false;
+            } else {
                 Update();
+                const bool isFinished = CheckFinished();
+                if (isFinished) {
+                    Terminate();
+                }
+                return isFinished;
             }
         }
     }

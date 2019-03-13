@@ -33,13 +33,13 @@ namespace garage {
     }
 
     bool Drive::ShouldUnlock(Command& command) {
-        return math::absolute(command.driveForward) > DEFAULT_INPUT_THRESHOLD ||
-               math::absolute(command.driveTurn) > DEFAULT_INPUT_THRESHOLD;
+        return std::fabs(command.driveForward) > DEFAULT_INPUT_THRESHOLD ||
+               std::fabs(command.driveTurn) > DEFAULT_INPUT_THRESHOLD;
     }
 
     double Drive::InputFromCommand(double commandInput) {
-        const double absoluteCommand = math::absolute(commandInput), sign = math::sign(commandInput);
-        return absoluteCommand > DEFAULT_INPUT_THRESHOLD ? sign * std::abs(std::pow(commandInput, 2.0)) : 0.0;
+        const double absoluteCommand = std::fabs(commandInput), sign = math::sign(commandInput);
+        return absoluteCommand > DEFAULT_INPUT_THRESHOLD ? sign * std::fabs(std::pow(commandInput, 2.0)) : 0.0;
     }
 
     void Drive::UpdateUnlocked(Command& command) {
@@ -53,8 +53,8 @@ namespace garage {
             const double
                     forwardInput = InputFromCommand(command.driveForward),
                     turnInput = InputFromCommand(command.driveTurn);
-            m_LeftOutput = forwardInput + turnInput * (1 - math::absolute(forwardInput) * 0.5) * 0.25;
-            m_RightOutput = forwardInput - turnInput * (1 - math::absolute(forwardInput) * 0.5) * 0.25;
+            m_LeftOutput = forwardInput + turnInput * (1 - std::fabs(forwardInput) * 0.5) * 0.25;
+            m_RightOutput = forwardInput - turnInput * (1 - std::fabs(forwardInput) * 0.5) * 0.25;
         }
     }
 
@@ -64,14 +64,15 @@ namespace garage {
                 rightOutput = m_RightMaster.GetAppliedOutput(),
                 leftCurrent = m_LeftMaster.GetOutputCurrent(),
                 rightCurrent = m_RightMaster.GetOutputCurrent();
-//        m_NetworkTable->PutNumber("Gyro", m_Pigeon.GetFusedHeading());
+        const double heading = m_Pigeon.GetFusedHeading(), fixedHeading = math::fixAngle(heading);
+        m_NetworkTable->PutNumber("Gyro", fixedHeading);
         m_NetworkTable->PutNumber("Left Output", leftOutput);
         m_NetworkTable->PutNumber("Right Output", rightOutput);
         m_NetworkTable->PutNumber("Left Encoder", m_LeftEncoder.GetPosition());
         m_NetworkTable->PutNumber("Left Amperage", leftCurrent);
         m_NetworkTable->PutNumber("Right Encoder", m_RightEncoder.GetPosition());
         m_NetworkTable->PutNumber("Right Amperage", rightCurrent);
-        LogSample(lib::Logger::LogLevel::k_Info, lib::Logger::Format(
+        LogSample(lib::Logger::LogLevel::k_Debug, lib::Logger::Format(
                 "Left Output: %f, Right Output: %f, Left Current: %f, Right Current: %f",
                 leftOutput, rightOutput, leftCurrent, rightCurrent));
     }
@@ -79,7 +80,7 @@ namespace garage {
     void Drive::Update() {
         m_RightEncoderPosition = m_RightEncoder.GetPosition();
         m_LeftEncoderPosition = m_LeftEncoder.GetPosition();
-        if (m_Robot->ShouldOutputMotors()) {
+        if (m_Robot->ShouldOutput()) {
             m_LeftMaster.Set(m_LeftOutput);
             m_RightMaster.Set(m_RightOutput);
         }

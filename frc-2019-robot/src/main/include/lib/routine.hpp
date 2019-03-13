@@ -7,12 +7,15 @@ namespace garage {
     class Robot;
     namespace lib {
         class Routine {
+
         protected:
             std::shared_ptr<Robot> m_Robot;
             std::string m_Name;
-            bool m_Running = false;
+            bool m_IsFinished = true;
 
             virtual void Update() {}
+
+            virtual bool CheckFinished() { return true; }
 
         public:
             Routine(std::shared_ptr<Robot>& robot, const std::string& name);
@@ -21,9 +24,11 @@ namespace garage {
 
             virtual void Terminate();
 
-            virtual bool CheckFinished() { return true; }
+            virtual bool Periodic();
 
-            virtual void Periodic();
+            virtual bool IsFinished() {
+                return m_IsFinished;
+            }
         };
     }
 }

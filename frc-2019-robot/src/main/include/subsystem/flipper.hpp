@@ -9,13 +9,13 @@
 
 #include <rev/CANSparkMax.h>
 
-#define FLIPPER_SET_POINT_LOWER 3.0
-#define FLIPPER_SET_POINT_UPPER 38.0
-
 #define FLIPPER_LOWER 0.0
 #define FLIPPER_UPPER 40.0
 #define FLIPPER_LOWER_ANGLE 0.0
 #define FLIPPER_UPPER_ANGLE 180.0
+
+#define FLIPPER_SET_POINT_LOWER (FLIPPER_LOWER + 3.0)
+#define FLIPPER_SET_POINT_UPPER (FLIPPER_UPPER - 3.0)
 
 #define FLIPPER_P 4e-5
 #define FLIPPER_I 1e-7
@@ -106,7 +106,9 @@ namespace garage {
         rev::CANSparkMax m_FlipperMaster{FLIPPER, rev::CANSparkMax::MotorType::kBrushless};
         rev::CANPIDController m_FlipperController = m_FlipperMaster.GetPIDController();
         rev::CANEncoder m_Encoder = m_FlipperMaster.GetEncoder();
-        rev::CANDigitalInput m_LimitSwitch = m_FlipperMaster.GetForwardLimitSwitch(rev::CANDigitalInput::LimitSwitchPolarity::kNormallyOpen);
+        rev::CANDigitalInput
+            m_LimitSwitch = m_FlipperMaster.GetForwardLimitSwitch(rev::CANDigitalInput::LimitSwitchPolarity::kNormallyOpen),
+            m_ForwardLimitSwitch = m_FlipperMaster.GetReverseLimitSwitch(rev::CANDigitalInput::LimitSwitchPolarity::kNormallyClosed);
         bool m_IsLimitSwitchDown = true, m_FirstLimitSwitchHit = true;
         double m_EncoderPosition = 0.0, m_EncoderVelocity = 0.0, m_Angle = 0.0;
         double m_AngleFeedForward = FLIPPER_ANGLE_FF, m_MaxVelocity = FLIPPER_VELOCITY;

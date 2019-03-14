@@ -72,7 +72,7 @@ namespace garage {
     }
 
     bool Flipper::ShouldUnlock(Command& command) {
-        return std::fabs(command.flipper) > DEFAULT_INPUT_THRESHOLD && !command.offTheBooksModeEnabled;
+        return std::fabs(command.flipper) > DEFAULT_INPUT_THRESHOLD && m_LockServoOutput != LOCK_SERVO_UPPER;
     }
 
     void Flipper::UpdateUnlocked(Command& command) {
@@ -108,9 +108,10 @@ namespace garage {
     }
 
     void Flipper::SpacedUpdate(Command& command) {
+        const double appliedOutput = m_FlipperMaster.GetAppliedOutput();
         Log(lib::Logger::LogLevel::k_Debug, lib::Logger::Format(
-                "Output: %f, Angle: %f, Encoder Position: %f, Encoder Velocity: %f, Limit Switch: %s",
-                m_FlipperMaster.GetAppliedOutput(), m_Angle, m_EncoderPosition, m_EncoderVelocity, m_IsLimitSwitchDown ? "true" : "false"));
+                "Output: %f, Angle: %f, Encoder Position: %f, Encoder Velocity: %f, Reverse Limit Switch: %s, Forward Limit Switch: %s",
+                appliedOutput, m_Angle, m_EncoderPosition, m_EncoderVelocity, m_IsLimitSwitchDown ? "true" : "false", true ? "true" : "false"));
     }
 
     void Flipper::SetRawOutput(double output) {
@@ -236,7 +237,7 @@ namespace garage {
                 auto error = flipper->m_FlipperController.SetReference(clampedSetPoint, rev::ControlType::kSmartMotion,
                                                                        FLIPPER_SMART_MOTION_PID_SLOT, feedForward);
                 if (error == rev::CANError::kOK) {
-                    Log(lib::Logger::LogLevel::k_Debug, lib::Logger::Format("Setting set point to: %d", clampedSetPoint));
+                    Log(lib::Logger::LogLevel::k_Debug, lib::Logger::Format("Wanted set point: %f", clampedSetPoint));
                 } else {
                     Log(lib::Logger::LogLevel::k_Error, lib::Logger::Format("CAN Error: %d", error));
                 }

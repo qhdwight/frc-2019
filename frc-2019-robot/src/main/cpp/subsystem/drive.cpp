@@ -74,7 +74,7 @@ namespace garage {
         m_NetworkTable->PutNumber("Left Amperage", leftCurrent);
         m_NetworkTable->PutNumber("Right Encoder", m_RightEncoder.GetPosition());
         m_NetworkTable->PutNumber("Right Amperage", rightCurrent);
-        LogSample(lib::Logger::LogLevel::k_Debug, lib::Logger::Format(
+        Log(lib::Logger::LogLevel::k_Debug, lib::Logger::Format(
                 "Left Output: %f, Right Output: %f, Left Current: %f, Right Current: %f",
                 leftOutput, rightOutput, leftCurrent, rightCurrent));
     }

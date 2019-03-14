@@ -29,13 +29,21 @@ namespace garage {
                 return different;
             }
 
-            virtual void AddController(std::shared_ptr<Controller> controller) {
-                m_Controllers.push_back(controller);
+            virtual void AddController(std::shared_ptr<Controller> controller)
+            {
+                if (controller) {
+                    m_Controllers.push_back(controller);
+                } else {
+                    Log(Logger::LogLevel::k_Error, "Trying to add a null controller");
+                }
             }
 
             virtual void SetUnlockedController(std::shared_ptr<Controller> controller) {
                 if (controller != m_UnlockedController) {
                     m_UnlockedController = controller;
+                    if (!m_IsLocked && controller != m_Controller) {
+                        SetController(controller);
+                    }
                 }
             }
 

@@ -64,12 +64,11 @@ namespace garage {
         m_ElevatorMaster.ConfigAllowableClosedloopError(ELEVATOR_MOTION_MAGIC_PID_SLOT, ELEVATOR_ALLOWABLE_CLOSED_LOOP_ERROR, CONFIG_TIMEOUT);
         // Safety
         m_ElevatorMaster.ConfigClosedLoopPeakOutput(ELEVATOR_MOTION_MAGIC_PID_SLOT, 0.75, CONFIG_TIMEOUT);
-        m_ElevatorMaster.ConfigPeakOutputReverse(-0.2, CONFIG_TIMEOUT);
 
         /* Final enabling */
         m_ElevatorMaster.EnableVoltageCompensation(true);
         m_ElevatorMaster.EnableCurrentLimit(false);
-        m_ElevatorMaster.OverrideSoftLimitsEnable(true);
+        m_ElevatorMaster.OverrideSoftLimitsEnable(false);
         m_ElevatorMaster.OverrideLimitSwitchesEnable(false);
 
         m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, 0.0);
@@ -203,14 +202,20 @@ namespace garage {
 
     void RawElevatorController::ProcessCommand(Command& command) {
         m_Input = math::threshold(command.elevatorInput, DEFAULT_INPUT_THRESHOLD);
-        m_Output = m_Input * 0.5;
+        m_Output = math::clamp(m_Input, -0.5, 0.45);
     }
 
     void RawElevatorController::Control() {
         auto elevator = m_Subsystem.lock();
         Log(lib::Logger::LogLevel::k_Debug, lib::Logger::Format("Input Value: %f, Output Value: %f", m_Input, m_Output));
         if (elevator->m_Robot->ShouldOutput()) {
-            elevator->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, m_Output);
+            if ((elevator->m_EncoderPosition > 7500 || m_Output > 0.01) &&
+                elevator->m_EncoderPosition < ELEVATOR_MAX) {
+                elevator->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, m_Output);
+            } else {
+                elevator->Log(lib::Logger::LogLevel::k_Warning, "Not in range for raw control");
+                elevator->SoftLand();
+            }
         }
     }
 

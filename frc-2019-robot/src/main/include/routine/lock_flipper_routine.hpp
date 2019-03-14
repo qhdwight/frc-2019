@@ -13,7 +13,7 @@ namespace garage {
                 std::make_shared<SetFlipperAngleRoutine>(robot, 180.0),
                 std::make_shared<lib::WaitRoutine>(robot, 200l),
                 std::make_shared<SetFlipperServoRoutine>(robot, true),
-                std::make_shared<lib::WaitRoutine>(robot, 1000l)
+                std::make_shared<lib::WaitRoutine>(robot, 2000l)
         }) {
 
         }

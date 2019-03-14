@@ -10,7 +10,7 @@ namespace garage {
     public:
         ResetWithServoRoutine(std::shared_ptr<Robot> robot)
             : ResetRoutine(robot) {
-            m_SubRoutines.insert(m_SubRoutines.begin(), std::make_shared<lib::WaitRoutine>(robot, 1000l));
+            m_SubRoutines.insert(m_SubRoutines.begin(), std::make_shared<lib::WaitRoutine>(robot, 2000l));
             m_SubRoutines.insert(m_SubRoutines.begin(), std::make_shared<SetFlipperServoRoutine>(robot, false));
         }
     };

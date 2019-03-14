@@ -17,6 +17,7 @@ namespace garage {
         void RoutineManager::AddRoutine(std::shared_ptr<Routine> routine) {
             // Make sure we are not adding the same exact routine twice
             if (!routine) {
+                Logger::Log(Logger::LogLevel::k_Error, "Trying to add a null routine");
                 return;
             }
             // TODO std function? who writes their own algorithms anyways

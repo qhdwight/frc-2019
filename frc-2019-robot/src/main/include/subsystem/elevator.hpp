@@ -32,7 +32,7 @@
 #define ELEVATOR_PEAK_CURRENT_DURATION 200 // Milliseconds
 
 #define ELEVATOR_ALLOWABLE_CLOSED_LOOP_ERROR 0 // Encoder ticks - Zero is always try to get to value and do not stop
-#define ELEVATOR_WITHIN_SET_POINT_AMOUNT 1200 // Encoder ticks
+#define ELEVATOR_WITHIN_SET_POINT_AMOUNT 1500 // Encoder ticks
 
 #define ELEVATOR_OPEN_LOOP_RAMP 0.4 // Seconds
 #define ELEVATOR_CLOSED_LOOP_RAMP 0.1 // Seconds

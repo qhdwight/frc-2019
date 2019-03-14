@@ -32,7 +32,7 @@ namespace garage {
         auto flipper = std::weak_ptr<Flipper>(shared_from_this());
         AddController(m_RawController = std::make_shared<RawFlipperController>(flipper));
         AddController(m_SetPointController = std::make_shared<SetPointFlipperController>(flipper));
-        SetUnlockedController(m_RawController);
+        SetUnlockedController(m_SetPointController);
         AddNetworkTableListener("Angle FF", FLIPPER_ANGLE_FF, [this](const double angleFF) {
             m_AngleFeedForward = angleFF;
             return true;
@@ -170,7 +170,7 @@ namespace garage {
                 }
             }
         } else {
-            flipper->LogSample(lib::Logger::LogLevel::k_Info, "Not doing anything");
+            flipper->LogSample(lib::Logger::LogLevel::k_Debug, "Not doing anything");
             flipper->m_FlipperMaster.Set(0.0);
         }
     }

@@ -215,18 +215,24 @@ namespace garage {
         m_WantedSetPoint = math::clamp(m_WantedSetPoint, ELEVATOR_MIN, ELEVATOR_MAX_CLOSED_LOOP_HEIGHT);
         Log(lib::Logger::LogLevel::k_Debug,
             lib::Logger::Format("Wanted Set Point: %d, Feed Forward: %f", m_WantedSetPoint, elevator->m_FeedForward));
-        if ((elevator->m_EncoderPosition > ELEVATOR_MIN_CLOSED_LOOP_HEIGHT || m_WantedSetPoint > ELEVATOR_MIN) &&
-            elevator->m_EncoderPosition < ELEVATOR_MAX) {
-            elevator->LogSample(lib::Logger::LogLevel::k_Debug, "Theoretically Okay and Working");
-            if (elevator->m_Robot->ShouldOutput()) {
-                elevator->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::MotionMagic,
-                                               m_WantedSetPoint,
-                                               ctre::phoenix::motorcontrol::DemandType::DemandType_ArbitraryFeedForward,
-                                               elevator->m_FeedForward);
-            }
-        } else {
-            elevator->Log(lib::Logger::LogLevel::k_Error, "Not in closed loop range for set point");
+        // TODO tune
+        if (elevator->m_EncoderPosition < 7000 && m_WantedSetPoint == 0) {
+            elevator->Log(lib::Logger::LogLevel::k_Info, "Safe Land Getting to Zero");
             elevator->SoftLand();
+        } else {
+            if ((elevator->m_EncoderPosition > ELEVATOR_MIN_CLOSED_LOOP_HEIGHT || m_WantedSetPoint > ELEVATOR_MIN) &&
+                elevator->m_EncoderPosition < ELEVATOR_MAX) {
+                elevator->LogSample(lib::Logger::LogLevel::k_Debug, "Theoretically Okay and Working");
+                if (elevator->m_Robot->ShouldOutput()) {
+                    elevator->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::MotionMagic,
+                                                   m_WantedSetPoint,
+                                                   ctre::phoenix::motorcontrol::DemandType::DemandType_ArbitraryFeedForward,
+                                                   elevator->m_FeedForward);
+                }
+            } else {
+                elevator->Log(lib::Logger::LogLevel::k_Error, "Not in closed loop range for set point");
+                elevator->SoftLand();
+            }
         }
     }
 

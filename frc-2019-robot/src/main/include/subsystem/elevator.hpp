@@ -24,7 +24,7 @@
 #define ELEVATOR_F 0.03 // Multiplied by velocity calculated by motion magic and added to output, does most of work
 #define ELEVATOR_FF 0.32 // Percent output - Output required to hold elevator at a position, always added to motor output in closed loop
 #define ELEVATOR_MAX_CLOSED_LOOP_HEIGHT (ELEVATOR_MAX - 10000)
-#define ELEVATOR_MIN_CLOSED_LOOP_HEIGHT 4000 // Encoder ticks
+#define ELEVATOR_MIN_CLOSED_LOOP_HEIGHT 3000 // Encoder ticks
 
 /* Energy Management */
 #define ELEVATOR_CONTINUOUS_CURRENT_LIMIT 40 // Amperes

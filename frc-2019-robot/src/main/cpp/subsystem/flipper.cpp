@@ -21,6 +21,7 @@ namespace garage {
         m_FlipperController.SetSmartMotionMinOutputVelocity(0.0, FLIPPER_SMART_MOTION_PID_SLOT);
         m_FlipperController.SetSmartMotionMaxAccel(FLIPPER_ACCELERATION, FLIPPER_SMART_MOTION_PID_SLOT);
         m_FlipperController.SetSmartMotionAllowedClosedLoopError(FLIPPER_ALLOWABLE_ERROR, FLIPPER_SMART_MOTION_PID_SLOT);
+        // TODO yay or nay with s-curve?
         m_FlipperController.SetSmartMotionAccelStrategy(rev::CANPIDController::AccelStrategy::kSCurve, FLIPPER_SMART_MOTION_PID_SLOT);
         m_FlipperMaster.EnableVoltageCompensation(DEFAULT_VOLTAGE_COMPENSATION);
         m_LimitSwitch.EnableLimitSwitch(false);
@@ -38,8 +39,14 @@ namespace garage {
         });
     }
 
+    void Flipper::Reset() {
+        ControllableSubsystem::Reset();
+        m_LockServoOutput = LOCK_SERVO_LOWER;
+        m_CameraServoOutput = CAMERA_SERVO_LOWER;
+    }
+
     bool Flipper::ShouldUnlock(Command& command) {
-        return std::fabs(command.flipper) > DEFAULT_INPUT_THRESHOLD;
+        return std::fabs(command.flipper) > DEFAULT_INPUT_THRESHOLD && m_LockServoOutput == LOCK_SERVO_LOWER;
     }
 
     void Flipper::Update() {
@@ -58,19 +65,22 @@ namespace garage {
         }
         m_EncoderPosition = m_Encoder.GetPosition();
         m_EncoderVelocity = m_Encoder.GetVelocity();
+        m_Angle = RawSetPointToAngle(m_EncoderPosition);
         const uint16_t faults = m_FlipperMaster.GetStickyFaults();
         if (faults != 0) {
             Log(lib::Logger::LogLevel::k_Error, lib::Logger::Format("Stick Fault Error: %d", faults));
             m_FlipperMaster.ClearFaults();
         }
-//        const double output = math::threshold(m_LastCommand.ballIntake, DEFAULT_INPUT_THRESHOLD) * 0.35;
-//        m_Flipper.Set(output);
+        // TODO check
+        m_CameraServoOutput = static_cast<uint16_t>(m_Angle > 90.0 ? CAMERA_SERVO_LOWER : CAMERA_SERVO_UPPER);
+        m_CameraServo.SetRaw(m_CameraServoOutput);
+        m_LockServo.SetAngle(m_LockServoOutput);
     }
 
     void Flipper::SpacedUpdate(Command& command) {
-        Log(lib::Logger::LogLevel::k_Info, lib::Logger::Format(
-                "Output: %f, Encoder Position: %f, Encoder Velocity: %f, Limit Switch: %s",
-                m_FlipperMaster.GetAppliedOutput(), m_EncoderPosition, m_EncoderVelocity, m_IsLimitSwitchDown ? "true" : "false"));
+        Log(lib::Logger::LogLevel::k_Debug, lib::Logger::Format(
+                "Output: %f, Angle: %f, Encoder Position: %f, Encoder Velocity: %f, Limit Switch: %s",
+                m_FlipperMaster.GetAppliedOutput(), m_Angle, m_EncoderPosition, m_EncoderVelocity, m_IsLimitSwitchDown ? "true" : "false"));
     }
 
     void Flipper::SetRawOutput(double output) {
@@ -90,12 +100,25 @@ namespace garage {
         SetAngle(90.0);
     }
 
+    void Flipper::LockServo() {
+        Lock();
+        m_LockServoOutput = LOCK_SERVO_UPPER;
+    }
+
     double Flipper::RawSetPointToAngle(double setPoint) {
         return math::map(setPoint, FLIPPER_LOWER, FLIPPER_UPPER, FLIPPER_LOWER_ANGLE, FLIPPER_UPPER_ANGLE);
     }
 
     double Flipper::AngleToRawSetPoint(double angle) {
         return math::map(angle, FLIPPER_LOWER_ANGLE, FLIPPER_UPPER_ANGLE, FLIPPER_LOWER, FLIPPER_UPPER);
+    }
+
+    bool Flipper::WithinAngle(double angle) {
+        return math::withinRange(m_Angle, angle, 1.5);
+    }
+
+    double Flipper::GetAngle() {
+        return m_Angle;
     }
 
     /* =============================================================== Controllers ===============================================================
@@ -135,8 +158,7 @@ namespace garage {
         if (inMiddle || wantingToGoOtherWay) {
             const double
                     clampedSetPoint = math::clamp(m_SetPoint, FLIPPER_SET_POINT_LOWER, FLIPPER_SET_POINT_UPPER),
-                    angle = flipper->RawSetPointToAngle(encoderPosition),
-                    angleFeedForward = std::cos(r2d(angle)) * flipper->m_AngleFeedForward,
+                    angleFeedForward = std::cos(r2d(flipper->m_Angle)) * flipper->m_AngleFeedForward,
                     feedForward = angleFeedForward;
             if (flipper->m_Robot->ShouldOutput()) {
                 auto error = flipper->m_FlipperController.SetReference(clampedSetPoint, rev::ControlType::kSmartMotion,

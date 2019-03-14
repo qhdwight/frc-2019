@@ -5,8 +5,6 @@
 #include <memory>
 
 namespace garage {
-    class Robot;
-
     class Elevator;
 
     class SetElevatorPositionRoutine : public lib::SubsystemRoutine<Elevator> {

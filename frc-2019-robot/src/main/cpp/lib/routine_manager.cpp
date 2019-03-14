@@ -9,13 +9,14 @@ namespace garage {
         }
 
         void RoutineManager::AddRoutinesFromCommand(Command& command) {
-            for (auto& routine : command.routines)
+            for (auto& routine : command.routines) {
                 AddRoutine(routine);
+            }
         }
 
         void RoutineManager::AddRoutine(std::shared_ptr<Routine> routine) {
             // Make sure we are not adding the same exact routine twice
-            // TODO std function?
+            // TODO std function? who writes their own algorithms anyways
             for (auto& existingRoutine : m_QueuedRoutines) {
                 if (routine == existingRoutine) {
                     return;

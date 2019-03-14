@@ -14,6 +14,9 @@
 #include <lib/routine_manager.hpp>
 #include <test/test_drive_auto_routine.hpp>
 #include <routine/reset_routine.hpp>
+#include <routine/flip_over_routine.hpp>
+#include <routine/ball_intake_routine.hpp>
+#include <routine/lock_flipper_routine.hpp>
 #include <routine/ball_placement_routine.hpp>
 #include <routine/elevator_and_flipper_routine.hpp>
 
@@ -23,7 +26,6 @@
 #include <frc/Joystick.h>
 #include <frc/TimedRobot.h>
 #include <frc/XboxController.h>
-#include <frc/Servo.h>
 
 #include <wpi/optional.h>
 
@@ -67,10 +69,8 @@ namespace garage {
         std::shared_ptr<lib::Routine>
                 m_TestRoutine, m_ResetRoutine,
                 m_BottomHatchRoutine, m_MiddleHatchRoutine, m_TopHatchRoutine,
-                m_BottomBallRoutine, m_MiddleBallRoutine, m_TopBallRoutine;
-        // TODO remove
-        frc::Servo m_CameraServo{0};
-        uint16_t m_CameraOutput = 0;
+                m_BottomBallRoutine, m_MiddleBallRoutine, m_TopBallRoutine,
+                m_EndGameRoutine, m_FlipOverRoutine, m_BallIntakeRoutine;
 
     public:
         void RobotInit() override;

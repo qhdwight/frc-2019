@@ -87,6 +87,7 @@ namespace garage {
         rev::CANDigitalInput m_LimitSwitch = m_FlipperMaster.GetForwardLimitSwitch(rev::CANDigitalInput::LimitSwitchPolarity::kNormallyOpen);
         bool m_IsLimitSwitchDown = true, m_FirstLimitSwitchHit = true;
         double m_EncoderPosition = 0.0, m_EncoderVelocity = 0.0;
+        double m_Angle = 0.0;
         double m_AngleFeedForward = FLIPPER_ANGLE_FF;
         std::shared_ptr<RawFlipperController> m_RawController;
         std::shared_ptr<SetPointFlipperController> m_SetPointController;
@@ -110,10 +111,18 @@ namespace garage {
 
         void SetAngle(double angle);
 
+        void LockServo();
+
+        bool WithinAngle(double angle);
+
+        double GetAngle();
+
         void Stow();
 
         double RawSetPointToAngle(double setPoint);
 
         double AngleToRawSetPoint(double angle);
+
+        void Reset() override;
     };
 }

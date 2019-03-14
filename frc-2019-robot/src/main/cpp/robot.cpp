@@ -49,11 +49,14 @@ namespace garage {
         m_MiddleHatchRoutine = std::make_shared<ElevatorAndFlipperRoutine>(m_Pointer, m_Config.middleHatchHeight, 180.0, "Middle Hatch");
         m_TopHatchRoutine = std::make_shared<ElevatorAndFlipperRoutine>(m_Pointer, m_Config.topHatchHeight, 180.0, "Top Hatch");
         // Ball routines
-        m_BottomBallRoutine = std::make_shared<BallPlacementRoutine>(m_Pointer, m_Config.bottomBallHeight, m_Config.bottomBallAngle, "Bottom Ball");
-        m_MiddleBallRoutine = std::make_shared<BallPlacementRoutine>(m_Pointer, m_Config.middleBallHeight, m_Config.middleBallAngle, "Middle Ball");
-        m_TopBallRoutine = std::make_shared<BallPlacementRoutine>(m_Pointer, m_Config.topBallHeight, m_Config.bottomBallAngle, "Top Ball");
+        m_BottomBallRoutine = std::make_shared<ElevatorAndFlipperRoutine>(m_Pointer, m_Config.bottomBallHeight, m_Config.bottomBallAngle, "Bottom Ball");
+        m_MiddleBallRoutine = std::make_shared<ElevatorAndFlipperRoutine>(m_Pointer, m_Config.middleBallHeight, m_Config.middleBallAngle, "Middle Ball");
+        m_TopBallRoutine = std::make_shared<ElevatorAndFlipperRoutine>(m_Pointer, m_Config.topBallHeight, m_Config.bottomBallAngle, "Top Ball");
         m_TestRoutine = std::make_shared<lib::ParallelRoutine>(m_Pointer, "Test Routine",
                                                                lib::RoutineVector{testWaitRoutine, testWaitRoutine, testWaitRoutine});
+        m_EndGameRoutine = std::make_shared<LockFlipperRoutine>(m_Pointer);
+        m_FlipOverRoutine = std::make_shared<FlipOverRoutine>(m_Pointer);
+        m_BallIntakeRoutine = std::make_shared<BallIntakeRoutine>(m_Pointer);
         lib::Logger::Log(lib::Logger::LogLevel::k_Info, "End robot initialization");
     }
 
@@ -172,28 +175,30 @@ namespace garage {
 
     void Robot::UpdateCommand() {
         if (m_Controller.GetStickButtonPressed(frc::GenericHID::kRightHand)) {
-            m_Command.drivePrescisionEnabled = !m_Command.drivePrescisionEnabled;
+            m_Command.drivePrecisionEnabled = !m_Command.drivePrecisionEnabled;
         }
-        if (m_Controller.GetStickButtonPressed(frc::GenericHID::kLeftHand)) {
-            m_Command.elevatorOpenLoopEnabled = !m_Command.elevatorOpenLoopEnabled;
+        if (m_Controller.GetStartButtonPressed()) {
+            m_Command.offTheBooksModeEnabled = !m_Command.offTheBooksModeEnabled;
+            if (m_Command.offTheBooksModeEnabled) {
+                m_Command.routines.push_back(m_EndGameRoutine);
+            }
         }
         m_Command.driveForward = -m_Controller.GetY(frc::GenericHID::JoystickHand::kRightHand);
         m_Command.driveTurn = m_Controller.GetX(frc::GenericHID::JoystickHand::kRightHand);
         m_Command.flipper = m_Controller.GetTriggerAxis(frc::GenericHID::JoystickHand::kRightHand) -
                             m_Controller.GetTriggerAxis(frc::GenericHID::JoystickHand::kLeftHand);
-        bool startButton = m_Controller.GetStartButtonPressed();
-        if (startButton) {
-            m_CameraOutput = static_cast<uint16_t>(m_CameraOutput == CAMERA_SERVO_LOWER ? CAMERA_SERVO_UPPER : CAMERA_SERVO_LOWER);
-        }
-        m_CameraServo.SetRaw(m_CameraOutput);
         m_Command.ballIntake = math::axis<double>(
                 m_Controller.GetBumper(frc::GenericHID::JoystickHand::kRightHand),
                 m_Controller.GetBumper(frc::GenericHID::JoystickHand::kLeftHand));
         const int pov = m_Controller.GetPOV();
         const bool
+                // Left button
                 elevatorHatch = pov == 90,
+                // Button button
                 elevatorDown = pov == 180,
+                // Right button
                 elevatorBall = pov == 270,
+                // Top button
                 elevatorSoftLand = pov == 0;
         m_Command.routines.clear();
 //        if (m_Controller.GetAButtonPressed()) {
@@ -211,6 +216,8 @@ namespace garage {
                 m_Command.routines.push_back(m_BottomBallRoutine);
             } else if (elevatorHatch) {
                 m_Command.routines.push_back(m_BottomHatchRoutine);
+            } else {
+                m_Command.routines.push_back(m_BallIntakeRoutine);
             }
         }
         if (m_Controller.GetBButtonPressed()) {
@@ -232,7 +239,8 @@ namespace garage {
             m_Command.hatchIntakeDown = false;
         }
         if (m_Controller.GetXButtonPressed()) {
-            m_Command.routines.push_back(m_TestRoutine);
+            m_Command.routines.push_back(m_FlipOverRoutine);
+//            m_Command.routines.push_back(m_TestRoutine);
         }
         if (elevatorDown) {
             m_RoutineManager->TerminateAllRoutines();

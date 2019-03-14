@@ -43,7 +43,7 @@ namespace garage {
     }
 
     void Drive::UpdateUnlocked(Command& command) {
-        if (command.drivePrescisionEnabled) {
+        if (command.drivePrecisionEnabled) {
             const double
                     forwardInputFine = math::threshold(command.driveForward, DEFAULT_INPUT_THRESHOLD) - DEFAULT_INPUT_THRESHOLD,
                     turnInputFine = math::threshold(command.driveTurn, DEFAULT_INPUT_THRESHOLD) - DEFAULT_INPUT_THRESHOLD;

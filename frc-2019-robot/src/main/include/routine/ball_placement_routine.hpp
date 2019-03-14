@@ -5,8 +5,6 @@
 #include <routine/elevator_and_flipper_routine.hpp>
 
 namespace garage {
-    class Robot;
-
     class Elevator;
 
     class BallPlacementRoutine : public lib::SequentialRoutine {

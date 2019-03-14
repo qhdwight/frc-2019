@@ -3,18 +3,22 @@
 #include <robot.hpp>
 
 namespace garage {
-    SetFlipperAngleRoutine::SetFlipperAngleRoutine(std::shared_ptr<Robot>& robot, double angle, const std::string& name)
+    SetFlipperAngleRoutine::SetFlipperAngleRoutine(std::shared_ptr<Robot> robot, double angle, const std::string& name)
             : SubsystemRoutine(robot, robot->GetFlipper(), name), m_Angle(angle) {
 
     }
 
     void SetFlipperAngleRoutine::Start() {
         Routine::Start();
-//        m_Subsystem->SetAngle(m_Angle);
+        m_Subsystem->SetAngle(m_Angle);
     }
 
     void SetFlipperAngleRoutine::Terminate() {
         Routine::Terminate();
-//        m_Subsystem->Unlock();
+        m_Subsystem->Unlock();
+    }
+
+    bool SetFlipperAngleRoutine::CheckFinished() {
+        return m_Subsystem->WithinAngle(m_Angle);
     }
 }

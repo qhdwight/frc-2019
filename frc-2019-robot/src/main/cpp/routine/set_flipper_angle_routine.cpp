@@ -10,11 +10,11 @@ namespace garage {
 
     void SetFlipperAngleRoutine::Start() {
         Routine::Start();
-        m_Subsystem->SetAngle(m_Angle);
+//        m_Subsystem->SetAngle(m_Angle);
     }
 
     void SetFlipperAngleRoutine::Terminate() {
         Routine::Terminate();
-        m_Subsystem->Unlock();
+//        m_Subsystem->Unlock();
     }
 }

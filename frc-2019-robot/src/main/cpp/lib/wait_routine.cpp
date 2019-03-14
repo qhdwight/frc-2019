@@ -1,5 +1,7 @@
 #include <lib/wait_routine.hpp>
 
+#include <lib/logger.hpp>
+
 namespace garage {
     namespace lib {
         void WaitRoutine::Start() {

@@ -1,9 +1,12 @@
 #include <lib/sequential_routine.hpp>
 
+#include <lib/logger.hpp>
+
 namespace garage {
     namespace lib {
         void SequentialRoutine::Start() {
             Routine::Start();
+            m_CurrentRoutineIndex = 0;
             if (!m_SubRoutines.empty()) {
                 m_SubRoutines.front()->Start();
             }
@@ -17,8 +20,6 @@ namespace garage {
                     if (m_CurrentRoutineIndex < m_SubRoutines.size()) {
                         auto& nextRoutine = m_SubRoutines[m_CurrentRoutineIndex];
                         nextRoutine->Start();
-                    } else {
-                        Terminate();
                     }
                 }
             }
@@ -29,6 +30,7 @@ namespace garage {
         }
 
         void SequentialRoutine::Terminate() {
+            Routine::Terminate();
             if (m_CurrentRoutineIndex < m_SubRoutines.size()) {
                 auto& currentRoutine = m_SubRoutines[m_CurrentRoutineIndex];
                 currentRoutine->Terminate();

@@ -52,8 +52,8 @@ namespace garage {
         m_BottomBallRoutine = std::make_shared<BallPlacementRoutine>(m_Pointer, m_Config.bottomBallHeight, m_Config.bottomBallAngle, "Bottom Ball");
         m_MiddleBallRoutine = std::make_shared<BallPlacementRoutine>(m_Pointer, m_Config.middleBallHeight, m_Config.middleBallAngle, "Middle Ball");
         m_TopBallRoutine = std::make_shared<BallPlacementRoutine>(m_Pointer, m_Config.topBallHeight, m_Config.bottomBallAngle, "Top Ball");
-        m_TestRoutine = std::make_shared<lib::SequentialRoutine>(m_Pointer, "Test Routine",
-                                                                 lib::RoutineVector{testWaitRoutine, testWaitRoutine, testWaitRoutine});
+        m_TestRoutine = std::make_shared<lib::ParallelRoutine>(m_Pointer, "Test Routine",
+                                                               lib::RoutineVector{testWaitRoutine, testWaitRoutine, testWaitRoutine});
         lib::Logger::Log(lib::Logger::LogLevel::k_Info, "End robot initialization");
     }
 
@@ -181,6 +181,11 @@ namespace garage {
         m_Command.driveTurn = m_Controller.GetX(frc::GenericHID::JoystickHand::kRightHand);
         m_Command.flipper = m_Controller.GetTriggerAxis(frc::GenericHID::JoystickHand::kRightHand) -
                             m_Controller.GetTriggerAxis(frc::GenericHID::JoystickHand::kLeftHand);
+        bool startButton = m_Controller.GetStartButtonPressed();
+        if (startButton) {
+            m_CameraOutput = static_cast<uint16_t>(m_CameraOutput == CAMERA_SERVO_LOWER ? CAMERA_SERVO_UPPER : CAMERA_SERVO_LOWER);
+        }
+        m_CameraServo.SetRaw(m_CameraOutput);
         m_Command.ballIntake = math::axis<double>(
                 m_Controller.GetBumper(frc::GenericHID::JoystickHand::kRightHand),
                 m_Controller.GetBumper(frc::GenericHID::JoystickHand::kLeftHand));

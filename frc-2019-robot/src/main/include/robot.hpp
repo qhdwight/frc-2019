@@ -23,6 +23,7 @@
 #include <frc/Joystick.h>
 #include <frc/TimedRobot.h>
 #include <frc/XboxController.h>
+#include <frc/Servo.h>
 
 #include <wpi/optional.h>
 
@@ -67,6 +68,9 @@ namespace garage {
                 m_TestRoutine, m_ResetRoutine,
                 m_BottomHatchRoutine, m_MiddleHatchRoutine, m_TopHatchRoutine,
                 m_BottomBallRoutine, m_MiddleBallRoutine, m_TopBallRoutine;
+        // TODO remove
+        frc::Servo m_CameraServo{0};
+        uint16_t m_CameraOutput = 0;
 
     public:
         void RobotInit() override;

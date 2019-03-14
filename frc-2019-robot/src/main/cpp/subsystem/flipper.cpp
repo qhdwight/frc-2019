@@ -15,6 +15,7 @@ namespace garage {
         m_FlipperController.SetI(FLIPPER_I, FLIPPER_SMART_MOTION_PID_SLOT);
         m_FlipperController.SetD(FLIPPER_D, FLIPPER_SMART_MOTION_PID_SLOT);
         m_FlipperController.SetIZone(FLIPPER_I_ZONE, FLIPPER_SMART_MOTION_PID_SLOT);
+        m_FlipperController.SetIMaxAccum(FLIPPER_MAX_ACCUM, FLIPPER_SMART_MOTION_PID_SLOT);
         m_FlipperController.SetFF(FLIPPER_FF, FLIPPER_SMART_MOTION_PID_SLOT);
         m_FlipperController.SetOutputRange(-1.0, 1.0, FLIPPER_SMART_MOTION_PID_SLOT);
         m_FlipperController.SetSmartMotionMaxVelocity(FLIPPER_VELOCITY, FLIPPER_SMART_MOTION_PID_SLOT);
@@ -37,6 +38,30 @@ namespace garage {
         AddNetworkTableListener("Angle FF", FLIPPER_ANGLE_FF, [this](const double angleFF) {
             m_AngleFeedForward = angleFF;
             return true;
+        });
+        AddNetworkTableListener("P", FLIPPER_P, [this](const double p) {
+            auto error = m_FlipperController.SetP(p, FLIPPER_SMART_MOTION_PID_SLOT);
+            return error == rev::CANError::kOK;
+        });
+        AddNetworkTableListener("I", FLIPPER_I, [this](const double i) {
+            auto error = m_FlipperController.SetI(i, FLIPPER_SMART_MOTION_PID_SLOT);
+            return error == rev::CANError::kOK;
+        });
+        AddNetworkTableListener("I Zone", FLIPPER_I_ZONE, [this](const double iZone) {
+            auto error = m_FlipperController.SetIZone(iZone, FLIPPER_SMART_MOTION_PID_SLOT);
+            return error == rev::CANError::kOK;
+        });
+        AddNetworkTableListener("Max Accum", FLIPPER_MAX_ACCUM, [this](const double maxAccum) {
+            auto error = m_FlipperController.SetIMaxAccum(maxAccum, FLIPPER_SMART_MOTION_PID_SLOT);
+            return error == rev::CANError::kOK;
+        });
+        AddNetworkTableListener("D", FLIPPER_D, [this](const double d) {
+            auto error = m_FlipperController.SetD(d, FLIPPER_SMART_MOTION_PID_SLOT);
+            return error == rev::CANError::kOK;
+        });
+        AddNetworkTableListener("FF", FLIPPER_FF, [this](const double ff) {
+            auto error = m_FlipperController.SetFF(ff, FLIPPER_SMART_MOTION_PID_SLOT);
+            return error == rev::CANError::kOK;
         });
     }
 

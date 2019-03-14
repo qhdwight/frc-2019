@@ -20,6 +20,7 @@
 #define FLIPPER_P 4e-5
 #define FLIPPER_I 1e-7
 #define FLIPPER_D 7e-4
+#define FLIPPER_MAX_ACCUM 0.1
 #define FLIPPER_I_ZONE 3.0
 #define FLIPPER_FF 0.000156
 #define FLIPPER_VELOCITY 4400.0

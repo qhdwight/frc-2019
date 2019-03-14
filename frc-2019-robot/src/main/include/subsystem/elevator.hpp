@@ -12,11 +12,11 @@
 #define ELEVATOR_MIN 0 // Encoder ticks
 
 /* Gains and Motion Magic */
-#define ELEVATOR_VELOCITY 20000 // Encoder ticks per 100 ms
-#define ELEVATOR_ACCELERATION 22500 // Encoder ticks per 100 ms per 100 ms
+#define ELEVATOR_VELOCITY 25000 // Encoder ticks per 100 ms
+#define ELEVATOR_ACCELERATION 20000 // Encoder ticks per 100 ms per 100 ms
 #define ELEVATOR_P 0.01
 #define ELEVATOR_I 0.0
-#define ELEVATOR_MAX_I 0.0
+#define ELEVATOR_MAX_ACCUM 0.0
 #define ELEVATOR_I_ZONE 0 // Encoder ticks
 #define ELEVATOR_D 0.5
 #define ELEVATOR_S_CURVE_STRENGTH 3 // Value between 1-8 which determines how curved the trapezoidal motion profile is

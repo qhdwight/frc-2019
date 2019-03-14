@@ -57,7 +57,7 @@ namespace garage {
         m_ElevatorMaster.Config_kP(ELEVATOR_MOTION_MAGIC_PID_SLOT, ELEVATOR_P, CONFIG_TIMEOUT);
         m_ElevatorMaster.Config_kD(ELEVATOR_MOTION_MAGIC_PID_SLOT, ELEVATOR_D, CONFIG_TIMEOUT);
         m_ElevatorMaster.Config_kI(ELEVATOR_MOTION_MAGIC_PID_SLOT, ELEVATOR_I, CONFIG_TIMEOUT);
-        m_ElevatorMaster.ConfigMaxIntegralAccumulator(ELEVATOR_MOTION_MAGIC_PID_SLOT, ELEVATOR_MAX_I, CONFIG_TIMEOUT);
+        m_ElevatorMaster.ConfigMaxIntegralAccumulator(ELEVATOR_MOTION_MAGIC_PID_SLOT, ELEVATOR_MAX_ACCUM, CONFIG_TIMEOUT);
         m_ElevatorMaster.Config_IntegralZone(ELEVATOR_MOTION_MAGIC_PID_SLOT, ELEVATOR_I_ZONE, CONFIG_TIMEOUT);
         m_ElevatorMaster.Config_kF(ELEVATOR_MOTION_MAGIC_PID_SLOT, ELEVATOR_F, CONFIG_TIMEOUT);
         m_ElevatorMaster.ConfigMotionSCurveStrength(ELEVATOR_S_CURVE_STRENGTH, CONFIG_TIMEOUT);
@@ -95,6 +95,18 @@ namespace garage {
         AddNetworkTableListener("Velocity", ELEVATOR_VELOCITY, [this](const int velocity) {
             m_MaxVelocity = velocity;
             auto error = m_ElevatorMaster.ConfigMotionCruiseVelocity(velocity, CONFIG_TIMEOUT);
+            return error == ctre::phoenix::OK;
+        });
+        AddNetworkTableListener("I", ELEVATOR_I, [this](const double i) {
+            auto error = m_ElevatorMaster.Config_kI(ELEVATOR_MOTION_MAGIC_PID_SLOT, i, CONFIG_TIMEOUT);
+            return error == ctre::phoenix::OK;
+        });
+        AddNetworkTableListener("I Zone", ELEVATOR_I_ZONE, [this](const int iZone) {
+            auto error = m_ElevatorMaster.Config_IntegralZone(ELEVATOR_MOTION_MAGIC_PID_SLOT, iZone, CONFIG_TIMEOUT);
+            return error == ctre::phoenix::OK;
+        });
+        AddNetworkTableListener("Max Accum", ELEVATOR_MAX_ACCUM, [this](const int maxAccum) {
+            auto error = m_ElevatorMaster.ConfigMaxIntegralAccumulator(ELEVATOR_MOTION_MAGIC_PID_SLOT, maxAccum, CONFIG_TIMEOUT);
             return error == ctre::phoenix::OK;
         });
         AddNetworkTableListener("F", ELEVATOR_F, [this](const double f) {

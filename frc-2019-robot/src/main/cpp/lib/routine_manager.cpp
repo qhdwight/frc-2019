@@ -16,6 +16,9 @@ namespace garage {
 
         void RoutineManager::AddRoutine(std::shared_ptr<Routine> routine) {
             // Make sure we are not adding the same exact routine twice
+            if (!routine) {
+                return;
+            }
             // TODO std function? who writes their own algorithms anyways
             for (auto& existingRoutine : m_QueuedRoutines) {
                 if (routine == existingRoutine) {

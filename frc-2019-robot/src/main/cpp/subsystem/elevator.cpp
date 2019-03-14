@@ -204,10 +204,8 @@ namespace garage {
 
     void SetPointElevatorController::ProcessCommand(Command& command) {
         auto elevator = m_Subsystem.lock();
-        if (!elevator->m_IsLocked) {
-            const double input = math::threshold(command.elevatorInput, DEFAULT_INPUT_THRESHOLD);
-            m_WantedSetPoint += static_cast<int>(input * 5000.0);
-        }
+        const double input = math::threshold(command.elevatorInput, DEFAULT_INPUT_THRESHOLD);
+        m_WantedSetPoint += static_cast<int>(input * 5000.0);
     }
 
     void SetPointElevatorController::Control() {
@@ -248,7 +246,7 @@ namespace garage {
 
     void VelocityElevatorController::Control() {
         auto elevator = m_Subsystem.lock();
-        if ((elevator->m_EncoderPosition > ELEVATOR_MIN_CLOSED_LOOP_HEIGHT || m_WantedVelocity > 0.01) &&
+        if ((elevator->m_EncoderPosition > (ELEVATOR_MIN_CLOSED_LOOP_HEIGHT * 2) || m_WantedVelocity > 0.01) &&
             elevator->m_EncoderPosition < ELEVATOR_MAX) {
             if (elevator->m_EncoderPosition < ELEVATOR_MAX_CLOSED_LOOP_HEIGHT || m_WantedVelocity < -0.01) {
                 Log(lib::Logger::LogLevel::k_Debug, lib::Logger::Format("Wanted Velocity: %f", m_WantedVelocity));

@@ -32,7 +32,8 @@ namespace garage {
         auto flipper = std::weak_ptr<Flipper>(shared_from_this());
         AddController(m_RawController = std::make_shared<RawFlipperController>(flipper));
         AddController(m_SetPointController = std::make_shared<SetPointFlipperController>(flipper));
-        SetUnlockedController(m_SetPointController);
+        AddController(m_VelocityController = std::make_shared<VelocityFlipperController>(flipper));
+        SetUnlockedController(m_VelocityController);
         AddNetworkTableListener("Angle FF", FLIPPER_ANGLE_FF, [this](const double angleFF) {
             m_AngleFeedForward = angleFF;
             return true;
@@ -142,6 +143,44 @@ namespace garage {
         m_Output = 0.0;
     }
 
+    void VelocityFlipperController::Reset() {
+        m_WantedVelocity = 0.0;
+        m_Input = 0.0;
+    }
+
+    void VelocityFlipperController::ProcessCommand(Command& command) {
+        auto flipper = m_Subsystem.lock();
+        m_Input = math::threshold(command.flipper, DEFAULT_INPUT_THRESHOLD);
+        m_WantedVelocity = m_Input * flipper->m_MaxVelocity;
+    }
+
+    void VelocityFlipperController::Control() {
+        auto flipper = m_Subsystem.lock();
+        double encoderPosition = flipper->m_EncoderPosition;
+        const bool inMiddle = encoderPosition > FLIPPER_SET_POINT_LOWER && encoderPosition < FLIPPER_SET_POINT_UPPER;
+        bool wantingToGoOtherWay = false;
+        if ((encoderPosition < FLIPPER_SET_POINT_LOWER && m_WantedVelocity > 0.01) ||
+            (encoderPosition > FLIPPER_SET_POINT_UPPER && m_WantedVelocity < -0.01))
+            wantingToGoOtherWay = true;
+        if (inMiddle || wantingToGoOtherWay) {
+            const double
+                    angleFeedForward = std::cos(r2d(flipper->m_Angle)) * flipper->m_AngleFeedForward,
+                    feedForward = angleFeedForward;
+            if (flipper->m_Robot->ShouldOutput()) {
+                auto error = flipper->m_FlipperController.SetReference(m_WantedVelocity, rev::ControlType::kSmartVelocity,
+                                                                       FLIPPER_SMART_MOTION_PID_SLOT, feedForward);
+                if (error == rev::CANError::kOK) {
+                    Log(lib::Logger::LogLevel::k_Debug, lib::Logger::Format("Wanted Velocity: %f", m_WantedVelocity));
+                } else {
+                    Log(lib::Logger::LogLevel::k_Error, lib::Logger::Format("CAN Error: %d", error));
+                }
+            }
+        } else {
+            flipper->LogSample(lib::Logger::LogLevel::k_Debug, "Not doing anything");
+            flipper->m_FlipperMaster.Set(0.0);
+        }
+    }
+
     void SetPointFlipperController::ProcessCommand(garage::Command& command) {
         m_SetPoint += math::threshold(command.flipper, DEFAULT_INPUT_THRESHOLD);
         m_SetPoint = math::clamp(m_SetPoint, FLIPPER_LOWER, FLIPPER_UPPER);
@@ -164,7 +203,7 @@ namespace garage {
                 auto error = flipper->m_FlipperController.SetReference(clampedSetPoint, rev::ControlType::kSmartMotion,
                                                                        FLIPPER_SMART_MOTION_PID_SLOT, feedForward);
                 if (error == rev::CANError::kOK) {
-                    Log(lib::Logger::LogLevel::k_Info, lib::Logger::Format("Setting set point to: %d", clampedSetPoint));
+                    Log(lib::Logger::LogLevel::k_Debug, lib::Logger::Format("Setting set point to: %d", clampedSetPoint));
                 } else {
                     Log(lib::Logger::LogLevel::k_Error, lib::Logger::Format("CAN Error: %d", error));
                 }

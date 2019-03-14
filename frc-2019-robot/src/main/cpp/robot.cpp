@@ -57,6 +57,7 @@ namespace garage {
         m_EndGameRoutine = std::make_shared<LockFlipperRoutine>(m_Pointer);
         m_FlipOverRoutine = std::make_shared<FlipOverRoutine>(m_Pointer);
         m_BallIntakeRoutine = std::make_shared<BallIntakeRoutine>(m_Pointer);
+        m_CargoRoutine = std::make_shared<ElevatorAndFlipperRoutine>(m_Pointer, 0, 30.0, "Cargo");
         lib::Logger::Log(lib::Logger::LogLevel::k_Info, "End robot initialization");
     }
 
@@ -225,6 +226,8 @@ namespace garage {
                 m_Command.routines.push_back(m_MiddleBallRoutine);
             } else if (elevatorHatch) {
                 m_Command.routines.push_back(m_MiddleHatchRoutine);
+            } else {
+                m_Command.routines.push_back(m_CargoRoutine);
             }
         }
         if (m_Controller.GetYButtonPressed()) {

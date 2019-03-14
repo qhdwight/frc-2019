@@ -67,10 +67,12 @@ namespace garage {
         // Routines
 //        std::shared_ptr<test::TestDriveAutoRoutine> m_DriveForwardRoutine;
         std::shared_ptr<lib::Routine>
-                m_TestRoutine, m_ResetRoutine,
+                m_TestRoutine,
+                m_ResetRoutine,
                 m_BottomHatchRoutine, m_MiddleHatchRoutine, m_TopHatchRoutine,
                 m_BottomBallRoutine, m_MiddleBallRoutine, m_TopBallRoutine,
-                m_EndGameRoutine, m_FlipOverRoutine, m_BallIntakeRoutine;
+                m_FlipOverRoutine, m_BallIntakeRoutine, m_CargoRoutine,
+                m_EndGameRoutine;
 
     public:
         void RobotInit() override;

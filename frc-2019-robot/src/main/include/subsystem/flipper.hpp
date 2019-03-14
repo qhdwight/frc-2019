@@ -47,7 +47,26 @@ namespace garage {
 
     public:
         RawFlipperController(std::weak_ptr<Flipper>& subsystem)
-                : SubsystemController(subsystem, "Raw Controller") {};
+                : SubsystemController(subsystem, "Raw Controller") {}
+
+        void Reset() override;
+
+        void ProcessCommand(Command& command) override;
+
+        void Control() override;
+    };
+
+    class VelocityFlipperController : public FlipperController {
+    private:
+        double m_WantedVelocity = 0.0, m_Input = 0.0;
+
+    public:
+        VelocityFlipperController(std::weak_ptr<Flipper>& subsystem)
+                : SubsystemController(subsystem, "Velocity Controller") {}
+
+        void SetWantedVelocity(double velocity) {
+            m_WantedVelocity = velocity;
+        }
 
         void Reset() override;
 
@@ -62,7 +81,7 @@ namespace garage {
 
     public:
         SetPointFlipperController(std::weak_ptr<Flipper>& subsystem)
-                : SubsystemController(subsystem, "Set Point Controller") {};
+                : SubsystemController(subsystem, "Set Point Controller") {}
 
         void SetSetPoint(double setPoint) {
             m_SetPoint = setPoint;
@@ -78,6 +97,8 @@ namespace garage {
     class Flipper : public lib::ControllableSubsystem<Flipper> {
         friend class RawFlipperController;
 
+        friend class VelocityFlipperController;
+
         friend class SetPointFlipperController;
 
     protected:
@@ -86,11 +107,11 @@ namespace garage {
         rev::CANEncoder m_Encoder = m_FlipperMaster.GetEncoder();
         rev::CANDigitalInput m_LimitSwitch = m_FlipperMaster.GetForwardLimitSwitch(rev::CANDigitalInput::LimitSwitchPolarity::kNormallyOpen);
         bool m_IsLimitSwitchDown = true, m_FirstLimitSwitchHit = true;
-        double m_EncoderPosition = 0.0, m_EncoderVelocity = 0.0;
-        double m_Angle = 0.0;
-        double m_AngleFeedForward = FLIPPER_ANGLE_FF;
+        double m_EncoderPosition = 0.0, m_EncoderVelocity = 0.0, m_Angle = 0.0;
+        double m_AngleFeedForward = FLIPPER_ANGLE_FF, m_MaxVelocity = FLIPPER_VELOCITY;
         std::shared_ptr<RawFlipperController> m_RawController;
         std::shared_ptr<SetPointFlipperController> m_SetPointController;
+        std::shared_ptr<VelocityFlipperController> m_VelocityController;
         frc::Servo m_CameraServo{CAMERA_SERVO}, m_LockServo{LOCK_SERVO};
         uint16_t m_CameraServoOutput = CAMERA_SERVO_LOWER, m_LockServoOutput = LOCK_SERVO_LOWER;
 

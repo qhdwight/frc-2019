@@ -18,6 +18,7 @@
 #include <routine/ball_intake_routine.hpp>
 #include <routine/lock_flipper_routine.hpp>
 #include <routine/ball_placement_routine.hpp>
+#include <routine/reset_with_servo_routine.hpp>
 #include <routine/elevator_and_flipper_routine.hpp>
 
 #include <networktables/NetworkTable.h>
@@ -68,7 +69,7 @@ namespace garage {
 //        std::shared_ptr<test::TestDriveAutoRoutine> m_DriveForwardRoutine;
         std::shared_ptr<lib::Routine>
                 m_TestRoutine,
-                m_ResetRoutine,
+                m_ResetRoutine, m_ResetWithServoRoutine,
                 m_BottomHatchRoutine, m_MiddleHatchRoutine, m_TopHatchRoutine,
                 m_BottomBallRoutine, m_MiddleBallRoutine, m_TopBallRoutine,
                 m_FlipOverRoutine, m_BallIntakeRoutine, m_CargoRoutine,

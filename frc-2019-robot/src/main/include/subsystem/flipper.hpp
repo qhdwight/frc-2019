@@ -118,6 +118,8 @@ namespace garage {
 
         void Update() override;
 
+        void UpdateUnlocked(Command& command) override;
+
         void SpacedUpdate(Command& command) override;
 
         bool ShouldUnlock(Command& command) override;
@@ -134,6 +136,8 @@ namespace garage {
         void SetAngle(double angle);
 
         void LockServo();
+
+        void UnlockServo();
 
         bool WithinAngle(double angle);
 

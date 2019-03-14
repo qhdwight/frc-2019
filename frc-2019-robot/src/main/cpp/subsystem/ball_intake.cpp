@@ -18,6 +18,11 @@ namespace garage {
         m_LeftIntake.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, 0);
     }
 
+    void BallIntake::Reset() {
+        Subsystem::Reset();
+        SetOutput(0.0);
+    }
+
     bool BallIntake::ShouldUnlock(Command& command) {
         return std::fabs(command.ballIntake) > DEFAULT_INPUT_THRESHOLD;
     }

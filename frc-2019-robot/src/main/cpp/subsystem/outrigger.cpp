@@ -3,7 +3,6 @@
 #include <garage_math/garage_math.hpp>
 
 namespace garage {
-
     Outrigger::Outrigger(std::shared_ptr<Robot>& robot) : lib::Subsystem(robot, "Outrigger") {
         m_OutriggerMaster.RestoreFactoryDefaults();
         m_OutriggerSlave.RestoreFactoryDefaults();
@@ -15,10 +14,13 @@ namespace garage {
         m_OutriggerSlave.Follow(m_OutriggerMaster, true);
         m_OutriggerMaster.EnableVoltageCompensation(DEFAULT_VOLTAGE_COMPENSATION);
         m_OutriggerWheel.EnableVoltageCompensation(DEFAULT_VOLTAGE_COMPENSATION);
+        StopMotors();
     }
 
     void Outrigger::Reset() {
         Subsystem::Reset();
+        m_OutriggerOutput = 0.0;
+        m_OutriggerWheelOutput = 0.0;
         StopMotors();
     }
 
@@ -27,15 +29,22 @@ namespace garage {
         m_OutriggerWheel.Set(0.0);
     }
 
+    bool Outrigger::ShouldUnlock(Command& command) {
+        return math::absolute(command.outrigger) > DEFAULT_INPUT_THRESHOLD ||
+               math::absolute(command.outriggerWheel) > DEFAULT_INPUT_THRESHOLD;
+    }
+
     void Outrigger::UpdateUnlocked(Command& command) {
-        m_Output = math::threshold(command.test, DEFAULT_INPUT_THRESHOLD);
+        m_OutriggerOutput = math::threshold(command.outrigger, DEFAULT_INPUT_THRESHOLD);
+        m_OutriggerWheelOutput = math::threshold(command.outriggerWheel, DEFAULT_INPUT_THRESHOLD);
     }
 
     void Outrigger::Update() {
-        m_OutriggerWheel.Set(m_Output);
+        m_OutriggerMaster.Set(m_OutriggerOutput);
+        m_OutriggerWheel.Set(m_OutriggerWheelOutput);
     }
 
     void Outrigger::SetOutput(double output) {
-        m_Output = output;
+        m_OutriggerOutput = output;
     }
 }

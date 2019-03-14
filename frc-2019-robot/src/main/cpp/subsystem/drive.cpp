@@ -24,6 +24,8 @@ namespace garage {
 
     void Drive::Reset() {
         Subsystem::Reset();
+        m_LeftOutput = 0.0;
+        m_RightOutput = 0.0;
         StopMotors();
     }
 

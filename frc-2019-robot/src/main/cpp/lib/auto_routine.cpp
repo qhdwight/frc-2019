@@ -85,9 +85,10 @@ namespace garage {
                     desiredHeading = r2d(m_LeftFollower.heading);
             const double headingDelta = math::fixAngle(desiredHeading - heading);
             const double turn = 0.8 * (-1.0 / 80.0) * headingDelta;
-            m_Subsystem->Log(Logger::LogLevel::k_Info,
-                         Logger::Format("Left Output: %f, Right Output: %f, Left Encoder: %d, Right Encoder %d, Heading: %f, Heading Delta: %f",
-                                        leftOutput, rightOutput, leftEncoder, rightEncoder, heading, headingDelta));
+            m_Subsystem->LogSample(Logger::LogLevel::k_Debug,
+                                   Logger::Format(
+                                           "Left Output: %f, Right Output: %f, Left Encoder: %d, Right Encoder %d, Heading: %f, Heading Delta: %f",
+                                           leftOutput, rightOutput, leftEncoder, rightEncoder, heading, headingDelta));
             m_Subsystem->SetDriveOutput(leftOutput, rightOutput);
         }
 

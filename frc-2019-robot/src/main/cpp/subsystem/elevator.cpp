@@ -172,6 +172,15 @@ namespace garage {
         return math::withinRange(m_EncoderPosition, targetPosition, ELEVATOR_WITHIN_SET_POINT_AMOUNT);
     }
 
+    void Elevator::UpdateUnlocked(Command& command) {
+        if (command.offTheBooksModeEnabled) {
+            SetUnlockedController(m_RawController);
+        } else {
+            SetUnlockedController(m_VelocityController);
+        }
+        ControllableSubsystem::UpdateUnlocked(command);
+    }
+
     bool Elevator::ShouldUnlock(Command& command) {
 //        auto& driverStation = frc::DriverStation::GetInstance();
 //        const double timeRemaining = driverStation.GetMatchTime();
@@ -186,10 +195,6 @@ namespace garage {
     void Elevator::SetRawOutput(double output) {
         SetController(m_RawController);
         m_RawController->SetRawOutput(output);
-    }
-
-    void Elevator::SetManual() {
-        SetController(m_VelocityController);
     }
 
     void Elevator::SoftLand() {
@@ -226,23 +231,18 @@ namespace garage {
         Log(lib::Logger::LogLevel::k_Debug,
             lib::Logger::Format("Wanted Set Point: %d, Feed Forward: %f", m_WantedSetPoint, elevator->m_FeedForward));
         // TODO tune
-        if (elevator->m_EncoderPosition < 7000 && m_WantedSetPoint == 0) {
-            elevator->Log(lib::Logger::LogLevel::k_Info, "Safe Land Getting to Zero");
-            elevator->SoftLand();
-        } else {
-            if ((elevator->m_EncoderPosition > ELEVATOR_MIN_CLOSED_LOOP_HEIGHT || m_WantedSetPoint > ELEVATOR_MIN) &&
-                elevator->m_EncoderPosition < ELEVATOR_MAX) {
-                elevator->LogSample(lib::Logger::LogLevel::k_Debug, "Theoretically Okay and Working");
-                if (elevator->m_Robot->ShouldOutput()) {
-                    elevator->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::MotionMagic,
-                                                   m_WantedSetPoint,
-                                                   ctre::phoenix::motorcontrol::DemandType::DemandType_ArbitraryFeedForward,
-                                                   elevator->m_FeedForward);
-                }
-            } else {
-                elevator->Log(lib::Logger::LogLevel::k_Error, "Not in closed loop range for set point");
-                elevator->SoftLand();
+        if ((elevator->m_EncoderPosition > ELEVATOR_MIN_CLOSED_LOOP_HEIGHT || m_WantedSetPoint > ELEVATOR_MIN) &&
+            elevator->m_EncoderPosition < ELEVATOR_MAX) {
+            elevator->LogSample(lib::Logger::LogLevel::k_Debug, "Theoretically Okay and Working");
+            if (elevator->m_Robot->ShouldOutput()) {
+                elevator->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::MotionMagic,
+                                               m_WantedSetPoint,
+                                               ctre::phoenix::motorcontrol::DemandType::DemandType_ArbitraryFeedForward,
+                                               elevator->m_FeedForward);
             }
+        } else {
+            elevator->Log(lib::Logger::LogLevel::k_Warning, "Not in closed loop range for set point");
+            elevator->SoftLand();
         }
     }
 
@@ -272,7 +272,7 @@ namespace garage {
                 elevator->Log(lib::Logger::LogLevel::k_Warning, "Trying to go too high");
             }
         } else {
-            elevator->Log(lib::Logger::LogLevel::k_Error, "Not in closed loop range for velocity");
+            elevator->Log(lib::Logger::LogLevel::k_Warning, "Not in closed loop range for velocity");
             elevator->SoftLand();
         }
     }

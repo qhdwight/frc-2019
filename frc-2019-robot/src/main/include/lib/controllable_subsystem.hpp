@@ -34,11 +34,15 @@ namespace garage {
             }
 
             virtual void SetUnlockedController(std::shared_ptr<Controller> controller) {
-                m_UnlockedController = controller;
+                if (controller != m_UnlockedController) {
+                    m_UnlockedController = controller;
+                }
             }
 
             virtual void SetResetController(std::shared_ptr<Controller> controller) {
-                m_ResetController = controller;
+                if (controller != m_ResetController) {
+                    m_ResetController = controller;
+                }
             }
 
             void UpdateUnlocked(Command& command) override {

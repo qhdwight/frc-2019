@@ -44,13 +44,16 @@ namespace garage {
 //        m_DriveForwardRoutine->CalculatePath();
         auto testWaitRoutine = std::make_shared<lib::WaitRoutine>(m_Pointer, 500l);
         m_ResetRoutine = std::make_shared<ResetRoutine>(m_Pointer);
+        m_ResetWithServoRoutine = std::make_shared<ResetWithServoRoutine>(m_Pointer);
         // Hatch routines
         m_BottomHatchRoutine = std::make_shared<ElevatorAndFlipperRoutine>(m_Pointer, m_Config.bottomHatchHeight, 180.0, "Bottom Hatch");
         m_MiddleHatchRoutine = std::make_shared<ElevatorAndFlipperRoutine>(m_Pointer, m_Config.middleHatchHeight, 180.0, "Middle Hatch");
         m_TopHatchRoutine = std::make_shared<ElevatorAndFlipperRoutine>(m_Pointer, m_Config.topHatchHeight, 180.0, "Top Hatch");
         // Ball routines
-        m_BottomBallRoutine = std::make_shared<ElevatorAndFlipperRoutine>(m_Pointer, m_Config.bottomBallHeight, m_Config.bottomBallAngle, "Bottom Ball");
-        m_MiddleBallRoutine = std::make_shared<ElevatorAndFlipperRoutine>(m_Pointer, m_Config.middleBallHeight, m_Config.middleBallAngle, "Middle Ball");
+        m_BottomBallRoutine = std::make_shared<ElevatorAndFlipperRoutine>(m_Pointer, m_Config.bottomBallHeight, m_Config.bottomBallAngle,
+                                                                          "Bottom Ball");
+        m_MiddleBallRoutine = std::make_shared<ElevatorAndFlipperRoutine>(m_Pointer, m_Config.middleBallHeight, m_Config.middleBallAngle,
+                                                                          "Middle Ball");
         m_TopBallRoutine = std::make_shared<ElevatorAndFlipperRoutine>(m_Pointer, m_Config.topBallHeight, m_Config.bottomBallAngle, "Top Ball");
         m_TestRoutine = std::make_shared<lib::ParallelRoutine>(m_Pointer, "Test Routine",
                                                                lib::RoutineVector{testWaitRoutine, testWaitRoutine, testWaitRoutine});
@@ -68,7 +71,7 @@ namespace garage {
         std::error_code errorCode;
         wpi::raw_fd_istream settingsFile(deployDirectory, errorCode);
         if (errorCode) {
-            lib::Logger::Log(lib::Logger::LogLevel::k_Error,
+            lib::Logger::Log(lib::Logger::LogLevel::k_Fatal,
                              lib::Logger::Format("Error reading robot settings file: %s", FMT_STR(errorCode.message())));
         } else {
             try {
@@ -108,7 +111,7 @@ namespace garage {
                     }
                 }
             } catch (wpi::detail::parse_error& error) {
-                lib::Logger::Log(lib::Logger::LogLevel::k_Error, lib::Logger::Format("Error parsing robot settings: %s", error.what()));
+                lib::Logger::Log(lib::Logger::LogLevel::k_Fatal, lib::Logger::Format("Error parsing robot settings: %s", error.what()));
             }
         }
     }
@@ -180,26 +183,42 @@ namespace garage {
         }
         if (m_Controller.GetStartButtonPressed()) {
             m_Command.offTheBooksModeEnabled = !m_Command.offTheBooksModeEnabled;
+            m_RoutineManager->TerminateAllRoutines();
             if (m_Command.offTheBooksModeEnabled) {
+                m_Command.drivePrecisionEnabled = true;
                 m_Command.routines.push_back(m_EndGameRoutine);
+            } else {
+                m_Command.drivePrecisionEnabled = false;
+                m_Command.routines.push_back(m_ResetWithServoRoutine);
             }
         }
         m_Command.driveForward = -m_Controller.GetY(frc::GenericHID::JoystickHand::kRightHand);
         m_Command.driveTurn = m_Controller.GetX(frc::GenericHID::JoystickHand::kRightHand);
-        m_Command.flipper = m_Controller.GetTriggerAxis(frc::GenericHID::JoystickHand::kRightHand) -
-                            m_Controller.GetTriggerAxis(frc::GenericHID::JoystickHand::kLeftHand);
-        m_Command.ballIntake = math::axis<double>(
+        const double triggers = m_Controller.GetTriggerAxis(frc::GenericHID::JoystickHand::kRightHand) -
+                                m_Controller.GetTriggerAxis(frc::GenericHID::JoystickHand::kLeftHand);
+        const auto bumpers = math::axis<double>(
                 m_Controller.GetBumper(frc::GenericHID::JoystickHand::kRightHand),
                 m_Controller.GetBumper(frc::GenericHID::JoystickHand::kLeftHand));
+        if (m_Command.offTheBooksModeEnabled) {
+            m_Command.outrigger = triggers;
+            m_Command.outriggerWheel = bumpers;
+            m_Command.ballIntake = 0;
+            m_Command.flipper = 0;
+        } else {
+            m_Command.outrigger = 0;
+            m_Command.outriggerWheel = 0;
+            m_Command.ballIntake = bumpers;
+            m_Command.flipper = triggers;
+        }
         const int pov = m_Controller.GetPOV();
         const bool
-                // Left button
+        // Left button
                 elevatorHatch = pov == 90,
-                // Button button
+        // Button button
                 elevatorDown = pov == 180,
-                // Right button
+        // Right button
                 elevatorBall = pov == 270,
-                // Top button
+        // Top button
                 elevatorSoftLand = pov == 0;
         m_Command.routines.clear();
 //        if (m_Controller.GetAButtonPressed()) {
@@ -207,50 +226,47 @@ namespace garage {
 //            m_Command.routines.push_back(std::make_shared<lib::WaitRoutine>(m_Pointer, "Elevator Wait", 0.2));
 //            m_Command.routines.push_back(std::make_shared<test::SetElevatorPositionRoutine>(m_Pointer, "Elevator Down", 0.0));
 //        }
-//        m_Command.elevatorSoftLand = m_Controller.GetBButtonPressed();
-//        if (m_Controller.GetBButtonPressed()) {
-//            if (m_RoutineManager)
-//                m_RoutineManager->TerminateAllRoutines();
-//        }
-        if (m_Controller.GetAButtonPressed()) {
-            if (elevatorBall) {
-                m_Command.routines.push_back(m_BottomBallRoutine);
-            } else if (elevatorHatch) {
-                m_Command.routines.push_back(m_BottomHatchRoutine);
-            } else {
-                m_Command.routines.push_back(m_BallIntakeRoutine);
+        if (!m_Command.offTheBooksModeEnabled) {
+            if (m_Controller.GetAButtonPressed()) {
+                if (elevatorBall) {
+                    m_Command.routines.push_back(m_BottomBallRoutine);
+                } else if (elevatorHatch) {
+                    m_Command.routines.push_back(m_BottomHatchRoutine);
+                } else {
+                    m_Command.routines.push_back(m_BallIntakeRoutine);
+                }
             }
-        }
-        if (m_Controller.GetBButtonPressed()) {
-            if (elevatorBall) {
-                m_Command.routines.push_back(m_MiddleBallRoutine);
-            } else if (elevatorHatch) {
-                m_Command.routines.push_back(m_MiddleHatchRoutine);
-            } else {
-                m_Command.routines.push_back(m_CargoRoutine);
+            if (m_Controller.GetBButtonPressed()) {
+                if (elevatorBall) {
+                    m_Command.routines.push_back(m_MiddleBallRoutine);
+                } else if (elevatorHatch) {
+                    m_Command.routines.push_back(m_MiddleHatchRoutine);
+                } else {
+                    m_Command.routines.push_back(m_CargoRoutine);
+                }
             }
-        }
-        if (m_Controller.GetYButtonPressed()) {
-            if (elevatorBall) {
-                m_Command.routines.push_back(m_TopBallRoutine);
-            } else if (elevatorHatch) {
-                m_Command.routines.push_back(m_TopHatchRoutine);
+            if (m_Controller.GetYButtonPressed()) {
+                if (elevatorBall) {
+                    m_Command.routines.push_back(m_TopBallRoutine);
+                } else if (elevatorHatch) {
+                    m_Command.routines.push_back(m_TopHatchRoutine);
+                } else {
+                    m_Command.hatchIntakeDown = true;
+                }
             } else {
-                m_Command.hatchIntakeDown = true;
+                m_Command.hatchIntakeDown = false;
             }
-        } else {
-            m_Command.hatchIntakeDown = false;
-        }
-        if (m_Controller.GetXButtonPressed()) {
-            m_Command.routines.push_back(m_FlipOverRoutine);
+            if (m_Controller.GetXButtonPressed()) {
+                m_Command.routines.push_back(m_FlipOverRoutine);
 //            m_Command.routines.push_back(m_TestRoutine);
-        }
-        if (elevatorDown) {
-            m_RoutineManager->TerminateAllRoutines();
-            m_Command.routines.push_back(m_ResetRoutine);
-        } else if (elevatorSoftLand) {
-            m_RoutineManager->TerminateAllRoutines();
-            m_Elevator->SoftLand();
+            }
+            if (elevatorDown) {
+                m_RoutineManager->TerminateAllRoutines();
+                m_Command.routines.push_back(m_ResetRoutine);
+            } else if (elevatorSoftLand) {
+                m_RoutineManager->TerminateAllRoutines();
+                m_Elevator->SoftLand();
+            }
         }
         m_Command.elevatorInput = -m_Controller.GetY(frc::GenericHID::kLeftHand);
     }

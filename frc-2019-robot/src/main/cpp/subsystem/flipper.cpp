@@ -72,7 +72,11 @@ namespace garage {
     }
 
     bool Flipper::ShouldUnlock(Command& command) {
-        return std::fabs(command.flipper) > DEFAULT_INPUT_THRESHOLD && m_LockServoOutput == LOCK_SERVO_LOWER;
+        return std::fabs(command.flipper) > DEFAULT_INPUT_THRESHOLD && !command.offTheBooksModeEnabled;
+    }
+
+    void Flipper::UpdateUnlocked(Command& command) {
+        ControllableSubsystem::UpdateUnlocked(command);
     }
 
     void Flipper::Update() {
@@ -129,6 +133,10 @@ namespace garage {
     void Flipper::LockServo() {
         Lock();
         m_LockServoOutput = LOCK_SERVO_UPPER;
+    }
+
+    void Flipper::UnlockServo() {
+        m_LockServoOutput = LOCK_SERVO_LOWER;
     }
 
     double Flipper::RawSetPointToAngle(double setPoint) {

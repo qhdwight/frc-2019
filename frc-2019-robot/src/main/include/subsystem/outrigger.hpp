@@ -11,7 +11,7 @@
 namespace garage {
     class Outrigger : public lib::Subsystem {
     private:
-        double m_Output = 0.0;
+        double m_OutriggerOutput = 0.0, m_OutriggerWheelOutput = 0.0;
         rev::CANSparkMax
                 m_OutriggerMaster{OUTRIGGER_ARM_MASTER, rev::CANSparkMax::MotorType::kBrushless},
                 m_OutriggerSlave{OUTRIGGER_ARM_SLAVE, rev::CANSparkMax::MotorType::kBrushless},
@@ -25,6 +25,8 @@ namespace garage {
         void StopMotors();
 
         void Update() override;
+
+        bool ShouldUnlock(Command& command) override;
 
     public:
         Outrigger(std::shared_ptr<Robot>& robot);

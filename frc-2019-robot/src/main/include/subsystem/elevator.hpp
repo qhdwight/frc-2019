@@ -132,6 +132,8 @@ namespace garage {
 
         void Update() override;
 
+        void UpdateUnlocked(Command& command) override;
+
         void SpacedUpdate(Command& command) override;
 
     public:
@@ -144,8 +146,6 @@ namespace garage {
         void SetWantedSetPoint(int wantedSetPoint);
 
         void SetRawOutput(double output);
-
-        void SetManual();
 
         void SoftLand();
 

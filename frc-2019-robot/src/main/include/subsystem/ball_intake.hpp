@@ -49,5 +49,7 @@ namespace garage {
         void Stop();
 
         bool HasBall();
+
+        void Reset() override;
     };
 }

@@ -41,6 +41,7 @@ namespace garage {
             virtual void SetUnlockedController(std::shared_ptr<Controller> controller) {
                 if (controller != m_UnlockedController) {
                     m_UnlockedController = controller;
+                    // If we are unlocked and received this update, set to the new mode
                     if (!m_IsLocked && controller != m_Controller) {
                         SetController(controller);
                     }

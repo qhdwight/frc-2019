@@ -68,7 +68,7 @@ namespace garage {
 
     void Flipper::Reset() {
         ControllableSubsystem::Reset();
-        m_LockServoOutput = 0;
+        m_LockServoOutput = LOCK_SERVO_LOWER;
     }
 
     bool Flipper::ShouldUnlock(Command& command) {

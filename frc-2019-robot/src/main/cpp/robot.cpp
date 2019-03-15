@@ -132,9 +132,9 @@ namespace garage {
                         }
                         {
                             auto hatchRoutines = elevatorRoutines.at("hatch");
+                            m_Config.bottomHatchHeight = hatchRoutines.at("bottom").get<int>();
                             {
                                 auto rocketRoutines = hatchRoutines.at("rocket");
-                                m_Config.bottomHatchHeight = rocketRoutines.at("bottom").get<int>();
                                 m_Config.rocketMiddleHatchHeight = rocketRoutines.at("middle").get<int>();
                                 m_Config.rocketTopHatchHeight = rocketRoutines.at("top").get<int>();
                             }
@@ -204,7 +204,12 @@ namespace garage {
     }
 
     void Robot::UpdateCommand() {
+        /* Routines */
         m_Command.routines.clear();
+        if (m_Controller.GetBackButtonPressed()) {
+            // TODO remove after testing
+            m_Command.routines.push_back(m_TestRoutine);
+        }
         if (m_Controller.GetStickButtonPressed(frc::GenericHID::kRightHand)) {
             m_Command.drivePrecisionEnabled = !m_Command.drivePrecisionEnabled;
         }
@@ -219,10 +224,6 @@ namespace garage {
                 m_Command.routines.push_back(m_ResetWithServoRoutine);
             }
         }
-        if (m_Controller.GetBackButtonPressed()) {
-            // TODO remove
-            m_Command.routines.push_back(m_TestRoutine);
-        }
         const int pov = m_Controller.GetPOV();
         const bool
         // Left button
@@ -233,11 +234,6 @@ namespace garage {
                 elevatorBall = pov == 270,
         // Top button
                 elevatorSoftLand = pov == 0;
-//        if (m_Controller.GetAButtonPressed()) {
-//            m_Command.routines.push_back(std::make_shared<test::SetElevatorPositionRoutine>(m_Pointer, "Elevator Up", 100000.0));
-//            m_Command.routines.push_back(std::make_shared<lib::WaitRoutine>(m_Pointer, "Elevator Wait", 0.2));
-//            m_Command.routines.push_back(std::make_shared<test::SetElevatorPositionRoutine>(m_Pointer, "Elevator Down", 0.0));
-//        }
         if (!m_Command.offTheBooksModeEnabled) {
             if (m_Controller.GetAButtonPressed()) {
                 if (elevatorBall) {

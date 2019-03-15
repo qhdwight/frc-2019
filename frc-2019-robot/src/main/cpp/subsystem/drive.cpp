@@ -24,12 +24,12 @@ namespace garage {
 
     void Drive::Reset() {
         Subsystem::Reset();
-        m_LeftOutput = 0.0;
-        m_RightOutput = 0.0;
         StopMotors();
     }
 
     void Drive::StopMotors() {
+        m_LeftOutput = 0.0;
+        m_RightOutput = 0.0;
         m_LeftMaster.Set(0.0);
         m_RightMaster.Set(0.0);
     }
@@ -49,8 +49,8 @@ namespace garage {
             const double
                     forwardInputFine = math::threshold(command.driveForward, DEFAULT_INPUT_THRESHOLD) - DEFAULT_INPUT_THRESHOLD,
                     turnInputFine = math::threshold(command.driveTurn, DEFAULT_INPUT_THRESHOLD) - DEFAULT_INPUT_THRESHOLD;
-            m_LeftOutput = (forwardInputFine + turnInputFine) * 0.05;
-            m_RightOutput = (forwardInputFine - turnInputFine) * 0.05;
+            m_LeftOutput = (forwardInputFine + turnInputFine) * DRIVE_PRECISION_POWER;
+            m_RightOutput = (forwardInputFine - turnInputFine) * DRIVE_PRECISION_POWER;
         } else {
             const double
                     forwardInput = InputFromCommand(command.driveForward),

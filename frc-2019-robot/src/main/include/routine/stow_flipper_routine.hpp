@@ -7,7 +7,7 @@ namespace garage {
     class StowFlipperRoutine : public SetFlipperAngleRoutine {
     public:
         StowFlipperRoutine(std::shared_ptr<Robot>& robot)
-                : SetFlipperAngleRoutine(robot, 90.0, "Stow Flipper") {
+                : SetFlipperAngleRoutine(robot, FLIPPER_STOW_ANGLE, "Stow Flipper") {
 
         }
     };

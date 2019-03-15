@@ -70,10 +70,10 @@ namespace garage {
         m_NetworkTable->PutNumber("Gyro", fixedHeading);
         m_NetworkTable->PutNumber("Left Output", leftOutput);
         m_NetworkTable->PutNumber("Right Output", rightOutput);
-        m_NetworkTable->PutNumber("Left Encoder", m_LeftEncoder.GetPosition());
-        m_NetworkTable->PutNumber("Left Amperage", leftCurrent);
-        m_NetworkTable->PutNumber("Right Encoder", m_RightEncoder.GetPosition());
-        m_NetworkTable->PutNumber("Right Amperage", rightCurrent);
+        m_NetworkTable->PutNumber("Left Encoder", m_LeftEncoderPosition);
+        m_NetworkTable->PutNumber("Left Current", leftCurrent);
+        m_NetworkTable->PutNumber("Right Encoder", m_RightEncoderPosition);
+        m_NetworkTable->PutNumber("Right Current", rightCurrent);
         Log(lib::Logger::LogLevel::k_Debug, lib::Logger::Format(
                 "Left Output: %f, Right Output: %f, Left Current: %f, Right Current: %f",
                 leftOutput, rightOutput, leftCurrent, rightCurrent));

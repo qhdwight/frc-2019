@@ -10,7 +10,7 @@ namespace garage {
     class LockFlipperRoutine : public lib::SequentialRoutine {
     public:
         LockFlipperRoutine(std::shared_ptr<Robot> robot) : lib::SequentialRoutine(robot, "Lock Flipper", {
-                std::make_shared<SetFlipperAngleRoutine>(robot, 180.0),
+                std::make_shared<SetFlipperAngleRoutine>(robot, FLIPPER_UPPER_ANGLE),
                 std::make_shared<lib::WaitRoutine>(robot, 200l),
                 std::make_shared<SetFlipperServoRoutine>(robot, true),
                 std::make_shared<lib::WaitRoutine>(robot, 2000l)

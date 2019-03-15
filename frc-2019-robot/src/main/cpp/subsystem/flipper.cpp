@@ -25,7 +25,8 @@ namespace garage {
         // TODO yay or nay with s-curve?
         m_FlipperController.SetSmartMotionAccelStrategy(rev::CANPIDController::AccelStrategy::kSCurve, FLIPPER_SMART_MOTION_PID_SLOT);
         m_FlipperMaster.EnableVoltageCompensation(DEFAULT_VOLTAGE_COMPENSATION);
-        m_LimitSwitch.EnableLimitSwitch(false);
+        m_ReverseLimitSwitch.EnableLimitSwitch(true);
+        m_ForwardLimitSwitch.EnableLimitSwitch(true);
         m_FlipperMaster.Set(0.0);
     }
 
@@ -67,8 +68,7 @@ namespace garage {
 
     void Flipper::Reset() {
         ControllableSubsystem::Reset();
-        m_LockServoOutput = LOCK_SERVO_LOWER;
-        m_CameraServoOutput = CAMERA_SERVO_LOWER;
+        m_LockServoOutput = 0;
     }
 
     bool Flipper::ShouldUnlock(Command& command) {
@@ -79,20 +79,28 @@ namespace garage {
         ControllableSubsystem::UpdateUnlocked(command);
     }
 
-    void Flipper::Update() {
-        m_IsLimitSwitchDown = m_LimitSwitch.Get();
-        if (m_IsLimitSwitchDown && m_FirstLimitSwitchHit) {
-            auto error = m_Encoder.SetPosition(0.0);
-            if (error == rev::CANError::kOK) {
-                Log(lib::Logger::LogLevel::k_Info, "Limit switch hit and encoder reset");
-                m_FirstLimitSwitchHit = false;
-            } else {
-                Log(lib::Logger::LogLevel::k_Error, lib::Logger::Format("CAN Error: %d", error));
+    void Flipper::HandleLimitSwitch(rev::CANDigitalInput& limitSwitch, bool& isLimitSwitchDown, bool& isFirstHit, double resetEncoderValue) {
+        isLimitSwitchDown = limitSwitch.Get();
+        if (isLimitSwitchDown) {
+            if (isFirstHit) {
+                auto error = m_Encoder.SetPosition(resetEncoderValue);
+                if (error == rev::CANError::kOK) {
+                    Log(lib::Logger::LogLevel::k_Info, "Limit switch hit and encoder reset");
+                    isFirstHit = false;
+                } else {
+                    Log(lib::Logger::LogLevel::k_Error, lib::Logger::Format("CAN Error: %d", error));
+                }
             }
+        } else {
+            isFirstHit = true;
         }
-        if (!m_IsLimitSwitchDown) {
-            m_FirstLimitSwitchHit = true;
-        }
+    }
+
+    void Flipper::Update() {
+        // Reverse limit switch
+        HandleLimitSwitch(m_ReverseLimitSwitch, m_IsReverseLimitSwitchDown, m_FirstReverseLimitSwitchHit, FLIPPER_LOWER);
+        HandleLimitSwitch(m_ForwardLimitSwitch, m_IsForwardLimitSwitchDown, m_FirstForwardLimitSwitchHit, FLIPPER_UPPER);
+        // Encoder and angle
         m_EncoderPosition = m_Encoder.GetPosition();
         m_EncoderVelocity = m_Encoder.GetVelocity();
         m_Angle = RawSetPointToAngle(m_EncoderPosition);
@@ -101,17 +109,24 @@ namespace garage {
             Log(lib::Logger::LogLevel::k_Error, lib::Logger::Format("Stick Fault Error: %d", faults));
             m_FlipperMaster.ClearFaults();
         }
-        // TODO check
-        m_CameraServoOutput = static_cast<uint16_t>(m_Angle > 90.0 ? CAMERA_SERVO_LOWER : CAMERA_SERVO_UPPER);
+        // TODO check direction
+        m_CameraServoOutput = static_cast<uint16_t>(m_Angle > FLIPPER_STOW_ANGLE ? CAMERA_SERVO_LOWER : CAMERA_SERVO_UPPER);
         m_CameraServo.SetRaw(m_CameraServoOutput);
-        m_LockServo.SetAngle(m_LockServoOutput);
+        m_LockServo.SetRaw(m_LockServoOutput);
     }
 
     void Flipper::SpacedUpdate(Command& command) {
-        const double appliedOutput = m_FlipperMaster.GetAppliedOutput();
+        const double appliedOutput = m_FlipperMaster.GetAppliedOutput(), current = m_FlipperMaster.GetOutputCurrent();
+        m_NetworkTable->PutNumber("Angle", m_Angle);
+        m_NetworkTable->PutNumber("Position", m_EncoderPosition);
+        m_NetworkTable->PutNumber("Velocity", m_EncoderVelocity);
+        m_NetworkTable->PutNumber("Output", appliedOutput);
+        m_NetworkTable->PutNumber("Current", appliedOutput);
         Log(lib::Logger::LogLevel::k_Debug, lib::Logger::Format(
-                "Output: %f, Angle: %f, Encoder Position: %f, Encoder Velocity: %f, Reverse Limit Switch: %s, Forward Limit Switch: %s",
-                appliedOutput, m_Angle, m_EncoderPosition, m_EncoderVelocity, m_IsLimitSwitchDown ? "true" : "false", true ? "true" : "false"));
+                "Output: %f, Current: %f, Angle: %f, Encoder Position: %f, Encoder Velocity: %f, Reverse Limit Switch: %s, Forward Limit Switch: %s",
+                appliedOutput, current,
+                m_Angle, m_EncoderPosition, m_EncoderVelocity,
+                m_IsReverseLimitSwitchDown ? "true" : "false", m_IsForwardLimitSwitchDown ? "true" : "false"));
     }
 
     void Flipper::SetRawOutput(double output) {
@@ -128,7 +143,7 @@ namespace garage {
     }
 
     void Flipper::Stow() {
-        SetAngle(90.0);
+        SetAngle(FLIPPER_STOW_ANGLE);
     }
 
     void Flipper::LockServo() {

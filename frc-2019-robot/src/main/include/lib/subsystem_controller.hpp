@@ -35,11 +35,11 @@ namespace garage {
                 Log(Logger::LogLevel::k_Info, "Disabled");
             }
 
-            virtual void Reset() {};
+            virtual void Reset() {}
 
-            virtual void ProcessCommand(Command& command) {};
+            virtual void ProcessCommand(Command& command) {}
 
-            virtual void Control() {};
+            virtual void Control() {}
 
             const std::string& GetName() const {
                 return m_Name;

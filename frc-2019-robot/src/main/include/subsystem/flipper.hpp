@@ -12,21 +12,22 @@
 #define FLIPPER_LOWER 0.0
 #define FLIPPER_UPPER 40.0
 #define FLIPPER_LOWER_ANGLE 0.0
+#define FLIPPER_STOW_ANGLE 90.0
 #define FLIPPER_UPPER_ANGLE 180.0
 
 #define FLIPPER_SET_POINT_LOWER (FLIPPER_LOWER + 3.0)
 #define FLIPPER_SET_POINT_UPPER (FLIPPER_UPPER - 3.0)
 
-#define FLIPPER_P 4e-5
-#define FLIPPER_I 1e-7
-#define FLIPPER_D 7e-4
-#define FLIPPER_MAX_ACCUM 0.1
-#define FLIPPER_I_ZONE 3.0
-#define FLIPPER_FF 0.000156
-#define FLIPPER_VELOCITY 4400.0
-#define FLIPPER_ACCELERATION 2300.0
+#define FLIPPER_P 0.0
+#define FLIPPER_I 0.0
+#define FLIPPER_D 0.0
+#define FLIPPER_MAX_ACCUM 0.0
+#define FLIPPER_I_ZONE 0.0
+#define FLIPPER_FF 0.0
+#define FLIPPER_VELOCITY 2000.0
+#define FLIPPER_ACCELERATION 1000.0
 #define FLIPPER_ALLOWABLE_ERROR 0.0
-#define FLIPPER_ANGLE_FF 0.05
+#define FLIPPER_ANGLE_FF 0.0
 
 #define FLIPPER_CLOSED_LOOP_RAMP 0.1
 #define FLIPPER_SMART_MOTION_PID_SLOT 0
@@ -107,9 +108,11 @@ namespace garage {
         rev::CANPIDController m_FlipperController = m_FlipperMaster.GetPIDController();
         rev::CANEncoder m_Encoder = m_FlipperMaster.GetEncoder();
         rev::CANDigitalInput
-            m_LimitSwitch = m_FlipperMaster.GetForwardLimitSwitch(rev::CANDigitalInput::LimitSwitchPolarity::kNormallyOpen),
-            m_ForwardLimitSwitch = m_FlipperMaster.GetReverseLimitSwitch(rev::CANDigitalInput::LimitSwitchPolarity::kNormallyClosed);
-        bool m_IsLimitSwitchDown = true, m_FirstLimitSwitchHit = true;
+                m_ForwardLimitSwitch = m_FlipperMaster.GetForwardLimitSwitch(rev::CANDigitalInput::LimitSwitchPolarity::kNormallyOpen),
+                m_ReverseLimitSwitch = m_FlipperMaster.GetReverseLimitSwitch(rev::CANDigitalInput::LimitSwitchPolarity::kNormallyOpen);
+        bool
+                m_IsForwardLimitSwitchDown = true, m_FirstForwardLimitSwitchHit = true,
+                m_IsReverseLimitSwitchDown = true, m_FirstReverseLimitSwitchHit = true;
         double m_EncoderPosition = 0.0, m_EncoderVelocity = 0.0, m_Angle = 0.0;
         double m_AngleFeedForward = FLIPPER_ANGLE_FF, m_MaxVelocity = FLIPPER_VELOCITY;
         std::shared_ptr<RawFlipperController> m_RawController;
@@ -125,6 +128,8 @@ namespace garage {
         void SpacedUpdate(Command& command) override;
 
         bool ShouldUnlock(Command& command) override;
+
+        void HandleLimitSwitch(rev::CANDigitalInput& limitSwitch, bool& isLimitSwitchDown, bool& isFirstHit, double resetEncoderValue);
 
     public:
         Flipper(std::shared_ptr<Robot>& robot);

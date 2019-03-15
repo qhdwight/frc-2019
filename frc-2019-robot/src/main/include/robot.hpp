@@ -17,7 +17,6 @@
 #include <routine/flip_over_routine.hpp>
 #include <routine/ball_intake_routine.hpp>
 #include <routine/lock_flipper_routine.hpp>
-#include <routine/ball_placement_routine.hpp>
 #include <routine/reset_with_servo_routine.hpp>
 #include <routine/elevator_and_flipper_routine.hpp>
 
@@ -38,8 +37,13 @@
 namespace garage {
     struct RobotConfig {
         bool shouldOutput = true, enableElevator = true, enableDrive = true, enableFlipper = true, enableBallIntake = true, enableHatchIntake = true, enableOutrigger = true;
-        int bottomBallHeight, middleBallHeight, topBallHeight, bottomHatchHeight, middleHatchHeight, topHatchHeight;
-        double bottomBallAngle, middleBallAngle, topBallAngle;
+        int bottomHatchHeight;
+        // Rocket
+        int rocketBottomBallHeight, rocketMiddleBallHeight, rocketTopBallHeight, rocketMiddleHatchHeight, rocketTopHatchHeight;
+        double rocketBottomBallAngle, rocketMiddleBallAngle, rocketTopBallAngle;
+        // Cargo
+        int cargoBallHeight;
+        double cargoBallAngle;
     };
 
     class Robot : public frc::TimedRobot {
@@ -69,16 +73,26 @@ namespace garage {
 //        std::shared_ptr<test::TestDriveAutoRoutine> m_DriveForwardRoutine;
         std::shared_ptr<lib::Routine>
                 m_TestRoutine,
+        // ==== Reset
                 m_ResetRoutine, m_ResetWithServoRoutine,
-                m_BottomHatchRoutine, m_MiddleHatchRoutine, m_TopHatchRoutine,
-                m_BottomBallRoutine, m_MiddleBallRoutine, m_TopBallRoutine,
-                m_FlipOverRoutine, m_BallIntakeRoutine, m_CargoRoutine,
+                m_BottomHatchRoutine,
+        // ==== Rocket hatch
+                m_RocketMiddleHatchRoutine, m_RocketTopHatchRoutine,
+        // ==== Rocket ball
+                m_RocketBottomBallRoutine, m_RocketMiddleBallRoutine, m_RocketTopBallRoutine,
+        // ==== Utility
+                m_FlipOverRoutine, m_BallIntakeRoutine,
+        // ==== Cargo
+                m_CargoBallRoutine,
+        // ==== End game
                 m_EndGameRoutine;
 
     public:
         void RobotInit() override;
 
         void ReadConfig();
+
+        void CreateRoutines();
 
         void Reset();
 

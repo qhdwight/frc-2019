@@ -13,6 +13,7 @@
 namespace garage {
     void Robot::RobotInit() {
         lib::Logger::Log(lib::Logger::LogLevel::k_Info, "Start robot initialization");
+        auto begin = std::chrono::high_resolution_clock::now();
         m_Period = std::chrono::milliseconds(std::lround(m_period * 1000.0));
         // Setup network tables
         m_NetworkTableInstance = nt::NetworkTableInstance::GetDefault();
@@ -38,30 +39,49 @@ namespace garage {
         if (m_Config.enableBallIntake) AddSubsystem(m_BallIntake = std::make_shared<BallIntake>(m_Pointer));
         if (m_Config.enableHatchIntake) AddSubsystem(m_HatchIntake = std::make_shared<HatchIntake>(m_Pointer));
         if (m_Config.enableOutrigger) AddSubsystem(m_Outrigger = std::make_shared<Outrigger>(m_Pointer));
-        /* Create routines */
+        // Create our routines
+        CreateRoutines();
+        // Find out how long initialization took and record it
+        auto end = std::chrono::high_resolution_clock::now();
+        auto initializationTime = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
+        lib::Logger::Log(lib::Logger::LogLevel::k_Info, lib::Logger::Format("End robot initialization, took %d milliseconds", initializationTime));
+    }
+
+    void Robot::CreateRoutines() {
         // Render drive trajectory in initialization because it takes a couple of seconds
 //        m_DriveForwardRoutine = std::make_shared<test::TestDriveAutoRoutine>(m_Pointer, "Test Drive");
 //        m_DriveForwardRoutine->CalculatePath();
-        auto testWaitRoutine = std::make_shared<lib::WaitRoutine>(m_Pointer, 500l);
         m_ResetRoutine = std::make_shared<ResetRoutine>(m_Pointer);
         m_ResetWithServoRoutine = std::make_shared<ResetWithServoRoutine>(m_Pointer);
-        // Hatch routines
-        m_BottomHatchRoutine = std::make_shared<ElevatorAndFlipperRoutine>(m_Pointer, m_Config.bottomHatchHeight, 180.0, "Bottom Hatch");
-        m_MiddleHatchRoutine = std::make_shared<ElevatorAndFlipperRoutine>(m_Pointer, m_Config.middleHatchHeight, 180.0, "Middle Hatch");
-        m_TopHatchRoutine = std::make_shared<ElevatorAndFlipperRoutine>(m_Pointer, m_Config.topHatchHeight, 180.0, "Top Hatch");
-        // Ball routines
-        m_BottomBallRoutine = std::make_shared<ElevatorAndFlipperRoutine>(m_Pointer, m_Config.bottomBallHeight, m_Config.bottomBallAngle,
-                                                                          "Bottom Ball");
-        m_MiddleBallRoutine = std::make_shared<ElevatorAndFlipperRoutine>(m_Pointer, m_Config.middleBallHeight, m_Config.middleBallAngle,
-                                                                          "Middle Ball");
-        m_TopBallRoutine = std::make_shared<ElevatorAndFlipperRoutine>(m_Pointer, m_Config.topBallHeight, m_Config.bottomBallAngle, "Top Ball");
-        m_TestRoutine = std::make_shared<lib::ParallelRoutine>(m_Pointer, "Test Routine",
-                                                               lib::RoutineVector{testWaitRoutine, testWaitRoutine, testWaitRoutine});
-        m_EndGameRoutine = std::make_shared<LockFlipperRoutine>(m_Pointer);
+        /* Hatch routines */
+        m_BottomHatchRoutine = std::make_shared<ElevatorAndFlipperRoutine>
+                (m_Pointer, m_Config.bottomHatchHeight, FLIPPER_LOWER_ANGLE, "Bottom Hatch");
+        // Rocket hatch routines
+        m_RocketMiddleHatchRoutine = std::make_shared<ElevatorAndFlipperRoutine>
+                (m_Pointer, m_Config.rocketMiddleHatchHeight, FLIPPER_LOWER_ANGLE, "Middle Rocket Hatch");
+        m_RocketTopHatchRoutine = std::make_shared<ElevatorAndFlipperRoutine>
+                (m_Pointer, m_Config.rocketTopHatchHeight, FLIPPER_LOWER_ANGLE, "Top Rocket Hatch");
+        /* Ball routines */
+        // Rocket
+        m_RocketBottomBallRoutine = std::make_shared<ElevatorAndFlipperRoutine>
+                (m_Pointer, m_Config.rocketBottomBallHeight, m_Config.rocketBottomBallAngle, "Bottom Rocket Ball");
+        m_RocketMiddleBallRoutine = std::make_shared<ElevatorAndFlipperRoutine>
+                (m_Pointer, m_Config.rocketMiddleBallHeight, m_Config.rocketMiddleBallAngle, "Middle Rocket Ball");
+        m_RocketTopBallRoutine = std::make_shared<ElevatorAndFlipperRoutine>
+                (m_Pointer, m_Config.rocketTopBallHeight, m_Config.rocketTopBallAngle, "Top Rocket Ball");
+        // Cargo
+        m_CargoBallRoutine = std::make_shared<ElevatorAndFlipperRoutine>(m_Pointer, m_Config.cargoBallHeight, m_Config.cargoBallAngle, "Cargo Ball");
+        // Testing routine
+        auto
+                testWaitRoutineOne = std::make_shared<lib::WaitRoutine>(m_Pointer, 500l),
+                testWaitRoutineTwo = std::make_shared<lib::WaitRoutine>(m_Pointer, 1000l);
+        m_TestRoutine = std::make_shared<lib::ParallelRoutine>
+                (m_Pointer, "Test Routine", lib::RoutineVector{testWaitRoutineOne, testWaitRoutineTwo});
+        /* Utility routines */
         m_FlipOverRoutine = std::make_shared<FlipOverRoutine>(m_Pointer);
         m_BallIntakeRoutine = std::make_shared<BallIntakeRoutine>(m_Pointer);
-        m_CargoRoutine = std::make_shared<ElevatorAndFlipperRoutine>(m_Pointer, 0, 30.0, "Cargo");
-        lib::Logger::Log(lib::Logger::LogLevel::k_Info, "End robot initialization");
+        /* End game routines */
+        m_EndGameRoutine = std::make_shared<LockFlipperRoutine>(m_Pointer);
     }
 
     void Robot::ReadConfig() {
@@ -93,20 +113,31 @@ namespace garage {
                         auto elevatorRoutines = routinesJson.at("elevator");
                         {
                             auto ballRoutines = elevatorRoutines.at("ball");
-                            // Set Points
-                            m_Config.bottomBallHeight = ballRoutines.at("bottom_set_point").get<int>();
-                            m_Config.middleBallHeight = ballRoutines.at("middle_set_point").get<int>();
-                            m_Config.topBallHeight = ballRoutines.at("top_set_point").get<int>();
-                            // Angles
-                            m_Config.bottomBallAngle = ballRoutines.at("bottom_angle").get<double>();
-                            m_Config.middleBallAngle = ballRoutines.at("middle_angle").get<double>();
-                            m_Config.topBallAngle = ballRoutines.at("top_angle").get<double>();
+                            {
+                                auto rocketRoutines = ballRoutines.at("rocket");
+                                // Set Points
+                                m_Config.rocketBottomBallHeight = rocketRoutines.at("bottom_set_point").get<int>();
+                                m_Config.rocketMiddleBallHeight = rocketRoutines.at("middle_set_point").get<int>();
+                                m_Config.rocketTopBallHeight = rocketRoutines.at("top_set_point").get<int>();
+                                // Angles
+                                m_Config.rocketBottomBallAngle = rocketRoutines.at("bottom_angle").get<double>();
+                                m_Config.rocketMiddleBallAngle = rocketRoutines.at("middle_angle").get<double>();
+                                m_Config.rocketTopBallAngle = rocketRoutines.at("top_angle").get<double>();
+                            }
+                            {
+                                auto cargoRoutines = ballRoutines.at("cargo");
+                                m_Config.cargoBallHeight = cargoRoutines.at("set_point").get<int>();
+                                m_Config.cargoBallAngle = cargoRoutines.at("angle").get<double>();
+                            }
                         }
                         {
                             auto hatchRoutines = elevatorRoutines.at("hatch");
-                            m_Config.bottomHatchHeight = hatchRoutines.at("bottom").get<int>();
-                            m_Config.middleHatchHeight = hatchRoutines.at("middle").get<int>();
-                            m_Config.topHatchHeight = hatchRoutines.at("top").get<int>();
+                            {
+                                auto rocketRoutines = hatchRoutines.at("rocket");
+                                m_Config.bottomHatchHeight = rocketRoutines.at("bottom").get<int>();
+                                m_Config.rocketMiddleHatchHeight = rocketRoutines.at("middle").get<int>();
+                                m_Config.rocketTopHatchHeight = rocketRoutines.at("top").get<int>();
+                            }
                         }
                     }
                 }
@@ -145,11 +176,6 @@ namespace garage {
 
     void Robot::TeleopInit() {
         Reset();
-//        auto r1 = std::dynamic_pointer_cast<lib::Routine>(std::make_shared<lib::WaitRoutine>(m_Pointer, "Wait One", 2.0));
-//        auto r2 = std::dynamic_pointer_cast<lib::Routine>(std::make_shared<lib::WaitRoutine>(m_Pointer, "Wait Two", 4.0));
-//        std::vector<std::shared_ptr<lib::Routine>> routines{r1, r2};
-//        auto seq = std::dynamic_pointer_cast<lib::Routine>(std::make_shared<lib::SequentialRoutine>(m_Pointer, "All", std::move(routines)));
-//        m_RoutineManager->AddRoutine(seq);
     }
 
     void Robot::ControllablePeriodic() {
@@ -178,6 +204,7 @@ namespace garage {
     }
 
     void Robot::UpdateCommand() {
+        m_Command.routines.clear();
         if (m_Controller.GetStickButtonPressed(frc::GenericHID::kRightHand)) {
             m_Command.drivePrecisionEnabled = !m_Command.drivePrecisionEnabled;
         }
@@ -192,8 +219,69 @@ namespace garage {
                 m_Command.routines.push_back(m_ResetWithServoRoutine);
             }
         }
+        if (m_Controller.GetBackButtonPressed()) {
+            // TODO remove
+            m_Command.routines.push_back(m_TestRoutine);
+        }
+        const int pov = m_Controller.GetPOV();
+        const bool
+        // Left button
+                elevatorHatch = pov == 90,
+        // Button button
+                elevatorDown = pov == 180,
+        // Right button
+                elevatorBall = pov == 270,
+        // Top button
+                elevatorSoftLand = pov == 0;
+//        if (m_Controller.GetAButtonPressed()) {
+//            m_Command.routines.push_back(std::make_shared<test::SetElevatorPositionRoutine>(m_Pointer, "Elevator Up", 100000.0));
+//            m_Command.routines.push_back(std::make_shared<lib::WaitRoutine>(m_Pointer, "Elevator Wait", 0.2));
+//            m_Command.routines.push_back(std::make_shared<test::SetElevatorPositionRoutine>(m_Pointer, "Elevator Down", 0.0));
+//        }
+        if (!m_Command.offTheBooksModeEnabled) {
+            if (m_Controller.GetAButtonPressed()) {
+                if (elevatorBall) {
+                    m_Command.routines.push_back(m_RocketBottomBallRoutine);
+                } else if (elevatorHatch) {
+                    m_Command.routines.push_back(m_BottomHatchRoutine);
+                } else {
+                    m_Command.routines.push_back(m_BallIntakeRoutine);
+                }
+            }
+            if (m_Controller.GetBButtonPressed()) {
+                if (elevatorBall) {
+                    m_Command.routines.push_back(m_RocketMiddleBallRoutine);
+                } else if (elevatorHatch) {
+                    m_Command.routines.push_back(m_RocketMiddleHatchRoutine);
+                } else {
+                    m_Command.routines.push_back(m_CargoBallRoutine);
+                }
+            }
+            if (m_Controller.GetYButtonPressed()) {
+                if (elevatorBall) {
+                    m_Command.routines.push_back(m_RocketTopBallRoutine);
+                } else if (elevatorHatch) {
+                    m_Command.routines.push_back(m_RocketTopHatchRoutine);
+                } else {
+                    m_Command.hatchIntakeDown = true;
+                }
+            } else {
+                m_Command.hatchIntakeDown = false;
+            }
+            if (m_Controller.GetXButtonPressed()) {
+                m_Command.routines.push_back(m_FlipOverRoutine);
+            }
+            if (elevatorDown) {
+                m_RoutineManager->TerminateAllRoutines();
+                m_Command.routines.push_back(m_ResetRoutine);
+            } else if (elevatorSoftLand) {
+                m_RoutineManager->TerminateAllRoutines();
+                m_Elevator->SoftLand();
+            }
+        }
         m_Command.driveForward = -m_Controller.GetY(frc::GenericHID::JoystickHand::kRightHand);
         m_Command.driveTurn = m_Controller.GetX(frc::GenericHID::JoystickHand::kRightHand);
+        m_Command.elevatorInput = -m_Controller.GetY(frc::GenericHID::kLeftHand);
         const double triggers = m_Controller.GetTriggerAxis(frc::GenericHID::JoystickHand::kRightHand) -
                                 m_Controller.GetTriggerAxis(frc::GenericHID::JoystickHand::kLeftHand);
         const auto bumpers = math::axis<double>(
@@ -210,65 +298,6 @@ namespace garage {
             m_Command.ballIntake = bumpers;
             m_Command.flipper = triggers;
         }
-        const int pov = m_Controller.GetPOV();
-        const bool
-        // Left button
-                elevatorHatch = pov == 90,
-        // Button button
-                elevatorDown = pov == 180,
-        // Right button
-                elevatorBall = pov == 270,
-        // Top button
-                elevatorSoftLand = pov == 0;
-        m_Command.routines.clear();
-//        if (m_Controller.GetAButtonPressed()) {
-//            m_Command.routines.push_back(std::make_shared<test::SetElevatorPositionRoutine>(m_Pointer, "Elevator Up", 100000.0));
-//            m_Command.routines.push_back(std::make_shared<lib::WaitRoutine>(m_Pointer, "Elevator Wait", 0.2));
-//            m_Command.routines.push_back(std::make_shared<test::SetElevatorPositionRoutine>(m_Pointer, "Elevator Down", 0.0));
-//        }
-        if (!m_Command.offTheBooksModeEnabled) {
-            if (m_Controller.GetAButtonPressed()) {
-                if (elevatorBall) {
-                    m_Command.routines.push_back(m_BottomBallRoutine);
-                } else if (elevatorHatch) {
-                    m_Command.routines.push_back(m_BottomHatchRoutine);
-                } else {
-                    m_Command.routines.push_back(m_BallIntakeRoutine);
-                }
-            }
-            if (m_Controller.GetBButtonPressed()) {
-                if (elevatorBall) {
-                    m_Command.routines.push_back(m_MiddleBallRoutine);
-                } else if (elevatorHatch) {
-                    m_Command.routines.push_back(m_MiddleHatchRoutine);
-                } else {
-                    m_Command.routines.push_back(m_CargoRoutine);
-                }
-            }
-            if (m_Controller.GetYButtonPressed()) {
-                if (elevatorBall) {
-                    m_Command.routines.push_back(m_TopBallRoutine);
-                } else if (elevatorHatch) {
-                    m_Command.routines.push_back(m_TopHatchRoutine);
-                } else {
-                    m_Command.hatchIntakeDown = true;
-                }
-            } else {
-                m_Command.hatchIntakeDown = false;
-            }
-            if (m_Controller.GetXButtonPressed()) {
-                m_Command.routines.push_back(m_FlipOverRoutine);
-//            m_Command.routines.push_back(m_TestRoutine);
-            }
-            if (elevatorDown) {
-                m_RoutineManager->TerminateAllRoutines();
-                m_Command.routines.push_back(m_ResetRoutine);
-            } else if (elevatorSoftLand) {
-                m_RoutineManager->TerminateAllRoutines();
-                m_Elevator->SoftLand();
-            }
-        }
-        m_Command.elevatorInput = -m_Controller.GetY(frc::GenericHID::kLeftHand);
     }
 
     void Robot::TestInit() {

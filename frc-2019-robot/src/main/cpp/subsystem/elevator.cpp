@@ -209,7 +209,7 @@ namespace garage {
         auto elevator = m_Subsystem.lock();
         Log(lib::Logger::LogLevel::k_Debug, lib::Logger::Format("Input Value: %f, Output Value: %f", m_Input, m_Output));
         if (elevator->m_Robot->ShouldOutput()) {
-            if ((elevator->m_EncoderPosition > 7500 || m_Output > 0.01) &&
+            if ((elevator->m_EncoderPosition > ELEVATOR_MIN_RAW_HEIGHT || m_Output > 0.01) &&
                 elevator->m_EncoderPosition < ELEVATOR_MAX) {
                 elevator->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, m_Output);
             } else {
@@ -235,7 +235,6 @@ namespace garage {
         m_WantedSetPoint = math::clamp(m_WantedSetPoint, ELEVATOR_MIN, ELEVATOR_MAX_CLOSED_LOOP_HEIGHT);
         Log(lib::Logger::LogLevel::k_Debug,
             lib::Logger::Format("Wanted Set Point: %d, Feed Forward: %f", m_WantedSetPoint, elevator->m_FeedForward));
-        // TODO tune
         if ((elevator->m_EncoderPosition > ELEVATOR_MIN_CLOSED_LOOP_HEIGHT || m_WantedSetPoint > ELEVATOR_MIN) &&
             elevator->m_EncoderPosition < ELEVATOR_MAX) {
             elevator->LogSample(lib::Logger::LogLevel::k_Debug, "Theoretically Okay and Working");

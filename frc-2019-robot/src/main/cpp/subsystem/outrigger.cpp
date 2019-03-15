@@ -45,6 +45,7 @@ namespace garage {
     }
 
     void Outrigger::SetOutput(double output) {
+        Lock();
         m_OutriggerOutput = output;
     }
 }

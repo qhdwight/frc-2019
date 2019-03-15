@@ -11,12 +11,12 @@
 
 #define FLIPPER_LOWER 0.0
 #define FLIPPER_UPPER 40.0
-#define FLIPPER_LOWER_ANGLE 0.0
-#define FLIPPER_STOW_ANGLE 90.0
-#define FLIPPER_UPPER_ANGLE 180.0
+#define FLIPPER_LOWER_ANGLE 0.0 // Degrees
+#define FLIPPER_STOW_ANGLE 90.0 // Degrees
+#define FLIPPER_UPPER_ANGLE 180.0 // Degrees
 
-#define FLIPPER_SET_POINT_LOWER (FLIPPER_LOWER + 3.0)
-#define FLIPPER_SET_POINT_UPPER (FLIPPER_UPPER - 3.0)
+#define FLIPPER_SET_POINT_LOWER (FLIPPER_LOWER + 3.0) // Raw set point
+#define FLIPPER_SET_POINT_UPPER (FLIPPER_UPPER - 3.0) // Raw set point
 
 #define FLIPPER_P 0.0
 #define FLIPPER_I 0.0
@@ -28,6 +28,8 @@
 #define FLIPPER_ACCELERATION 500.0
 #define FLIPPER_ALLOWABLE_ERROR 0.0
 #define FLIPPER_ANGLE_FF 0.0
+
+#define FLIPPER_WITHIN_RANGE 2.0 // Degrees
 
 #define FLIPPER_RAW_POWER 0.25
 
@@ -54,6 +56,8 @@ namespace garage {
                 : SubsystemController(subsystem, "Raw Controller") {}
 
         void Reset() override;
+
+        void SetOutput(double output);
 
         void ProcessCommand(Command& command) override;
 

@@ -1,35 +1,37 @@
 {
-  "should_output_motors": false,
+  "should_output_motors": true,
   "subsystems": {
-    "enable_elevator": false,
-    "enable_drive": false,
+    "enable_elevator": true,
+    "enable_drive": true,
     "enable_flipper": false,
-    "enable_ball_intake": false,
-    "enable_hatch_intake": false,
+    "enable_ball_intake": true,
+    "enable_hatch_intake": true,
     "enable_outrigger": false
   },
   "routines": {
-    "elevator": {
-      "ball": {
-        "rocket": {
-          "bottom_set_point": 0,
-          "middle_set_point": 0,
-          "top_set_point": 0,
-          "bottom_angle": 0.0,
-          "middle_angle": 0.0,
-          "top_angle": 0.0
-        },
-        "cargo": {
-          "set_point": 0,
-          "angle": 0.0
-        }
+    "ball": {
+      "intake": {
+        "ground_set_point": 5000,
+        "loading_set_point": 117000
       },
-      "hatch": {
-        "bottom": 6625,
-        "rocket": {
-          "middle": 177100,
-          "top": 336951
-        }
+      "rocket": {
+        "bottom_set_point": 20000,
+        "middle_set_point": 182000,
+        "top_set_point": 344000,
+        "bottom_angle": 30.0,
+        "middle_angle": 30.0,
+        "top_angle": 30.0
+      },
+      "cargo": {
+        "down_set_point": 194000,
+        "up_set_point": 112000
+      }
+    },
+    "hatch": {
+      "bottom": 20000,
+      "rocket": {
+        "middle": 182000,
+        "top": 344000
       }
     }
   }

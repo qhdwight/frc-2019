@@ -8,7 +8,7 @@
 #include <ctre/phoenix/motorcontrol/can/TalonSRX.h>
 #include <ctre/phoenix/motorcontrol/can/VictorSPX.h>
 
-#define ELEVATOR_MAX 350000 // Encoder ticks
+#define ELEVATOR_MAX 360000 // Encoder ticks
 #define ELEVATOR_MIN 0 // Encoder ticks
 
 /* Gains and Motion Magic */
@@ -38,7 +38,7 @@
 #define ELEVATOR_OPEN_LOOP_RAMP 0.4 // Seconds
 #define ELEVATOR_CLOSED_LOOP_RAMP 0.1 // Seconds
 
-#define ELEVATOR_SAFE_DOWN 0.22 // Percent output
+#define ELEVATOR_SAFE_DOWN 0.0 // Percent output
 
 #define ELEVATOR_MOTION_MAGIC_PID_SLOT 0
 

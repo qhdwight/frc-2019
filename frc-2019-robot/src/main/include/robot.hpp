@@ -19,6 +19,7 @@
 #include <routine/lock_flipper_routine.hpp>
 #include <routine/reset_with_servo_routine.hpp>
 #include <routine/elevator_and_flipper_routine.hpp>
+#include <routine/set_elevator_position_routine.hpp>
 
 #include <networktables/NetworkTable.h>
 #include <networktables/NetworkTableInstance.h>
@@ -42,8 +43,10 @@ namespace garage {
         int rocketBottomBallHeight, rocketMiddleBallHeight, rocketTopBallHeight, rocketMiddleHatchHeight, rocketTopHatchHeight;
         double rocketBottomBallAngle, rocketMiddleBallAngle, rocketTopBallAngle;
         // Cargo
-        int cargoBallHeight;
+        int cargoBallHeightDown, cargoBallHeightUp;
         double cargoBallAngle;
+        // Intake
+        int groundIntakeBallHeight, loadingIntakeBallHeight;
     };
 
     class Robot : public frc::TimedRobot {
@@ -81,7 +84,7 @@ namespace garage {
         // ==== Rocket ball
                 m_RocketBottomBallRoutine, m_RocketMiddleBallRoutine, m_RocketTopBallRoutine,
         // ==== Utility
-                m_FlipOverRoutine, m_BallIntakeRoutine,
+                m_FlipOverRoutine, m_GroundBallIntakeRoutine, m_LoadingBallIntakeRoutine,
         // ==== Cargo
                 m_CargoBallRoutine,
         // ==== End game

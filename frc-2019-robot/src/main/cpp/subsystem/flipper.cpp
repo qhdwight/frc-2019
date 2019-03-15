@@ -35,7 +35,7 @@ namespace garage {
         AddController(m_RawController = std::make_shared<RawFlipperController>(flipper));
         AddController(m_SetPointController = std::make_shared<SetPointFlipperController>(flipper));
         AddController(m_VelocityController = std::make_shared<VelocityFlipperController>(flipper));
-        SetUnlockedController(m_VelocityController);
+//        SetUnlockedController(m_RawController);
         AddNetworkTableListener("Angle FF", FLIPPER_ANGLE_FF, [this](const double angleFF) {
             m_AngleFeedForward = angleFF;
             return true;
@@ -131,6 +131,7 @@ namespace garage {
 
     void Flipper::SetRawOutput(double output) {
         SetController(m_RawController);
+        m_RawController->SetOutput(output);
     }
 
     void Flipper::SetSetPoint(double setPoint) {
@@ -164,7 +165,7 @@ namespace garage {
     }
 
     bool Flipper::WithinAngle(double angle) {
-        return math::withinRange(m_Angle, angle, 1.5);
+        return math::withinRange(m_Angle, angle, FLIPPER_WITHIN_RANGE);
     }
 
     double Flipper::GetAngle() {
@@ -185,6 +186,10 @@ namespace garage {
         if (flipper->m_Robot->ShouldOutput()) {
             flipper->m_FlipperMaster.Set(m_Output);
         }
+    }
+
+    void RawFlipperController::SetOutput(double output) {
+        m_Output = output;
     }
 
     void RawFlipperController::Reset() {

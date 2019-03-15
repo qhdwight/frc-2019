@@ -19,12 +19,12 @@ namespace garage {
 
     void Outrigger::Reset() {
         Subsystem::Reset();
-        m_OutriggerOutput = 0.0;
-        m_OutriggerWheelOutput = 0.0;
         StopMotors();
     }
 
     void Outrigger::StopMotors() {
+        m_OutriggerOutput = 0.0;
+        m_OutriggerWheelOutput = 0.0;
         m_OutriggerMaster.Set(0.0);
         m_OutriggerWheel.Set(0.0);
     }

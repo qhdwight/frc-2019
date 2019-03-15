@@ -10,11 +10,15 @@ namespace garage {
 
     void SoftLandElevatorRoutine::Start() {
         Routine::Start();
-        m_Subsystem->SoftLand();
+        if (m_Subsystem) {
+            m_Subsystem->SoftLand();
+        }
     }
 
     void SoftLandElevatorRoutine::Terminate() {
         Routine::Terminate();
-        m_Subsystem->Unlock();
+        if (m_Subsystem) {
+            m_Subsystem->Unlock();
+        }
     }
 }

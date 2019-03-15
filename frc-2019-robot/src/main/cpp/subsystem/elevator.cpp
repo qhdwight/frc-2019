@@ -80,7 +80,7 @@ namespace garage {
         AddController(m_SetPointController = std::make_shared<SetPointElevatorController>(elevator));
         AddController(m_VelocityController = std::make_shared<VelocityElevatorController>(elevator));
         AddController(m_SoftLandController = std::make_shared<SoftLandElevatorController>(elevator));
-        SetUnlockedController(m_VelocityController);
+        SetUnlockedController(m_RawController);
         SetResetController(m_SoftLandController);
         SetupNetworkTableEntries();
     }
@@ -202,7 +202,7 @@ namespace garage {
 
     void RawElevatorController::ProcessCommand(Command& command) {
         m_Input = math::threshold(command.elevatorInput, DEFAULT_INPUT_THRESHOLD);
-        m_Output = math::clamp(m_Input, -0.5, 0.45);
+        m_Output = math::clamp(m_Input, -0.75, 0.45);
     }
 
     void RawElevatorController::Control() {

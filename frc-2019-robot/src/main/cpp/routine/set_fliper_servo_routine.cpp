@@ -5,10 +5,12 @@
 namespace garage {
     void SetFlipperServoRoutine::Start() {
         Routine::Start();
-        if (m_ShouldLock) {
-            m_Subsystem->LockServo();
-        } else {
-            m_Subsystem->UnlockServo();
+        if (m_Subsystem) {
+            if (m_ShouldLock) {
+                m_Subsystem->LockServo();
+            } else {
+                m_Subsystem->UnlockServo();
+            }
         }
     }
 

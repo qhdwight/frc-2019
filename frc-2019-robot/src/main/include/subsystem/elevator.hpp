@@ -54,11 +54,11 @@ namespace garage {
     public:
         RawElevatorController(std::weak_ptr<Elevator>& subsystem) : lib::SubsystemController<Elevator>(subsystem, "Raw Controller") {}
 
+        void Reset() override;
+
         void ProcessCommand(Command& command) override;
 
         void Control() override;
-
-        void Reset() override;
 
         void SetRawOutput(double output) {
             m_Output = output;

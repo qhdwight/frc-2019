@@ -18,6 +18,7 @@ namespace garage {
         // Setup network tables
         m_NetworkTableInstance = nt::NetworkTableInstance::GetDefault();
         m_NetworkTable = m_NetworkTableInstance.GetTable("Garage Robotics");
+        m_DashboardNetworkTable = m_NetworkTable->GetSubTable("Dashboard");
         // Setup logging system
         const auto defaultLogLevel = lib::Logger::LogLevel::k_Info;
         lib::Logger::SetLogLevel(defaultLogLevel);
@@ -206,15 +207,17 @@ namespace garage {
     void Robot::UpdateCommand() {
         /* Routines */
         m_Command.routines.clear();
-        if (m_Controller.GetBackButtonPressed()) {
+        if (m_PrimaryController.GetBackButtonPressed()) {
             // TODO remove after testing
             m_Command.routines.push_back(m_TestRoutine);
         }
-        if (m_Controller.GetStickButtonPressed(frc::GenericHID::kRightHand)) {
+        if (m_PrimaryController.GetStickButtonPressed(frc::GenericHID::kRightHand)) {
             m_Command.drivePrecisionEnabled = !m_Command.drivePrecisionEnabled;
+            m_DashboardNetworkTable->PutString("Drive Mode", m_Command.drivePrecisionEnabled ? "Precise" : "Coarse");
         }
-        if (m_Controller.GetStartButtonPressed()) {
+        if (m_PrimaryController.GetStartButtonPressed()) {
             m_Command.offTheBooksModeEnabled = !m_Command.offTheBooksModeEnabled;
+            m_DashboardNetworkTable->PutString("Off the Books", m_Command.drivePrecisionEnabled ? "Yeet" : "Naw");
             m_RoutineManager->TerminateAllRoutines();
             if (m_Command.offTheBooksModeEnabled) {
                 m_Command.drivePrecisionEnabled = true;
@@ -224,7 +227,7 @@ namespace garage {
                 m_Command.routines.push_back(m_ResetWithServoRoutine);
             }
         }
-        const int pov = m_Controller.GetPOV();
+        const int pov = m_PrimaryController.GetPOV();
         const bool
         // Left button
                 elevatorHatch = pov == 90,
@@ -235,7 +238,7 @@ namespace garage {
         // Top button
                 elevatorSoftLand = pov == 0;
         if (!m_Command.offTheBooksModeEnabled) {
-            if (m_Controller.GetAButtonPressed()) {
+            if (m_PrimaryController.GetAButtonPressed()) {
                 if (elevatorBall) {
                     m_Command.routines.push_back(m_RocketBottomBallRoutine);
                 } else if (elevatorHatch) {
@@ -244,7 +247,7 @@ namespace garage {
                     m_Command.routines.push_back(m_BallIntakeRoutine);
                 }
             }
-            if (m_Controller.GetBButtonPressed()) {
+            if (m_PrimaryController.GetBButtonPressed()) {
                 if (elevatorBall) {
                     m_Command.routines.push_back(m_RocketMiddleBallRoutine);
                 } else if (elevatorHatch) {
@@ -253,7 +256,7 @@ namespace garage {
                     m_Command.routines.push_back(m_CargoBallRoutine);
                 }
             }
-            if (m_Controller.GetYButtonPressed()) {
+            if (m_PrimaryController.GetYButtonPressed()) {
                 if (elevatorBall) {
                     m_Command.routines.push_back(m_RocketTopBallRoutine);
                 } else if (elevatorHatch) {
@@ -264,25 +267,26 @@ namespace garage {
             } else {
                 m_Command.hatchIntakeDown = false;
             }
-            if (m_Controller.GetXButtonPressed()) {
+            if (m_PrimaryController.GetXButtonPressed()) {
                 m_Command.routines.push_back(m_FlipOverRoutine);
             }
-            if (elevatorDown) {
+            const int secondaryPov = m_SecondaryController.GetPOV();
+            if (elevatorDown || secondaryPov == 180) {
                 m_RoutineManager->TerminateAllRoutines();
                 m_Command.routines.push_back(m_ResetRoutine);
-            } else if (elevatorSoftLand) {
+            } else if (elevatorSoftLand || secondaryPov == 0) {
                 m_RoutineManager->TerminateAllRoutines();
                 m_Elevator->SoftLand();
             }
         }
-        m_Command.driveForward = -m_Controller.GetY(frc::GenericHID::JoystickHand::kRightHand);
-        m_Command.driveTurn = m_Controller.GetX(frc::GenericHID::JoystickHand::kRightHand);
-        m_Command.elevatorInput = -m_Controller.GetY(frc::GenericHID::kLeftHand);
-        const double triggers = m_Controller.GetTriggerAxis(frc::GenericHID::JoystickHand::kRightHand) -
-                                m_Controller.GetTriggerAxis(frc::GenericHID::JoystickHand::kLeftHand);
+        m_Command.driveForward = -m_PrimaryController.GetY(frc::GenericHID::JoystickHand::kRightHand);
+        m_Command.driveTurn = m_PrimaryController.GetX(frc::GenericHID::JoystickHand::kRightHand);
+        m_Command.elevatorInput = -m_PrimaryController.GetY(frc::GenericHID::kLeftHand);
+        const double triggers = m_PrimaryController.GetTriggerAxis(frc::GenericHID::JoystickHand::kRightHand) -
+                                m_PrimaryController.GetTriggerAxis(frc::GenericHID::JoystickHand::kLeftHand);
         const auto bumpers = math::axis<double>(
-                m_Controller.GetBumper(frc::GenericHID::JoystickHand::kRightHand),
-                m_Controller.GetBumper(frc::GenericHID::JoystickHand::kLeftHand));
+                m_PrimaryController.GetBumper(frc::GenericHID::JoystickHand::kRightHand),
+                m_PrimaryController.GetBumper(frc::GenericHID::JoystickHand::kLeftHand));
         if (m_Command.offTheBooksModeEnabled) {
             m_Command.outrigger = triggers;
             m_Command.outriggerWheel = bumpers;

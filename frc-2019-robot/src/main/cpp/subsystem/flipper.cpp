@@ -177,7 +177,7 @@ namespace garage {
 
     void RawFlipperController::ProcessCommand(Command& command) {
         m_Input = math::threshold(command.flipper, DEFAULT_INPUT_THRESHOLD);
-        m_Output = m_Input * 0.25;
+        m_Output = m_Input * FLIPPER_RAW_POWER;
     }
 
     void RawFlipperController::Control() {

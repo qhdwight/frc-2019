@@ -10,7 +10,7 @@ namespace garage {
     Flipper::Flipper(std::shared_ptr<Robot>& robot) : lib::ControllableSubsystem<Flipper>(robot, "Flipper") {
         m_FlipperMaster.RestoreFactoryDefaults();
         m_FlipperMaster.SetIdleMode(rev::CANSparkMax::IdleMode::kBrake);
-        m_FlipperMaster.SetOpenLoopRampRate(FLIPPER_CLOSED_LOOP_RAMP);
+        m_FlipperMaster.SetClosedLoopRampRate(FLIPPER_CLOSED_LOOP_RAMP);
         m_FlipperController.SetP(FLIPPER_P, FLIPPER_SMART_MOTION_PID_SLOT);
         m_FlipperController.SetI(FLIPPER_I, FLIPPER_SMART_MOTION_PID_SLOT);
         m_FlipperController.SetD(FLIPPER_D, FLIPPER_SMART_MOTION_PID_SLOT);
@@ -107,7 +107,7 @@ namespace garage {
         uint16_t faults = m_FlipperMaster.GetStickyFaults();
         faults &= ~(1 << 14);
         faults &= ~(1 << 15);
-        if (faults != 0) {
+        if (faults) {
             Log(lib::Logger::LogLevel::k_Error, lib::Logger::Format("Sticky Fault Error: %d", faults));
             m_FlipperMaster.ClearFaults();
         }

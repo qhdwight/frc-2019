@@ -1,16 +1,18 @@
 #pragma once
 
+// Drive
 #define PIGEON_IMU 0
 #define DRIVE_LEFT_MASTER 1
 #define DRIVE_LEFT_SLAVE 2
 #define DRIVE_RIGHT_MASTER 3
 #define DRIVE_RIGHT_SLAVE 4
+// Elevator
 #define ELEVATOR_MASTER 5
-#define ELEVATOR_SLAVE_ONE 6
-#define ELEVATOR_SLAVE_TWO 7
-#define ELEVATOR_SLAVE_THREE 8
+#define ELEVATOR_SLAVE 6
+// Ball Intake
 #define BALL_INTAKE_MASTER 9
 #define BALL_INTAKE_SLAVE 10
+// Outrigger
 #define OUTRIGGER_ARM_MASTER 11
 #define OUTRIGGER_ARM_SLAVE 12
 #define OUTRIGGER_WHEEL 13

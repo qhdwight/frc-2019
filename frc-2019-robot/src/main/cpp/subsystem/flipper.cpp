@@ -35,7 +35,7 @@ namespace garage {
         AddController(m_RawController = std::make_shared<RawFlipperController>(flipper));
         AddController(m_SetPointController = std::make_shared<SetPointFlipperController>(flipper));
         AddController(m_VelocityController = std::make_shared<VelocityFlipperController>(flipper));
-//        SetUnlockedController(m_RawController);
+        SetUnlockedController(m_VelocityController);
         AddNetworkTableListener("Angle FF", FLIPPER_ANGLE_FF, [this](const double angleFF) {
             m_AngleFeedForward = angleFF;
             return true;
@@ -104,15 +104,22 @@ namespace garage {
         m_EncoderPosition = m_Encoder.GetPosition();
         m_EncoderVelocity = m_Encoder.GetVelocity();
         m_Angle = RawSetPointToAngle(m_EncoderPosition);
-        const uint16_t faults = m_FlipperMaster.GetStickyFaults();
+        uint16_t faults = m_FlipperMaster.GetStickyFaults();
+        faults &= ~(1 << 14);
+        faults &= ~(1 << 15);
         if (faults != 0) {
-            Log(lib::Logger::LogLevel::k_Error, lib::Logger::Format("Stick Fault Error: %d", faults));
+            Log(lib::Logger::LogLevel::k_Error, lib::Logger::Format("Sticky Fault Error: %d", faults));
             m_FlipperMaster.ClearFaults();
         }
         // TODO check direction
         m_CameraServoOutput = static_cast<uint16_t>(m_Angle > FLIPPER_STOW_ANGLE ? CAMERA_SERVO_LOWER : CAMERA_SERVO_UPPER);
         m_CameraServo.SetRaw(m_CameraServoOutput);
         m_LockServo.SetRaw(m_LockServoOutput);
+        if (m_Controller) {
+            m_Controller->Control();
+        } else {
+            LogSample(lib::Logger::LogLevel::k_Warning, "No controller detected");
+        }
     }
 
     void Flipper::SpacedUpdate(Command& command) {
@@ -183,6 +190,7 @@ namespace garage {
 
     void RawFlipperController::Control() {
         auto flipper = m_Subsystem.lock();
+        Log(lib::Logger::LogLevel::k_Debug, lib::Logger::Format("Wanted Output: %f", m_Output));
         if (flipper->m_Robot->ShouldOutput()) {
             flipper->m_FlipperMaster.Set(m_Output);
         }
@@ -218,13 +226,13 @@ namespace garage {
             wantingToGoOtherWay = true;
         if (inMiddle || wantingToGoOtherWay) {
             const double
-                    angleFeedForward = std::cos(r2d(flipper->m_Angle)) * flipper->m_AngleFeedForward,
+                    angleFeedForward = std::cos(d2r(flipper->m_Angle)) * flipper->m_AngleFeedForward,
                     feedForward = angleFeedForward;
             if (flipper->m_Robot->ShouldOutput()) {
                 auto error = flipper->m_FlipperController.SetReference(m_WantedVelocity, rev::ControlType::kSmartVelocity,
-                                                                       FLIPPER_SMART_MOTION_PID_SLOT, feedForward);
+                                                                       FLIPPER_SMART_MOTION_PID_SLOT, feedForward * DEFAULT_VOLTAGE_COMPENSATION);
                 if (error == rev::CANError::kOK) {
-                    Log(lib::Logger::LogLevel::k_Debug, lib::Logger::Format("Wanted Velocity: %f", m_WantedVelocity));
+                    Log(lib::Logger::LogLevel::k_Debug, lib::Logger::Format("Wanted Velocity: %f, Feed Forward: %f, %f, %f", m_WantedVelocity, feedForward, std::cos(d2r(flipper->m_Angle)), flipper->m_AngleFeedForward));
                 } else {
                     Log(lib::Logger::LogLevel::k_Error, lib::Logger::Format("CAN Error: %d", error));
                 }
@@ -251,11 +259,11 @@ namespace garage {
         if (inMiddle || wantingToGoOtherWay) {
             const double
                     clampedSetPoint = math::clamp(m_SetPoint, FLIPPER_SET_POINT_LOWER, FLIPPER_SET_POINT_UPPER),
-                    angleFeedForward = std::cos(r2d(flipper->m_Angle)) * flipper->m_AngleFeedForward,
+                    angleFeedForward = std::cos(d2r(flipper->m_Angle)) * flipper->m_AngleFeedForward,
                     feedForward = angleFeedForward;
             if (flipper->m_Robot->ShouldOutput()) {
                 auto error = flipper->m_FlipperController.SetReference(clampedSetPoint, rev::ControlType::kSmartMotion,
-                                                                       FLIPPER_SMART_MOTION_PID_SLOT, feedForward);
+                                                                       FLIPPER_SMART_MOTION_PID_SLOT, feedForward * DEFAULT_VOLTAGE_COMPENSATION);
                 if (error == rev::CANError::kOK) {
                     Log(lib::Logger::LogLevel::k_Debug, lib::Logger::Format("Wanted set point: %f", clampedSetPoint));
                 } else {
@@ -263,7 +271,7 @@ namespace garage {
                 }
             }
         } else {
-            flipper->LogSample(lib::Logger::LogLevel::k_Debug, "Not doing anything");
+            flipper->LogSample(lib::Logger::LogLevel::k_Debug, lib::Logger::Format("Not doing anything, wanted set point: %f", m_SetPoint));
             flipper->m_FlipperMaster.Set(0.0);
         }
     }

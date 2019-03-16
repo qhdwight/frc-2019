@@ -6,7 +6,7 @@ namespace garage {
     SetFlipperAngleRoutine::SetFlipperAngleRoutine(std::shared_ptr<Robot> robot, double angle, const std::string& name)
             : SubsystemRoutine(robot, robot->GetFlipper(), name), m_Angle(angle) {
         if (m_Subsystem) {
-            m_Subsystem->Log(lib::Logger::LogLevel::k_Verbose, lib::Logger::Format("[%s] Set Flipper Angle: %f", FMT_STR(name), angle));
+            m_Subsystem->Log(lib::Logger::LogLevel::k_Info, lib::Logger::Format("[%s] Set Flipper Angle: %f", FMT_STR(name), angle));
         }
     }
 

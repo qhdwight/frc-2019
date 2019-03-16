@@ -69,7 +69,7 @@ namespace garage {
         m_ElevatorMaster.EnableVoltageCompensation(true);
         m_ElevatorMaster.EnableCurrentLimit(false);
         m_ElevatorMaster.OverrideSoftLimitsEnable(false);
-        m_ElevatorMaster.OverrideLimitSwitchesEnable(false);
+        m_ElevatorMaster.OverrideLimitSwitchesEnable(true);
 
         m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, 0.0);
     }
@@ -172,11 +172,11 @@ namespace garage {
     }
 
     void Elevator::UpdateUnlocked(Command& command) {
-        if (command.offTheBooksModeEnabled) {
-            SetUnlockedController(m_RawController);
-        } else {
-            SetUnlockedController(m_VelocityController);
-        }
+//        if (command.offTheBooksModeEnabled) {
+//            SetUnlockedController(m_RawController);
+//        } else {
+//            SetUnlockedController(m_RawController);
+//        }
         ControllableSubsystem::UpdateUnlocked(command);
     }
 
@@ -197,25 +197,27 @@ namespace garage {
     }
 
     void Elevator::SoftLand() {
+        Log(lib::Logger::LogLevel::k_Info, "Safe Land");
         SetController(m_SoftLandController);
     }
 
     void RawElevatorController::ProcessCommand(Command& command) {
         m_Input = math::threshold(command.elevatorInput, DEFAULT_INPUT_THRESHOLD);
-        m_Output = math::clamp(m_Input, -0.75, 0.45);
+        m_Output = math::clamp(m_Input, 0.0, 0.65);
     }
 
     void RawElevatorController::Control() {
         auto elevator = m_Subsystem.lock();
         Log(lib::Logger::LogLevel::k_Debug, lib::Logger::Format("Input Value: %f, Output Value: %f", m_Input, m_Output));
         if (elevator->m_Robot->ShouldOutput()) {
-            if ((elevator->m_EncoderPosition > ELEVATOR_MIN_RAW_HEIGHT || m_Output > 0.01) &&
-                elevator->m_EncoderPosition < ELEVATOR_MAX) {
-                elevator->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, m_Output);
-            } else {
-                elevator->Log(lib::Logger::LogLevel::k_Warning, "Not in range for raw control");
-                elevator->SoftLand();
-            }
+            elevator->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, m_Output);
+//            if ((elevator->m_EncoderPosition > ELEVATOR_MIN_RAW_HEIGHT || m_Output > 0.01) &&
+//                elevator->m_EncoderPosition < ELEVATOR_MAX) {
+//                elevator->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, m_Output);
+//            } else {
+//                elevator->Log(lib::Logger::LogLevel::k_Warning, "Not in range for raw control");
+//                elevator->SoftLand();
+//            }
         }
     }
 
@@ -274,6 +276,7 @@ namespace garage {
                 }
             } else {
                 elevator->Log(lib::Logger::LogLevel::k_Warning, "Trying to go too high");
+                elevator->SoftLand();
             }
         } else {
             elevator->Log(lib::Logger::LogLevel::k_Warning, "Not in closed loop range for velocity");

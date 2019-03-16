@@ -9,9 +9,13 @@ namespace garage {
     public:
         FlipOverRoutine(std::shared_ptr<Robot> robot);
 
-    private:
+    protected:
+        double m_TargetAngle = 0.0;
+
         void Start() override;
 
         void Terminate() override;
+
+        bool CheckFinished() override;
     };
 }

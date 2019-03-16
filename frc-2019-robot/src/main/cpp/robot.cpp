@@ -13,7 +13,7 @@
 
 namespace garage {
     void Robot::RobotInit() {
-        lib::Logger::Log(lib::Logger::LogLevel::k_Verbose, "Start robot initialization");
+        lib::Logger::Log(lib::Logger::LogLevel::k_Info, "Start robot initialization");
         auto begin = std::chrono::high_resolution_clock::now();
         m_Period = std::chrono::milliseconds(std::lround(m_period * 1000.0));
         // Setup network tables
@@ -21,7 +21,7 @@ namespace garage {
         m_NetworkTable = m_NetworkTableInstance.GetTable("Garage Robotics");
         m_DashboardNetworkTable = m_NetworkTable->GetSubTable("Dashboard");
         // Setup logging system
-        const auto defaultLogLevel = lib::Logger::LogLevel::k_Debug;
+        const auto defaultLogLevel = lib::Logger::LogLevel::k_Verbose;
         lib::Logger::SetLogLevel(defaultLogLevel);
         m_NetworkTable->PutNumber("Log Level", static_cast<double>(defaultLogLevel));
         m_NetworkTable->GetEntry("Log Level").AddListener([&](const nt::EntryNotification& notification) {
@@ -85,8 +85,9 @@ namespace garage {
         auto
                 testWaitRoutineOne = std::make_shared<lib::WaitRoutine>(m_Pointer, 500l),
                 testWaitRoutineTwo = std::make_shared<lib::WaitRoutine>(m_Pointer, 1000l);
-        m_TestRoutine = std::make_shared<lib::ParallelRoutine>
-                (m_Pointer, "Test Routine", lib::RoutineVector{testWaitRoutineOne, testWaitRoutineTwo});
+//        m_TestRoutine = std::make_shared<lib::ParallelRoutine>
+//                (m_Pointer, "Test Routine", lib::RoutineVector{testWaitRoutineOne, testWaitRoutineTwo});
+        m_TestRoutine = std::make_shared<SetElevatorPositionRoutine>(m_Pointer, 15000, "Meme");
     }
 
     void Robot::ReadConfig() {
@@ -246,13 +247,14 @@ namespace garage {
                 elevatorSoftLand = pov == 0;
         if (!m_Command.offTheBooksModeEnabled) {
             if (m_PrimaryController.GetAButtonPressed()) {
-                if (elevatorBall) {
-                    m_Command.routines.push_back(m_RocketBottomBallRoutine);
-                } else if (elevatorHatch) {
-                    m_Command.routines.push_back(m_BottomHatchRoutine);
-                } else {
-                    m_Command.routines.push_back(m_GroundBallIntakeRoutine);
-                }
+//                if (elevatorBall) {
+//                    m_Command.routines.push_back(m_RocketBottomBallRoutine);
+//                } else if (elevatorHatch) {
+//                    m_Command.routines.push_back(m_BottomHatchRoutine);
+//                } else {
+//                    m_Command.routines.push_back(m_GroundBallIntakeRoutine);
+//                }
+                m_Command.routines.push_back(m_TestRoutine);
             }
             if (m_PrimaryController.GetBButtonPressed()) {
                 if (elevatorBall) {
@@ -299,8 +301,6 @@ namespace garage {
             m_Command.driveTurn *= -1;
         }
         m_Command.elevatorInput = -m_PrimaryController.GetY(frc::GenericHID::kLeftHand);
-        m_Command.elevatorInput -= m_SecondaryController.GetY(frc::GenericHID::kLeftHand);
-        m_Command.elevatorInput = math::clamp(m_Command.elevatorInput, -1.0, 1.0);
         double triggers = m_PrimaryController.GetTriggerAxis(frc::GenericHID::JoystickHand::kRightHand) -
                           m_PrimaryController.GetTriggerAxis(frc::GenericHID::JoystickHand::kLeftHand);
         triggers = math::clamp(triggers, -1.0, 1.0);

@@ -14,15 +14,15 @@
 /* Gains and Motion Magic */
 #define ELEVATOR_VELOCITY 25000 // Encoder ticks per 100 ms
 #define ELEVATOR_ACCELERATION 20000 // Encoder ticks per 100 ms per 100 ms
-#define ELEVATOR_P 0.0
+#define ELEVATOR_P 0.01
 #define ELEVATOR_I 0.0
 #define ELEVATOR_MAX_ACCUM 0.0
 #define ELEVATOR_I_ZONE 0 // Encoder ticks
-#define ELEVATOR_D 0.0
+#define ELEVATOR_D 0.5
 #define ELEVATOR_S_CURVE_STRENGTH 3 // Value between 1-8 which determines how curved the trapezoidal motion profile is
 //#define ELEVATOR_D ELEVATOR_P * 3.3
-#define ELEVATOR_F 0.0 // Multiplied by velocity calculated by motion magic and added to output, does most of work
-#define ELEVATOR_FF 0.0 // Percent output - Output required to hold elevator at a position, always added to motor output in closed loop
+#define ELEVATOR_F 0.03 // Multiplied by velocity calculated by motion magic and added to output, does most of work
+#define ELEVATOR_FF 0.32 // Percent output - Output required to hold elevator at a position, always added to motor output in closed loop
 #define ELEVATOR_MAX_CLOSED_LOOP_HEIGHT (ELEVATOR_MAX - 10000)
 #define ELEVATOR_MIN_CLOSED_LOOP_HEIGHT 5000 // Encoder ticks
 #define ELEVATOR_MIN_RAW_HEIGHT 10000 // Encoder ticks
@@ -38,7 +38,7 @@
 #define ELEVATOR_OPEN_LOOP_RAMP 0.4 // Seconds
 #define ELEVATOR_CLOSED_LOOP_RAMP 0.1 // Seconds
 
-#define ELEVATOR_SAFE_DOWN 0.0 // Percent output
+#define ELEVATOR_SAFE_DOWN 0.16 // Percent output
 
 #define ELEVATOR_MOTION_MAGIC_PID_SLOT 0
 
@@ -119,7 +119,9 @@ namespace garage {
         ctre::phoenix::motorcontrol::StickyFaults m_StickyFaults;
         ctre::phoenix::motorcontrol::can::TalonSRX m_ElevatorMaster{ELEVATOR_MASTER};
         ctre::phoenix::motorcontrol::can::VictorSPX
-                m_ElevatorSlaveOne{ELEVATOR_SLAVE_ONE}, m_ElevatorSlaveTwo{ELEVATOR_SLAVE_TWO}, m_ElevatorSlaveThree{ELEVATOR_SLAVE_THREE};
+                m_ElevatorSlaveOne{ELEVATOR_SLAVE_ONE},
+                m_ElevatorSlaveTwo{ELEVATOR_SLAVE_TWO},
+                m_ElevatorSlaveThree{ELEVATOR_SLAVE_THREE};
         std::shared_ptr<RawElevatorController> m_RawController;
         std::shared_ptr<SetPointElevatorController> m_SetPointController;
         std::shared_ptr<VelocityElevatorController> m_VelocityController;

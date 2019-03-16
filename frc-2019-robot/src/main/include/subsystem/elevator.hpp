@@ -152,12 +152,14 @@ namespace garage {
 
         void ResetEncoder();
 
-        int GetPosition() {
+        double GetPosition() {
             return m_EncoderPosition;
         }
 
-        int GetVelocity() {
+        double GetVelocity() {
             return m_EncoderVelocity;
         }
+
+        void Reset() override;
     };
 }

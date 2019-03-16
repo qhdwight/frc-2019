@@ -25,6 +25,7 @@ namespace garage {
     }
 
     bool SetFlipperAngleRoutine::CheckFinished() {
+        lib::Logger::Log(lib::Logger::LogLevel::k_Info, std::to_string(m_Subsystem->WithinAngle(m_Angle)));
         return m_Subsystem ? m_Subsystem->WithinAngle(m_Angle) : true;
     }
 }

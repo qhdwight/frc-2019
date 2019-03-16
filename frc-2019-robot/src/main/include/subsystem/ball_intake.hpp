@@ -12,7 +12,7 @@
 #define RAMP_INTAKING 0.2
 #define RAMP_EXPELLING 0.05
 
-#define HAS_BALL_STALL_CURRENT 5.0
+#define HAS_BALL_STALL_CURRENT 3.0
 #define HAS_BALL_COUNTS_REQUIRED 5
 
 namespace garage {

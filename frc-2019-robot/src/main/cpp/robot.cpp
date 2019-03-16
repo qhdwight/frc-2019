@@ -214,10 +214,10 @@ namespace garage {
     void Robot::UpdateCommand() {
         /* Routines */
         m_Command.routines.clear();
-        if (m_PrimaryController.GetBackButtonPressed()) {
-            // TODO remove after testing
-            m_Command.routines.push_back(m_TestRoutine);
-        }
+//        if (m_PrimaryController.GetBackButtonPressed()) {
+//            // TODO remove after testing
+//            m_Command.routines.push_back(m_TestRoutine);
+//        }
         if (m_PrimaryController.GetStickButtonPressed(frc::GenericHID::kRightHand)) {
             m_Command.drivePrecisionEnabled = !m_Command.drivePrecisionEnabled;
             m_DashboardNetworkTable->PutString("Drive Mode", m_Command.drivePrecisionEnabled ? "Precise" : "Coarse");
@@ -256,6 +256,12 @@ namespace garage {
                 m_Command.routines.push_back(m_GroundBallIntakeRoutine);
             }
         }
+        if (m_SecondaryController.GetAButtonPressed()) {
+            m_Command.routines.push_back(m_GroundBallIntakeRoutine);
+        }
+        if (m_SecondaryController.GetXButtonPressed()) {
+            m_Command.routines.push_back(m_FlipOverRoutine);
+        }
         if (m_PrimaryController.GetBButtonPressed()) {
             if (elevatorBall) {
                 m_Command.routines.push_back(m_RocketMiddleBallRoutine);
@@ -265,7 +271,7 @@ namespace garage {
                 m_Command.routines.push_back(m_CargoBallRoutine);
             }
         }
-        if (m_PrimaryController.GetYButtonPressed()) {
+        if (m_PrimaryController.GetYButtonPressed() || m_SecondaryController.GetYButtonPressed()) {
             if (elevatorBall) {
                 m_Command.routines.push_back(m_RocketTopBallRoutine);
             } else if (elevatorHatch) {
@@ -288,9 +294,6 @@ namespace garage {
             m_RoutineManager->TerminateAllRoutines();
             m_Elevator->SoftLand();
         }
-        if (m_SecondaryController.GetAButtonPressed()) {
-            m_Elevator->ResetEncoder();
-        }
 //        }
         double angle = FLIPPER_UPPER_ANGLE;
         if (m_Flipper) {
@@ -303,12 +306,19 @@ namespace garage {
             m_Command.driveForward *= -1;
         }
         m_Command.elevatorInput = -m_PrimaryController.GetY(frc::GenericHID::kLeftHand);
-        double triggers = m_PrimaryController.GetTriggerAxis(frc::GenericHID::JoystickHand::kRightHand) -
-                          m_PrimaryController.GetTriggerAxis(frc::GenericHID::JoystickHand::kLeftHand);
+        double triggers = math::threshold(
+                m_PrimaryController.GetTriggerAxis(frc::GenericHID::JoystickHand::kRightHand) -
+                m_PrimaryController.GetTriggerAxis(frc::GenericHID::JoystickHand::kLeftHand), DEFAULT_INPUT_THRESHOLD);
+        triggers += math::threshold(
+                m_SecondaryController.GetTriggerAxis(frc::GenericHID::JoystickHand::kRightHand) -
+                m_SecondaryController.GetTriggerAxis(frc::GenericHID::JoystickHand::kLeftHand), DEFAULT_INPUT_THRESHOLD);
         triggers = math::clamp(triggers, -1.0, 1.0);
         auto bumpers = math::axis<double>(
                 m_PrimaryController.GetBumper(frc::GenericHID::JoystickHand::kRightHand),
                 m_PrimaryController.GetBumper(frc::GenericHID::JoystickHand::kLeftHand));
+        bumpers += math::axis<double>(
+                m_SecondaryController.GetBumper(frc::GenericHID::JoystickHand::kRightHand),
+                m_SecondaryController.GetBumper(frc::GenericHID::JoystickHand::kLeftHand));
         bumpers = math::clamp(bumpers, -1.0, 1.0);
         if (m_Command.offTheBooksModeEnabled) {
             m_Command.outrigger = triggers;

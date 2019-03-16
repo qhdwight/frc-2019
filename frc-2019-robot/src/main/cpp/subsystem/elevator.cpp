@@ -47,6 +47,10 @@ namespace garage {
         SetupNetworkTableEntries();
     }
 
+    void Elevator::Reset() {
+        m_IsFirstLimitSwitchHit = true;
+    }
+
     void Elevator::SetupNetworkTableEntries() {
         // Add listeners for each entry when a value is updated on the dashboard
         AddNetworkTableListener("Acceleration", ELEVATOR_ACCELERATION, [this](const double acceleration) {
@@ -92,8 +96,13 @@ namespace garage {
         // TODO add brownout detection and smart current monitoring
         if (m_ReverseLimitSwitch.Get()) {
             if (m_IsFirstLimitSwitchHit) {
-                m_IsFirstLimitSwitchHit = false;
-                m_Encoder.SetPosition(0.0);
+                auto error = m_Encoder.SetPosition(0.0);
+                if (error == rev::CANError::kOK) {
+                    Log(lib::Logger::LogLevel::k_Info, "Limit switch hit and encoder reset");
+                    m_IsFirstLimitSwitchHit = false;
+                } else {
+                    LogSample(lib::Logger::LogLevel::k_Warning, "Failed resetting encoder");
+                }
             }
         } else {
             m_IsFirstLimitSwitchHit = true;
@@ -240,7 +249,7 @@ namespace garage {
         if ((elevator->m_EncoderPosition > ELEVATOR_MIN_CLOSED_LOOP_HEIGHT || m_WantedVelocity > 0.01) &&
             elevator->m_EncoderPosition < ELEVATOR_MAX) {
             if (elevator->m_EncoderPosition < ELEVATOR_MAX_CLOSED_LOOP_HEIGHT || m_WantedVelocity < -0.01) {
-                Log(lib::Logger::LogLevel::k_Debug, lib::Logger::Format("Wanted Velocity: %f", m_WantedVelocity));
+                elevator->LogSample(lib::Logger::LogLevel::k_Debug, lib::Logger::Format("Wanted Velocity: %f", m_WantedVelocity));
                 if (elevator->m_Robot->ShouldOutput()) {
                     elevator->m_SparkController.SetReference(m_WantedVelocity, rev::ControlType::kSmartVelocity,
                                                              ELEVATOR_CLOSED_LOOP_SLOT, elevator->m_FeedForward);

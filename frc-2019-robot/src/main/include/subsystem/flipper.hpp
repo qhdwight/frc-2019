@@ -15,19 +15,19 @@
 #define FLIPPER_STOW_ANGLE 90.0 // Degrees
 #define FLIPPER_UPPER_ANGLE 180.0 // Degrees
 
-#define FLIPPER_SET_POINT_LOWER (FLIPPER_LOWER + 3.0) // Raw set point
-#define FLIPPER_SET_POINT_UPPER (FLIPPER_UPPER - 3.0) // Raw set point
+#define FLIPPER_SET_POINT_LOWER (FLIPPER_LOWER + 1.0) // Raw set point
+#define FLIPPER_SET_POINT_UPPER (FLIPPER_UPPER - 1.0) // Raw set point
 
-#define FLIPPER_P 0.00003
-#define FLIPPER_I 0.001
+#define FLIPPER_P 0.000032
+#define FLIPPER_I 0.0003
 #define FLIPPER_D 0.0
-#define FLIPPER_MAX_ACCUM 0.12
+#define FLIPPER_MAX_ACCUM 0.125
 #define FLIPPER_I_ZONE 7.0
-#define FLIPPER_FF 0.000175
+#define FLIPPER_FF 0.00014
 #define FLIPPER_VELOCITY 2400.0
 #define FLIPPER_ACCELERATION 3300.0
 #define FLIPPER_ALLOWABLE_ERROR 0.0
-#define FLIPPER_ANGLE_FF 0.035
+#define FLIPPER_ANGLE_FF 0.0335
 
 #define FLIPPER_WITHIN_RANGE 2.0 // Degrees
 
@@ -117,8 +117,8 @@ namespace garage {
                 m_ForwardLimitSwitch = m_FlipperMaster.GetForwardLimitSwitch(rev::CANDigitalInput::LimitSwitchPolarity::kNormallyOpen),
                 m_ReverseLimitSwitch = m_FlipperMaster.GetReverseLimitSwitch(rev::CANDigitalInput::LimitSwitchPolarity::kNormallyOpen);
         bool
-                m_IsForwardLimitSwitchDown = true, m_FirstForwardLimitSwitchHit = true,
-                m_IsReverseLimitSwitchDown = true, m_FirstReverseLimitSwitchHit = true;
+                m_IsForwardLimitSwitchDown = false, m_FirstForwardLimitSwitchHit = true,
+                m_IsReverseLimitSwitchDown = false, m_FirstReverseLimitSwitchHit = true;
         double m_EncoderPosition = 0.0, m_EncoderVelocity = 0.0, m_Angle = 0.0;
         double m_AngleFeedForward = FLIPPER_ANGLE_FF, m_MaxVelocity = FLIPPER_VELOCITY;
         std::shared_ptr<RawFlipperController> m_RawController;

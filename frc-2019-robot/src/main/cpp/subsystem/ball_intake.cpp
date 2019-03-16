@@ -16,6 +16,8 @@ namespace garage {
         m_RightIntake.EnableVoltageCompensation(true);
         m_RightIntake.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, 0);
         m_LeftIntake.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, 0);
+        SetOutput(0.0);
+        ConfigOpenLoopRamp(0.15);
     }
 
     void BallIntake::Reset() {
@@ -42,10 +44,11 @@ namespace garage {
     void BallIntake::SpacedUpdate(Command& command) {
         const double outputCurrent = m_RightIntake.GetOutputCurrent();
         m_NetworkTable->PutNumber("Current", outputCurrent);
-        if (outputCurrent > HAS_BALL_STALL_CURRENT)
+        if (outputCurrent > HAS_BALL_STALL_CURRENT) {
             m_HasBallCount++;
-        else if (m_HasBallCount > 0)
+        } else if (m_HasBallCount > 0) {
             m_HasBallCount = 0;
+        }
     }
 
     bool BallIntake::HasBall() {
@@ -53,7 +56,7 @@ namespace garage {
     }
 
     void BallIntake::SetOutput(double output) {
-        if (m_Robot->ShouldOutput() && m_LastOutput != output) {
+        if (m_Robot->ShouldOutput()) {
             m_RightIntake.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, output);
             m_LeftIntake.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, output);
             m_LastOutput = output;
@@ -75,12 +78,12 @@ namespace garage {
         switch (intakeMode) {
             case IntakeMode::k_Intaking: {
                 SetOutput(OUTPUT_PROPORTION_INTAKING * strength * -1);
-                ConfigOpenLoopRamp(RAMP_INTAKING);
+//                ConfigOpenLoopRamp(RAMP_INTAKING);
                 break;
             }
             case IntakeMode::k_Expelling: {
                 SetOutput(OUTPUT_PROPORTION_EXPELLING * strength);
-                ConfigOpenLoopRamp(RAMP_EXPELLING);
+//                ConfigOpenLoopRamp(RAMP_EXPELLING);
                 break;
             }
         }

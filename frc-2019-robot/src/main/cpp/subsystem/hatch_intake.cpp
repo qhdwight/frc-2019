@@ -17,8 +17,8 @@ namespace garage {
 
     void HatchIntake::UpdateUnlocked(Command& command) {
         if (command.hatchIntakeDown) {
-            m_ServoOutput = static_cast<uint16_t>(m_IntakeOpen ? HATCH_SERVO_LOWER : HATCH_SERVO_UPPER);
             m_IntakeOpen = !m_IntakeOpen;
+            m_ServoOutput = static_cast<uint16_t>(m_IntakeOpen ? HATCH_SERVO_LOWER : HATCH_SERVO_UPPER);
         }
         LogSample(lib::Logger::LogLevel::k_Debug, lib::Logger::Format("Servo Output: %d", m_ServoOutput));
     }

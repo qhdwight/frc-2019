@@ -241,7 +241,7 @@ namespace garage {
     void VelocityElevatorController::ProcessCommand(Command& command) {
         auto elevator = m_Subsystem.lock();
         m_Input = math::threshold(command.elevatorInput, DEFAULT_INPUT_THRESHOLD);
-        m_WantedVelocity = m_Input * elevator->m_MaxVelocity;
+        m_WantedVelocity = m_Input * elevator->m_MaxVelocity * 0.8;
     }
 
     void VelocityElevatorController::Control() {

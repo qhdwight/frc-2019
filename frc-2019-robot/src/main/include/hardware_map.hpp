@@ -7,8 +7,8 @@
 #define DRIVE_RIGHT_MASTER 3
 #define DRIVE_RIGHT_SLAVE 4
 // Elevator
-#define ELEVATOR_MASTER 5
-#define ELEVATOR_SLAVE 6
+#define ELEVATOR_MASTER 13
+#define ELEVATOR_SLAVE 11
 // Ball Intake
 #define BALL_INTAKE_MASTER 9
 #define BALL_INTAKE_SLAVE 10

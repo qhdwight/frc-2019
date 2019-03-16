@@ -9,12 +9,12 @@ namespace garage {
 
     class SetElevatorPositionRoutine : public lib::SubsystemRoutine<Elevator> {
     protected:
-        int m_SetPoint = 0;
+        double m_SetPoint = 0;
 
         bool CheckFinished() override;
 
     public:
-        SetElevatorPositionRoutine(std::shared_ptr<Robot> robot, int setPoint, const std::string& name = "Set Elevator Position");
+        SetElevatorPositionRoutine(std::shared_ptr<Robot> robot, double setPoint, const std::string& name = "Set Elevator Position");
 
         void Start() override;
 

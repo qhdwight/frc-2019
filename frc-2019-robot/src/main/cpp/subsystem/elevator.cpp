@@ -42,7 +42,7 @@ namespace garage {
         AddController(m_SetPointController = std::make_shared<SetPointElevatorController>(elevator));
         AddController(m_VelocityController = std::make_shared<VelocityElevatorController>(elevator));
         AddController(m_SoftLandController = std::make_shared<SoftLandElevatorController>(elevator));
-        SetUnlockedController(m_RawController);
+        SetUnlockedController(m_VelocityController);
         SetResetController(m_SoftLandController);
         SetupNetworkTableEntries();
     }
@@ -133,7 +133,7 @@ namespace garage {
         m_NetworkTable->PutNumber("Current", current);
         m_NetworkTable->PutNumber("Output", output);
         Log(lib::Logger::LogLevel::k_Debug, lib::Logger::Format(
-                "Output: %f, Current: %f, Encoder Position: %d, Encoder Velocity: %d",
+                "Output: %f, Current: %f, Encoder Position: %f, Encoder Velocity: %f",
                 output, current, m_EncoderPosition, m_EncoderVelocity));
     }
 
@@ -169,6 +169,10 @@ namespace garage {
     void Elevator::SoftLand() {
         Log(lib::Logger::LogLevel::k_Info, "Safe Land");
         SetController(m_SoftLandController);
+    }
+
+    void Elevator::ResetEncoder() {
+        m_Encoder.SetPosition(0.0);
     }
 
     void RawElevatorController::ProcessCommand(Command& command) {
@@ -207,7 +211,7 @@ namespace garage {
         auto elevator = m_Subsystem.lock();
         m_WantedSetPoint = math::clamp(m_WantedSetPoint, ELEVATOR_MIN, ELEVATOR_MAX_CLOSED_LOOP_HEIGHT);
         Log(lib::Logger::LogLevel::k_Debug,
-            lib::Logger::Format("Wanted Set Point: %d, Feed Forward: %f", m_WantedSetPoint, elevator->m_FeedForward));
+            lib::Logger::Format("Wanted Set Point: %f, Feed Forward: %f", m_WantedSetPoint, elevator->m_FeedForward));
         if ((elevator->m_EncoderPosition > ELEVATOR_MIN_CLOSED_LOOP_HEIGHT || m_WantedSetPoint > ELEVATOR_MIN) &&
             elevator->m_EncoderPosition < ELEVATOR_MAX) {
             elevator->LogSample(lib::Logger::LogLevel::k_Debug, "Theoretically Okay and Working");
@@ -233,7 +237,7 @@ namespace garage {
 
     void VelocityElevatorController::Control() {
         auto elevator = m_Subsystem.lock();
-        if ((elevator->m_EncoderPosition > (ELEVATOR_MIN_CLOSED_LOOP_HEIGHT * 2) || m_WantedVelocity > 0.01) &&
+        if ((elevator->m_EncoderPosition > ELEVATOR_MIN_CLOSED_LOOP_HEIGHT || m_WantedVelocity > 0.01) &&
             elevator->m_EncoderPosition < ELEVATOR_MAX) {
             if (elevator->m_EncoderPosition < ELEVATOR_MAX_CLOSED_LOOP_HEIGHT || m_WantedVelocity < -0.01) {
                 Log(lib::Logger::LogLevel::k_Debug, lib::Logger::Format("Wanted Velocity: %f", m_WantedVelocity));

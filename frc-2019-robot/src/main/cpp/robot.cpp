@@ -53,7 +53,7 @@ namespace garage {
         // Render drive trajectory in initialization because it takes a couple of seconds
 //        m_DriveForwardRoutine = std::make_shared<test::TestDriveAutoRoutine>(m_Pointer, "Test Drive");
 //        m_DriveForwardRoutine->CalculatePath();
-        m_ResetRoutine = std::make_shared<ResetRoutine>(m_Pointer);
+        m_ResetRoutine = std::make_shared<SetElevatorPositionRoutine>(m_Pointer, 0.0, "Reset");
         m_ResetWithServoRoutine = std::make_shared<ResetWithServoRoutine>(m_Pointer);
         /* Hatch routines */
         m_BottomHatchRoutine = std::make_shared<SetElevatorPositionRoutine>
@@ -87,7 +87,7 @@ namespace garage {
                 testWaitRoutineTwo = std::make_shared<lib::WaitRoutine>(m_Pointer, 1000l);
 //        m_TestRoutine = std::make_shared<lib::ParallelRoutine>
 //                (m_Pointer, "Test Routine", lib::RoutineVector{testWaitRoutineOne, testWaitRoutineTwo});
-        m_TestRoutine = std::make_shared<SetElevatorPositionRoutine>(m_Pointer, 15000, "Meme");
+        m_TestRoutine = std::make_shared<SetElevatorPositionRoutine>(m_Pointer, 40.0, "Meme");
     }
 
     void Robot::ReadConfig() {
@@ -119,15 +119,15 @@ namespace garage {
                         auto ballRoutines = routinesJson.at("ball");
                         {
                             auto intakeRoutines = ballRoutines.at("intake");
-                            m_Config.groundIntakeBallHeight = intakeRoutines.at("ground_set_point").get<int>();
-                            m_Config.loadingIntakeBallHeight = intakeRoutines.at("loading_set_point").get<int>();
+                            m_Config.groundIntakeBallHeight = intakeRoutines.at("ground_set_point").get<double>();
+                            m_Config.loadingIntakeBallHeight = intakeRoutines.at("loading_set_point").get<double>();
                         }
                         {
                             auto rocketRoutines = ballRoutines.at("rocket");
                             // Set Points
-                            m_Config.rocketBottomBallHeight = rocketRoutines.at("bottom_set_point").get<int>();
-                            m_Config.rocketMiddleBallHeight = rocketRoutines.at("middle_set_point").get<int>();
-                            m_Config.rocketTopBallHeight = rocketRoutines.at("top_set_point").get<int>();
+                            m_Config.rocketBottomBallHeight = rocketRoutines.at("bottom_set_point").get<double>();
+                            m_Config.rocketMiddleBallHeight = rocketRoutines.at("middle_set_point").get<double>();
+                            m_Config.rocketTopBallHeight = rocketRoutines.at("top_set_point").get<double>();
                             // Angles
                             m_Config.rocketBottomBallAngle = rocketRoutines.at("bottom_angle").get<double>();
                             m_Config.rocketMiddleBallAngle = rocketRoutines.at("middle_angle").get<double>();
@@ -135,17 +135,17 @@ namespace garage {
                         }
                         {
                             auto cargoRoutines = ballRoutines.at("cargo");
-                            m_Config.cargoBallHeightUp = cargoRoutines.at("up_set_point").get<int>();
-                            m_Config.cargoBallHeightDown = cargoRoutines.at("down_set_point").get<int>();
+                            m_Config.cargoBallHeightUp = cargoRoutines.at("up_set_point").get<double>();
+                            m_Config.cargoBallHeightDown = cargoRoutines.at("down_set_point").get<double>();
                         }
                     }
                     {
                         auto hatchRoutines = routinesJson.at("hatch");
-                        m_Config.bottomHatchHeight = hatchRoutines.at("bottom").get<int>();
+                        m_Config.bottomHatchHeight = hatchRoutines.at("bottom").get<double>();
                         {
                             auto rocketRoutines = hatchRoutines.at("rocket");
-                            m_Config.rocketMiddleHatchHeight = rocketRoutines.at("middle").get<int>();
-                            m_Config.rocketTopHatchHeight = rocketRoutines.at("top").get<int>();
+                            m_Config.rocketMiddleHatchHeight = rocketRoutines.at("middle").get<double>();
+                            m_Config.rocketTopHatchHeight = rocketRoutines.at("top").get<double>();
                         }
                     }
                 }
@@ -222,19 +222,20 @@ namespace garage {
             m_Command.drivePrecisionEnabled = !m_Command.drivePrecisionEnabled;
             m_DashboardNetworkTable->PutString("Drive Mode", m_Command.drivePrecisionEnabled ? "Precise" : "Coarse");
         }
-        if (m_PrimaryController.GetStartButtonPressed()) {
-            m_Command.offTheBooksModeEnabled = !m_Command.offTheBooksModeEnabled;
-            m_DashboardNetworkTable->PutString("Off the Books", m_Command.drivePrecisionEnabled ? "Yeet" : "Naw");
-            m_DashboardNetworkTable->PutNumber("Match Time Remaining", frc::DriverStation::GetInstance().GetMatchTime());
-            m_RoutineManager->TerminateAllRoutines();
-            if (m_Command.offTheBooksModeEnabled) {
-                m_Command.drivePrecisionEnabled = true;
-                m_Command.routines.push_back(m_EndGameRoutine);
-            } else {
-                m_Command.drivePrecisionEnabled = false;
-                m_Command.routines.push_back(m_ResetWithServoRoutine);
-            }
-        }
+        // TODO go off the books at some point in time
+//        if (m_PrimaryController.GetStartButtonPressed()) {
+//            m_Command.offTheBooksModeEnabled = !m_Command.offTheBooksModeEnabled;
+//            m_DashboardNetworkTable->PutString("Off the Books", m_Command.drivePrecisionEnabled ? "Yeet" : "Naw");
+//            m_DashboardNetworkTable->PutNumber("Match Time Remaining", frc::DriverStation::GetInstance().GetMatchTime());
+//            m_RoutineManager->TerminateAllRoutines();
+//            if (m_Command.offTheBooksModeEnabled) {
+//                m_Command.drivePrecisionEnabled = true;
+//                m_Command.routines.push_back(m_EndGameRoutine);
+//            } else {
+//                m_Command.drivePrecisionEnabled = false;
+//                m_Command.routines.push_back(m_ResetWithServoRoutine);
+//            }
+//        }
         const int pov = m_PrimaryController.GetPOV();
         const bool
         // Left button
@@ -245,50 +246,52 @@ namespace garage {
                 elevatorBall = pov == 270,
         // Top button
                 elevatorSoftLand = pov == 0;
-        if (!m_Command.offTheBooksModeEnabled) {
-            if (m_PrimaryController.GetAButtonPressed()) {
-//                if (elevatorBall) {
-//                    m_Command.routines.push_back(m_RocketBottomBallRoutine);
-//                } else if (elevatorHatch) {
-//                    m_Command.routines.push_back(m_BottomHatchRoutine);
-//                } else {
-//                    m_Command.routines.push_back(m_GroundBallIntakeRoutine);
-//                }
-                m_Command.routines.push_back(m_TestRoutine);
-            }
-            if (m_PrimaryController.GetBButtonPressed()) {
-                if (elevatorBall) {
-                    m_Command.routines.push_back(m_RocketMiddleBallRoutine);
-                } else if (elevatorHatch) {
-                    m_Command.routines.push_back(m_RocketMiddleHatchRoutine);
-                } else {
-                    m_Command.routines.push_back(m_CargoBallRoutine);
-                }
-            }
-            if (m_PrimaryController.GetYButtonPressed()) {
-                if (elevatorBall) {
-                    m_Command.routines.push_back(m_RocketTopBallRoutine);
-                } else if (elevatorHatch) {
-                    m_Command.routines.push_back(m_RocketTopHatchRoutine);
-                } else {
-                    m_Command.hatchIntakeDown = true;
-                }
+//        if (!m_Command.offTheBooksModeEnabled) {
+        if (m_PrimaryController.GetAButtonPressed()) {
+            if (elevatorBall) {
+                m_Command.routines.push_back(m_RocketBottomBallRoutine);
+            } else if (elevatorHatch) {
+                m_Command.routines.push_back(m_BottomHatchRoutine);
             } else {
-                m_Command.hatchIntakeDown = false;
-            }
-            if (m_PrimaryController.GetXButtonPressed()) {
-                m_RoutineManager->TerminateAllRoutines();
-                m_Command.routines.push_back(m_FlipOverRoutine);
-            }
-            const int secondaryPov = m_SecondaryController.GetPOV();
-            if (elevatorDown || secondaryPov == 180) {
-                m_RoutineManager->TerminateAllRoutines();
-                m_Command.routines.push_back(m_ResetRoutine);
-            } else if (elevatorSoftLand || secondaryPov == 0) {
-                m_RoutineManager->TerminateAllRoutines();
-                m_Elevator->SoftLand();
+                m_Command.routines.push_back(m_GroundBallIntakeRoutine);
             }
         }
+        if (m_PrimaryController.GetBButtonPressed()) {
+            if (elevatorBall) {
+                m_Command.routines.push_back(m_RocketMiddleBallRoutine);
+            } else if (elevatorHatch) {
+                m_Command.routines.push_back(m_RocketMiddleHatchRoutine);
+            } else {
+                m_Command.routines.push_back(m_CargoBallRoutine);
+            }
+        }
+        if (m_PrimaryController.GetYButtonPressed()) {
+            if (elevatorBall) {
+                m_Command.routines.push_back(m_RocketTopBallRoutine);
+            } else if (elevatorHatch) {
+                m_Command.routines.push_back(m_RocketTopHatchRoutine);
+            } else {
+                m_Command.hatchIntakeDown = true;
+            }
+        } else {
+            m_Command.hatchIntakeDown = false;
+        }
+        if (m_PrimaryController.GetXButtonPressed()) {
+            m_RoutineManager->TerminateAllRoutines();
+            m_Command.routines.push_back(m_FlipOverRoutine);
+        }
+        const int secondaryPov = m_SecondaryController.GetPOV();
+        if (elevatorDown || secondaryPov == 180) {
+            m_RoutineManager->TerminateAllRoutines();
+            m_Command.routines.push_back(m_ResetRoutine);
+        } else if (elevatorSoftLand || secondaryPov == 0) {
+            m_RoutineManager->TerminateAllRoutines();
+            m_Elevator->SoftLand();
+        }
+        if (m_SecondaryController.GetAButtonPressed()) {
+            m_Elevator->ResetEncoder();
+        }
+//        }
         double angle = FLIPPER_UPPER_ANGLE;
         if (m_Flipper) {
             angle = m_Flipper->GetAngle();
@@ -298,7 +301,6 @@ namespace garage {
         m_Command.driveTurn = m_PrimaryController.GetX(frc::GenericHID::JoystickHand::kRightHand);
         if (shouldInvertDrive) {
             m_Command.driveForward *= -1;
-            m_Command.driveTurn *= -1;
         }
         m_Command.elevatorInput = -m_PrimaryController.GetY(frc::GenericHID::kLeftHand);
         double triggers = m_PrimaryController.GetTriggerAxis(frc::GenericHID::JoystickHand::kRightHand) -

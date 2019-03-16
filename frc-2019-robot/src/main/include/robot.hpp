@@ -38,15 +38,15 @@
 namespace garage {
     struct RobotConfig {
         bool shouldOutput = true, enableElevator = true, enableDrive = true, enableFlipper = true, enableBallIntake = true, enableHatchIntake = true, enableOutrigger = true;
-        int bottomHatchHeight;
+        double bottomHatchHeight;
         // Rocket
-        int rocketBottomBallHeight, rocketMiddleBallHeight, rocketTopBallHeight, rocketMiddleHatchHeight, rocketTopHatchHeight;
+        double rocketBottomBallHeight, rocketMiddleBallHeight, rocketTopBallHeight, rocketMiddleHatchHeight, rocketTopHatchHeight;
         double rocketBottomBallAngle, rocketMiddleBallAngle, rocketTopBallAngle;
         // Cargo
-        int cargoBallHeightDown, cargoBallHeightUp;
+        double cargoBallHeightDown, cargoBallHeightUp;
         double cargoBallAngle;
         // Intake
-        int groundIntakeBallHeight, loadingIntakeBallHeight;
+        double groundIntakeBallHeight, loadingIntakeBallHeight;
     };
 
     class Robot : public frc::TimedRobot {

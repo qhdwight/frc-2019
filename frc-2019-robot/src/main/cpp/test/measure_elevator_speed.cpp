@@ -24,7 +24,7 @@ namespace garage {
         }
 
         bool MeasureElevatorSpeed::CheckFinished() {
-            return m_Subsystem->GetPosition() > 120000;
+            return m_Subsystem->GetPosition() > ELEVATOR_MAX / 12.0;
         }
     }
 }

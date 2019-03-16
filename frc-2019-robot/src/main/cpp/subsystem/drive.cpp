@@ -47,16 +47,16 @@ namespace garage {
     void Drive::UpdateUnlocked(Command& command) {
         if (command.drivePrecisionEnabled) {
             const double
-                    forwardInputFine = math::threshold(command.driveForward, DEFAULT_INPUT_THRESHOLD) - DEFAULT_INPUT_THRESHOLD,
-                    turnInputFine = math::threshold(command.driveTurn, DEFAULT_INPUT_THRESHOLD) - DEFAULT_INPUT_THRESHOLD;
+                    forwardInputFine = math::threshold(command.driveForward, DEFAULT_INPUT_THRESHOLD),
+                    turnInputFine = math::threshold(command.driveTurn, DEFAULT_INPUT_THRESHOLD);
             m_LeftOutput = (forwardInputFine + turnInputFine) * DRIVE_PRECISION_POWER;
             m_RightOutput = (forwardInputFine - turnInputFine) * DRIVE_PRECISION_POWER;
         } else {
             const double
                     forwardInput = InputFromCommand(command.driveForward),
                     turnInput = InputFromCommand(command.driveTurn);
-            m_LeftOutput = forwardInput + turnInput * (1 - std::fabs(forwardInput) * 0.5) * 0.25;
-            m_RightOutput = forwardInput - turnInput * (1 - std::fabs(forwardInput) * 0.5) * 0.25;
+            m_LeftOutput = forwardInput + turnInput * 0.2;
+            m_RightOutput = forwardInput - turnInput * 0.2;
         }
     }
 

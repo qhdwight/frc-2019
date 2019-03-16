@@ -9,6 +9,12 @@ namespace garage {
 
     }
 
+    void HatchIntake::Reset() {
+        Subsystem::Reset();
+        m_IntakeOpen = false;
+        m_ServoOutput = HATCH_SERVO_UPPER;
+    }
+
     void HatchIntake::UpdateUnlocked(Command& command) {
         if (command.hatchIntakeDown) {
             m_ServoOutput = static_cast<uint16_t>(m_IntakeOpen ? HATCH_SERVO_LOWER : HATCH_SERVO_UPPER);

@@ -74,7 +74,7 @@ namespace garage {
     void BallIntake::SetIntakeMode(IntakeMode intakeMode, double strength) {
         switch (intakeMode) {
             case IntakeMode::k_Intaking: {
-                SetOutput(OUTPUT_PROPORTION_INTAKING * strength);
+                SetOutput(OUTPUT_PROPORTION_INTAKING * strength * -1);
                 ConfigOpenLoopRamp(RAMP_INTAKING);
                 break;
             }

@@ -25,5 +25,7 @@ namespace garage {
 
     public:
         HatchIntake(std::shared_ptr<Robot>& robot);
+
+        void Reset() override;
     };
 }

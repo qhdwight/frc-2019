@@ -7,22 +7,22 @@
 
 #include <rev/CANSparkMax.h>
 
-#define ELEVATOR_MAX 0.0 // Encoder ticks
+#define ELEVATOR_MAX 110.0 // Encoder ticks
 #define ELEVATOR_MIN 0.0 // Encoder ticks
 
 /* Gains and Motion Magic */
-#define ELEVATOR_VELOCITY 0.0 // Encoder ticks per 100 ms
-#define ELEVATOR_ACCELERATION 0.0 // Encoder ticks per 100 ms per 100 ms
-#define ELEVATOR_P 0.0
+#define ELEVATOR_VELOCITY 2500.0
+#define ELEVATOR_ACCELERATION 2200.0
+#define ELEVATOR_P 0.00002
 #define ELEVATOR_I 0.0
 #define ELEVATOR_MAX_ACCUM 0.0
 #define ELEVATOR_I_ZONE 0 // Encoder ticks
 #define ELEVATOR_D 0.0
 //#define ELEVATOR_D ELEVATOR_P * 3.3
-#define ELEVATOR_F 0.0 // Multiplied by velocity calculated by motion magic and added to output, does most of work
-#define ELEVATOR_FF 0.0 // Percent output - Output required to hold elevator at a position, always added to motor output in closed loop
+#define ELEVATOR_F 0.0002
+#define ELEVATOR_FF 0.3
 #define ELEVATOR_MAX_CLOSED_LOOP_HEIGHT (ELEVATOR_MAX - 0)
-#define ELEVATOR_MIN_CLOSED_LOOP_HEIGHT 0 // Encoder ticks
+#define ELEVATOR_MIN_CLOSED_LOOP_HEIGHT 2.0 // Encoder ticks
 #define ELEVATOR_MIN_RAW_HEIGHT 0 // Encoder ticks
 
 /* Energy Management */
@@ -31,7 +31,7 @@
 #define ELEVATOR_PEAK_CURRENT_DURATION 200 // Milliseconds
 
 #define ELEVATOR_ALLOWABLE_CLOSED_LOOP_ERROR 0 // Encoder ticks - Zero is always try to get to value and do not stop
-#define ELEVATOR_WITHIN_SET_POINT_AMOUNT 0.0 // Encoder ticks
+#define ELEVATOR_WITHIN_SET_POINT_AMOUNT 2.0
 
 #define ELEVATOR_OPEN_LOOP_RAMP 0.2 // Seconds
 #define ELEVATOR_CLOSED_LOOP_RAMP 0.1 // Seconds
@@ -117,8 +117,8 @@ namespace garage {
                 m_SparkMaster{ELEVATOR_MASTER, rev::CANSparkMax::MotorType::kBrushless},
                 m_SparkSlave{ELEVATOR_SLAVE, rev::CANSparkMax::MotorType::kBrushless};
         rev::CANPIDController m_SparkController = m_SparkMaster.GetPIDController();
-        rev::CANEncoder m_Encoder = m_SparkMaster.GetEncoder();
-        rev::CANDigitalInput m_ReverseLimitSwitch = m_SparkMaster.GetForwardLimitSwitch(rev::CANDigitalInput::LimitSwitchPolarity::kNormallyOpen);
+        rev::CANEncoder m_Encoder = m_SparkSlave.GetEncoder();
+        rev::CANDigitalInput m_ReverseLimitSwitch = m_SparkSlave.GetReverseLimitSwitch(rev::CANDigitalInput::LimitSwitchPolarity::kNormallyOpen);
         bool m_IsFirstLimitSwitchHit = true;
         std::shared_ptr<RawElevatorController> m_RawController;
         std::shared_ptr<SetPointElevatorController> m_SetPointController;
@@ -149,6 +149,8 @@ namespace garage {
         void SetRawOutput(double output);
 
         void SoftLand();
+
+        void ResetEncoder();
 
         int GetPosition() {
             return m_EncoderPosition;

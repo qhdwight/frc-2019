@@ -231,7 +231,7 @@ namespace garage {
         }
         if (inMiddle || wantingToGoOtherWay) {
             const double
-                    angleFeedForward = std::cos(d2r(flipper->m_Angle)) * flipper->m_AngleFeedForward,
+                    angleFeedForward = std::cos(d2r(flipper->m_Angle + FLIPPER_COM_ANGLE_FF_OFFSET)) * flipper->m_AngleFeedForward,
                     feedForward = angleFeedForward;
             if (flipper->m_Robot->ShouldOutput()) {
                 auto error = flipper->m_FlipperController.SetReference(m_WantedVelocity, rev::ControlType::kSmartVelocity,
@@ -267,7 +267,7 @@ namespace garage {
         if (inMiddle || wantingToGoOtherWay) {
             const double
                     clampedSetPoint = math::clamp(m_SetPoint, FLIPPER_SET_POINT_LOWER, FLIPPER_SET_POINT_UPPER),
-                    angleFeedForward = std::cos(d2r(flipper->m_Angle)) * flipper->m_AngleFeedForward,
+                    angleFeedForward = std::cos(d2r(flipper->m_Angle + FLIPPER_COM_ANGLE_FF_OFFSET)) * flipper->m_AngleFeedForward,
                     feedForward = angleFeedForward;
             if (flipper->m_Robot->ShouldOutput()) {
                 auto error = flipper->m_FlipperController.SetReference(m_SetPoint, rev::ControlType::kSmartMotion,

@@ -54,9 +54,9 @@ namespace garage {
         } else {
             const double
                     forwardInput = InputFromCommand(command.driveForward),
-                    turnInput = InputFromCommand(command.driveTurn);
-            m_LeftOutput = forwardInput + turnInput * 0.2;
-            m_RightOutput = forwardInput - turnInput * 0.2;
+                    turnInput = math::threshold(command.driveTurn, DEFAULT_INPUT_THRESHOLD);
+            m_LeftOutput = forwardInput + turnInput * DRIVE_TURN_POWER;
+            m_RightOutput = forwardInput - turnInput * DRIVE_TURN_POWER;
         }
     }
 

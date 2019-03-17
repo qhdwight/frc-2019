@@ -87,7 +87,7 @@ namespace garage {
                 testWaitRoutineTwo = std::make_shared<lib::WaitRoutine>(m_Pointer, 1000l);
 //        m_TestRoutine = std::make_shared<lib::ParallelRoutine>
 //                (m_Pointer, "Test Routine", lib::RoutineVector{testWaitRoutineOne, testWaitRoutineTwo});
-        m_TestRoutine = std::make_shared<SetElevatorPositionRoutine>(m_Pointer, 40.0, "Meme");
+        m_TestRoutine = std::make_shared<SetFlipperAngleRoutine>(m_Pointer, 90.0, "Meme");
     }
 
     void Robot::ReadConfig() {
@@ -214,10 +214,10 @@ namespace garage {
     void Robot::UpdateCommand() {
         /* Routines */
         m_Command.routines.clear();
-//        if (m_PrimaryController.GetBackButtonPressed()) {
-//            // TODO remove after testing
-//            m_Command.routines.push_back(m_TestRoutine);
-//        }
+        if (m_PrimaryController.GetBackButtonPressed()) {
+            // TODO remove after testing
+            m_Command.routines.push_back(m_TestRoutine);
+        }
         if (m_PrimaryController.GetStickButtonPressed(frc::GenericHID::kRightHand)) {
             m_Command.drivePrecisionEnabled = !m_Command.drivePrecisionEnabled;
             m_DashboardNetworkTable->PutString("Drive Mode", m_Command.drivePrecisionEnabled ? "Precise" : "Coarse");

@@ -12,8 +12,9 @@
 
 #include <memory>
 
-#define DRIVE_RAMPING 0.3
-#define DRIVE_PRECISION_POWER 0.075
+#define DRIVE_RAMPING 1.5
+#define DRIVE_TURN_POWER 0.17
+#define DRIVE_PRECISION_POWER 0.09
 
 namespace garage {
     class Drive : public lib::Subsystem {

@@ -15,7 +15,7 @@ namespace garage {
         m_RightMaster.SetInverted(true);
         m_LeftSlave.Follow(m_LeftMaster);
         m_RightSlave.Follow(m_RightMaster);
-        m_LeftSlave.SetOpenLoopRampRate(DRIVE_RAMPING);
+        m_LeftMaster.SetOpenLoopRampRate(DRIVE_RAMPING);
         m_RightSlave.SetOpenLoopRampRate(DRIVE_RAMPING);
         m_LeftMaster.EnableVoltageCompensation(DEFAULT_VOLTAGE_COMPENSATION);
         m_RightMaster.EnableVoltageCompensation(DEFAULT_VOLTAGE_COMPENSATION);

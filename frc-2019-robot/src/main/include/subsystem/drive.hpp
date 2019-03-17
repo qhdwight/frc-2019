@@ -12,7 +12,7 @@
 
 #include <memory>
 
-#define DRIVE_RAMPING 0.2
+#define DRIVE_RAMPING 0.3
 #define DRIVE_PRECISION_POWER 0.075
 
 namespace garage {

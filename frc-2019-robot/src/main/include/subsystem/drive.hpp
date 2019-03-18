@@ -12,14 +12,16 @@
 
 #include <memory>
 
-#define DRIVE_RAMPING 1.5
-#define DRIVE_TURN_POWER 0.17
+#define DRIVE_RAMPING 0.15
+#define DRIVE_FORWARD_INCREMENT 0.1
+#define DRIVE_TURN_POWER 0.15
+#define DRIVE_FORWARD_POWER 0.8
 #define DRIVE_PRECISION_POWER 0.09
 
 namespace garage {
     class Drive : public lib::Subsystem {
     private:
-        double m_LeftOutput = 0.0, m_RightOutput = 0.0;
+        double m_LeftOutput = 0.0, m_RightOutput = 0.0, m_ForwardInput = 0.0;
         double m_RightEncoderPosition = 0.0, m_LeftEncoderPosition = 0.0;
         rev::CANSparkMax
                 m_RightMaster{DRIVE_RIGHT_MASTER, rev::CANSparkMax::MotorType::kBrushless},

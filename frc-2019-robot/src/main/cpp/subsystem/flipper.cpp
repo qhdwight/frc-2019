@@ -217,7 +217,7 @@ namespace garage {
     void VelocityFlipperController::ProcessCommand(Command& command) {
         auto flipper = m_Subsystem.lock();
         m_Input = math::threshold(command.flipper, DEFAULT_INPUT_THRESHOLD);
-        m_WantedVelocity = m_Input * flipper->m_MaxVelocity;
+        m_WantedVelocity = m_Input * flipper->m_MaxVelocity * FLIPPER_MANUAL_POWER;
     }
 
     void VelocityFlipperController::Control() {

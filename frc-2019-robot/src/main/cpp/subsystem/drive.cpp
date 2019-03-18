@@ -24,6 +24,7 @@ namespace garage {
 
     void Drive::Reset() {
         Subsystem::Reset();
+        m_ForwardInput = 0.0;
         StopMotors();
     }
 
@@ -41,20 +42,35 @@ namespace garage {
 
     double Drive::InputFromCommand(double commandInput) {
         const double absoluteCommand = std::fabs(commandInput), sign = math::sign(commandInput);
-        return absoluteCommand > DEFAULT_INPUT_THRESHOLD ? sign * std::fabs(std::pow(commandInput, 2.0)) : 0.0;
+        return sign * std::fabs(std::pow(commandInput, 2.0));
     }
 
     void Drive::UpdateUnlocked(Command& command) {
+//        LogSample(lib::Logger::LogLevel::k_Info, lib::Logger::Format("%f, %f", command.driveForward, command.driveTurn));
         if (command.drivePrecisionEnabled) {
             const double
-                    forwardInputFine = math::threshold(command.driveForward, DEFAULT_INPUT_THRESHOLD),
-                    turnInputFine = math::threshold(command.driveTurn, DEFAULT_INPUT_THRESHOLD);
+                    forwardInputFine = command.driveForward,
+                    turnInputFine = command.driveTurn;
             m_LeftOutput = (forwardInputFine + turnInputFine) * DRIVE_PRECISION_POWER;
             m_RightOutput = (forwardInputFine - turnInputFine) * DRIVE_PRECISION_POWER;
         } else {
             const double
                     forwardInput = InputFromCommand(command.driveForward),
-                    turnInput = math::threshold(command.driveTurn, DEFAULT_INPUT_THRESHOLD);
+                    turnInput = command.driveTurn;
+//            if (forwardInput > DEFAULT_INPUT_THRESHOLD) {
+//                m_ForwardInput += DRIVE_FORWARD_INCREMENT * forwardInput;
+//            } else {
+//                if (std::fabs(m_ForwardInput) > DEFAULT_INPUT_THRESHOLD) {
+//                    if (m_ForwardInput > 0) {
+//                        m_ForwardInput -= DRIVE_FORWARD_INCREMENT;
+//                    } else {
+//                        m_ForwardInput += DRIVE_FORWARD_INCREMENT;
+//                    }
+//                } else {
+//                    m_ForwardInput = 0.0;
+//                }
+//            }
+//            m_ForwardInput = math::clamp(m_ForwardInput, -DRIVE_FORWARD_POWER, DRIVE_FORWARD_POWER);
             m_LeftOutput = forwardInput + turnInput * DRIVE_TURN_POWER;
             m_RightOutput = forwardInput - turnInput * DRIVE_TURN_POWER;
         }

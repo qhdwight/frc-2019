@@ -21,7 +21,7 @@ namespace garage {
         m_NetworkTable = m_NetworkTableInstance.GetTable("Garage Robotics");
         m_DashboardNetworkTable = m_NetworkTable->GetSubTable("Dashboard");
         // Setup logging system
-        const auto defaultLogLevel = lib::Logger::LogLevel::k_Verbose;
+        const auto defaultLogLevel = lib::Logger::LogLevel::k_Info;
         lib::Logger::SetLogLevel(defaultLogLevel);
         m_NetworkTable->PutNumber("Log Level", static_cast<double>(defaultLogLevel));
         m_NetworkTable->GetEntry("Log Level").AddListener([&](const nt::EntryNotification& notification) {
@@ -216,7 +216,12 @@ namespace garage {
         m_Command.routines.clear();
         if (m_PrimaryController.GetBackButtonPressed()) {
             // TODO remove after testing
+            m_RoutineManager->TerminateAllRoutines();
             m_Command.routines.push_back(m_TestRoutine);
+        }
+        if (m_SecondaryController.GetStartButtonPressed()) {
+            m_RoutineManager->TerminateAllRoutines();
+            m_Command.routines.push_back(m_BottomHatchRoutine);
         }
         if (m_PrimaryController.GetStickButtonPressed(frc::GenericHID::kRightHand)) {
             m_Command.drivePrecisionEnabled = !m_Command.drivePrecisionEnabled;
@@ -236,45 +241,47 @@ namespace garage {
 //                m_Command.routines.push_back(m_ResetWithServoRoutine);
 //            }
 //        }
-        const int pov = m_PrimaryController.GetPOV();
+        const int pov = m_PrimaryController.GetPOV(), secondaryPOV = m_SecondaryController.GetPOV();
         const bool
         // Left button
-                elevatorHatch = pov == 90,
+                elevatorHatch = pov == 90 || secondaryPOV == 90,
         // Button button
-                elevatorDown = pov == 180,
+                elevatorDown = pov == 180 || secondaryPOV == 180,
         // Right button
-                elevatorBall = pov == 270,
+                elevatorBall = pov == 270 || secondaryPOV == 270,
         // Top button
-                elevatorSoftLand = pov == 0;
+                elevatorSoftLand = pov == 0 || secondaryPOV == 0;
 //        if (!m_Command.offTheBooksModeEnabled) {
-        if (m_PrimaryController.GetAButtonPressed()) {
+        if (m_PrimaryController.GetAButtonPressed() || m_SecondaryController.GetAButtonPressed()) {
             if (elevatorBall) {
+                m_RoutineManager->TerminateAllRoutines();
                 m_Command.routines.push_back(m_RocketBottomBallRoutine);
             } else if (elevatorHatch) {
+                m_RoutineManager->TerminateAllRoutines();
                 m_Command.routines.push_back(m_BottomHatchRoutine);
             } else {
+                m_RoutineManager->TerminateAllRoutines();
                 m_Command.routines.push_back(m_GroundBallIntakeRoutine);
             }
         }
-        if (m_SecondaryController.GetAButtonPressed()) {
-            m_Command.routines.push_back(m_GroundBallIntakeRoutine);
-        }
-        if (m_SecondaryController.GetXButtonPressed()) {
-            m_Command.routines.push_back(m_FlipOverRoutine);
-        }
-        if (m_PrimaryController.GetBButtonPressed()) {
+        if (m_PrimaryController.GetBButtonPressed() || m_SecondaryController.GetBButtonPressed()) {
             if (elevatorBall) {
+                m_RoutineManager->TerminateAllRoutines();
                 m_Command.routines.push_back(m_RocketMiddleBallRoutine);
             } else if (elevatorHatch) {
+                m_RoutineManager->TerminateAllRoutines();
                 m_Command.routines.push_back(m_RocketMiddleHatchRoutine);
             } else {
+                m_RoutineManager->TerminateAllRoutines();
                 m_Command.routines.push_back(m_CargoBallRoutine);
             }
         }
         if (m_PrimaryController.GetYButtonPressed() || m_SecondaryController.GetYButtonPressed()) {
             if (elevatorBall) {
+                m_RoutineManager->TerminateAllRoutines();
                 m_Command.routines.push_back(m_RocketTopBallRoutine);
             } else if (elevatorHatch) {
+                m_RoutineManager->TerminateAllRoutines();
                 m_Command.routines.push_back(m_RocketTopHatchRoutine);
             } else {
                 m_Command.hatchIntakeDown = true;
@@ -282,15 +289,15 @@ namespace garage {
         } else {
             m_Command.hatchIntakeDown = false;
         }
-        if (m_PrimaryController.GetXButtonPressed()) {
+        if (m_PrimaryController.GetXButtonPressed() || m_SecondaryController.GetXButtonPressed()) {
             m_RoutineManager->TerminateAllRoutines();
             m_Command.routines.push_back(m_FlipOverRoutine);
         }
         const int secondaryPov = m_SecondaryController.GetPOV();
-        if (elevatorDown || secondaryPov == 180) {
+        if (elevatorDown) {
             m_RoutineManager->TerminateAllRoutines();
             m_Command.routines.push_back(m_ResetRoutine);
-        } else if (elevatorSoftLand || secondaryPov == 0) {
+        } else if (elevatorSoftLand) {
             m_RoutineManager->TerminateAllRoutines();
             m_Elevator->SoftLand();
         }
@@ -300,12 +307,17 @@ namespace garage {
             angle = m_Flipper->GetAngle();
         }
         const bool shouldInvertDrive = angle < FLIPPER_STOW_ANGLE;
-        m_Command.driveForward = -m_PrimaryController.GetY(frc::GenericHID::JoystickHand::kRightHand);
-        m_Command.driveTurn = m_PrimaryController.GetX(frc::GenericHID::JoystickHand::kRightHand);
+        m_Command.driveForward = math::threshold(-m_PrimaryController.GetY(frc::GenericHID::JoystickHand::kRightHand), DEFAULT_INPUT_THRESHOLD);
+        m_Command.driveTurn = math::threshold(m_PrimaryController.GetX(frc::GenericHID::JoystickHand::kRightHand), DEFAULT_INPUT_THRESHOLD);
+        m_Command.driveForward += math::threshold(-m_SecondaryController.GetY(frc::GenericHID::kRightHand), XBOX_360_STICK_INPUT_THRESHOLD);
+        m_Command.driveTurn += math::threshold(m_SecondaryController.GetX(frc::GenericHID::kRightHand), XBOX_360_STICK_INPUT_THRESHOLD) * 0.5;
+//        const auto bet = m_PrimaryController.GetX(frc::GenericHID::kRightHand), meme = m_SecondaryController.GetX(frc::GenericHID::kRightHand);
+//        lib::Logger::Log(lib::Logger::LogLevel::k_Info, lib::Logger::Format("%f, %f, %f, %f, %f", bet, math::threshold(bet, 0.225), meme, math::threshold(meme, 0.225), m_Command.driveTurn));
         if (shouldInvertDrive) {
             m_Command.driveForward *= -1;
         }
-        m_Command.elevatorInput = -m_PrimaryController.GetY(frc::GenericHID::kLeftHand);
+        m_Command.elevatorInput = math::threshold(-m_PrimaryController.GetY(frc::GenericHID::kLeftHand), DEFAULT_INPUT_THRESHOLD);
+        m_Command.elevatorInput += math::threshold(-m_SecondaryController.GetY(frc::GenericHID::kLeftHand), XBOX_360_STICK_INPUT_THRESHOLD);
         double triggers = math::threshold(
                 m_PrimaryController.GetTriggerAxis(frc::GenericHID::JoystickHand::kRightHand) -
                 m_PrimaryController.GetTriggerAxis(frc::GenericHID::JoystickHand::kLeftHand), DEFAULT_INPUT_THRESHOLD);

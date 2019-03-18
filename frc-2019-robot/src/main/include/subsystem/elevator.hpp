@@ -11,8 +11,8 @@
 #define ELEVATOR_MIN 0.0 // Encoder ticks
 
 /* Gains and Motion Magic */
-#define ELEVATOR_VELOCITY 4500.0
-#define ELEVATOR_ACCELERATION 4500.0
+#define ELEVATOR_VELOCITY 5000.0
+#define ELEVATOR_ACCELERATION 5000.0
 #define ELEVATOR_P 0.00002
 #define ELEVATOR_I 0.0
 #define ELEVATOR_MAX_ACCUM 0.0

@@ -54,7 +54,7 @@ namespace garage {
 
     class RawFlipperController : public FlipperController {
     private:
-        double m_Input = 0.0, m_Output = 0.0;
+        double m_Output = 0.0;
 
     public:
         RawFlipperController(std::weak_ptr<Flipper>& subsystem)
@@ -71,7 +71,7 @@ namespace garage {
 
     class VelocityFlipperController : public FlipperController {
     private:
-        double m_WantedVelocity = 0.0, m_Input = 0.0;
+        double m_WantedVelocity = 0.0;
 
     public:
         VelocityFlipperController(std::weak_ptr<Flipper>& subsystem)
@@ -139,6 +139,8 @@ namespace garage {
         void SpacedUpdate(Command& command) override;
 
         bool ShouldUnlock(Command& command) override;
+
+        bool ShouldOutputMotors(double wantedOutput, double forwardThreshold, double reverseThreshold);
 
         void HandleLimitSwitch(rev::CANDigitalInput& limitSwitch, bool& isLimitSwitchDown, bool& isFirstHit, double resetEncoderValue);
 

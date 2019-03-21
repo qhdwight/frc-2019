@@ -43,7 +43,6 @@ namespace garage {
         AddController(m_VelocityController = std::make_shared<VelocityElevatorController>(elevator));
         AddController(m_SoftLandController = std::make_shared<SoftLandElevatorController>(elevator));
         SetUnlockedController(m_VelocityController);
-        SetResetController(m_SoftLandController);
         SetupNetworkTableEntries();
     }
 
@@ -185,13 +184,12 @@ namespace garage {
     }
 
     void RawElevatorController::ProcessCommand(Command& command) {
-        m_Input = math::threshold(command.elevatorInput, DEFAULT_INPUT_THRESHOLD);
-        m_Output = math::clamp(m_Input, 0.0, 0.65);
+        m_Output = math::clamp(command.elevatorInput, 0.0, 0.65);
     }
 
     void RawElevatorController::Control() {
         auto elevator = m_Subsystem.lock();
-        Log(lib::Logger::LogLevel::k_Debug, lib::Logger::Format("Input Value: %f, Output Value: %f", m_Input, m_Output));
+        Log(lib::Logger::LogLevel::k_Debug, lib::Logger::Format("Output Value: %f", m_Output));
         if (elevator->m_Robot->ShouldOutput()) {
             elevator->m_SparkMaster.Set(m_Output);
 //            elevator->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, m_Output);
@@ -206,7 +204,6 @@ namespace garage {
     }
 
     void RawElevatorController::Reset() {
-        m_Input = 0.0;
         m_Output = 0.0;
     }
 
@@ -240,8 +237,7 @@ namespace garage {
 
     void VelocityElevatorController::ProcessCommand(Command& command) {
         auto elevator = m_Subsystem.lock();
-        m_Input = math::threshold(command.elevatorInput, DEFAULT_INPUT_THRESHOLD);
-        m_WantedVelocity = m_Input * elevator->m_MaxVelocity * 0.8;
+        m_WantedVelocity = command.elevatorInput * elevator->m_MaxVelocity * 0.8;
     }
 
     void VelocityElevatorController::Control() {
@@ -265,7 +261,6 @@ namespace garage {
     }
 
     void VelocityElevatorController::Reset() {
-        m_Input = 0.0;
         m_WantedVelocity = 0.0;
     }
 

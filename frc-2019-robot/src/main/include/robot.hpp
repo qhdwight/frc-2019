@@ -1,6 +1,7 @@
 #pragma once
 
 #include <command.hpp>
+#include <robot_config.hpp>
 #include <subsystem/drive.hpp>
 #include <subsystem/flipper.hpp>
 #include <subsystem/elevator.hpp>
@@ -36,19 +37,6 @@
 #define PATH_LENGTH 256
 
 namespace garage {
-    struct RobotConfig {
-        bool shouldOutput = true, enableElevator = true, enableDrive = true, enableFlipper = true, enableBallIntake = true, enableHatchIntake = true, enableOutrigger = true;
-        double bottomHatchHeight;
-        // Rocket
-        double rocketBottomBallHeight, rocketMiddleBallHeight, rocketTopBallHeight, rocketMiddleHatchHeight, rocketTopHatchHeight;
-        double rocketBottomBallAngle, rocketMiddleBallAngle, rocketTopBallAngle;
-        // Cargo
-        double cargoBallHeightDown, cargoBallHeightUp;
-        double cargoBallAngle;
-        // Intake
-        double groundIntakeBallHeight, loadingIntakeBallHeight;
-    };
-
     class Robot : public frc::TimedRobot {
     private:
         std::shared_ptr<Robot> m_Pointer;
@@ -70,7 +58,7 @@ namespace garage {
         std::shared_ptr<HatchIntake> m_HatchIntake;
         std::vector<std::shared_ptr<lib::Subsystem>> m_Subsystems;
         wpi::optional<std::chrono::system_clock::time_point> m_LastPeriodicTime;
-        RobotConfig m_Config = RobotConfig();
+        RobotConfig m_Config;
         std::chrono::milliseconds m_Period;
         // Routines
 //        std::shared_ptr<test::TestDriveAutoRoutine> m_DriveForwardRoutine;
@@ -92,8 +80,6 @@ namespace garage {
 
     public:
         void RobotInit() override;
-
-        void ReadConfig();
 
         void CreateRoutines();
 

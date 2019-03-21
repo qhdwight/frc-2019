@@ -47,7 +47,7 @@ namespace garage {
 
     class RawElevatorController : public lib::SubsystemController<Elevator> {
     protected:
-        double m_Input = 0.0, m_Output = 0.0;
+        double m_Output = 0.0;
 
     public:
         RawElevatorController(std::weak_ptr<Elevator>& subsystem) : lib::SubsystemController<Elevator>(subsystem, "Raw Controller") {}
@@ -83,7 +83,7 @@ namespace garage {
 
     class VelocityElevatorController : public lib::SubsystemController<Elevator> {
     protected:
-        double m_Input = 0.0, m_WantedVelocity = 0.0;
+        double m_WantedVelocity = 0.0;
 
     public:
         VelocityElevatorController(std::weak_ptr<Elevator>& subsystem) : lib::SubsystemController<Elevator>(subsystem, "Velocity Controller") {}

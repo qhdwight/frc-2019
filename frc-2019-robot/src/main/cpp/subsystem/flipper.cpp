@@ -140,6 +140,17 @@ namespace garage {
                 m_IsReverseLimitSwitchDown ? "true" : "false", m_IsForwardLimitSwitchDown ? "true" : "false"));
     }
 
+    bool Flipper::ShouldOutputMotors(double wantedOutput, double forwardThreshold, double reverseThreshold) {
+        double encoderPosition = m_EncoderPosition;
+        const bool inMiddle = encoderPosition > FLIPPER_SET_POINT_LOWER && encoderPosition < FLIPPER_SET_POINT_UPPER;
+        bool wantingToGoOtherWay = false;
+        if ((encoderPosition < FLIPPER_SET_POINT_LOWER && wantedOutput > forwardThreshold) ||
+            (encoderPosition > FLIPPER_SET_POINT_UPPER && wantedOutput < reverseThreshold)) {
+            wantingToGoOtherWay = true;
+        }
+        return inMiddle || wantingToGoOtherWay;
+    }
+
     void Flipper::SetRawOutput(double output) {
         SetController(m_RawController);
         m_RawController->SetOutput(output);
@@ -187,9 +198,12 @@ namespace garage {
 
        =========================================================================================================================================== */
 
+    void RawFlipperController::Reset() {
+        m_Output = 0.0;
+    }
+
     void RawFlipperController::ProcessCommand(Command& command) {
-        m_Input = math::threshold(command.flipper, DEFAULT_INPUT_THRESHOLD);
-        m_Output = m_Input * FLIPPER_RAW_POWER;
+        m_Output = command.flipper * FLIPPER_RAW_POWER;
     }
 
     void RawFlipperController::Control() {
@@ -204,32 +218,18 @@ namespace garage {
         m_Output = output;
     }
 
-    void RawFlipperController::Reset() {
-        m_Input = 0.0;
-        m_Output = 0.0;
-    }
-
     void VelocityFlipperController::Reset() {
         m_WantedVelocity = 0.0;
-        m_Input = 0.0;
     }
 
     void VelocityFlipperController::ProcessCommand(Command& command) {
         auto flipper = m_Subsystem.lock();
-        m_Input = math::threshold(command.flipper, DEFAULT_INPUT_THRESHOLD);
-        m_WantedVelocity = m_Input * flipper->m_MaxVelocity * FLIPPER_MANUAL_POWER;
+        m_WantedVelocity = command.flipper * flipper->m_MaxVelocity * FLIPPER_MANUAL_POWER;
     }
 
     void VelocityFlipperController::Control() {
         auto flipper = m_Subsystem.lock();
-        double encoderPosition = flipper->m_EncoderPosition;
-        const bool inMiddle = encoderPosition > FLIPPER_SET_POINT_LOWER && encoderPosition < FLIPPER_SET_POINT_UPPER;
-        bool wantingToGoOtherWay = false;
-        if ((encoderPosition < FLIPPER_SET_POINT_LOWER && m_WantedVelocity > 0.01) ||
-            (encoderPosition > FLIPPER_SET_POINT_UPPER && m_WantedVelocity < -0.01)) {
-            wantingToGoOtherWay = true;
-        }
-        if (inMiddle || wantingToGoOtherWay) {
+        if (flipper->ShouldOutputMotors(m_WantedVelocity, 0.0, 0.0)) {
             const double
                     angleFeedForward = std::cos(d2r(flipper->m_Angle + FLIPPER_COM_ANGLE_FF_OFFSET)) * flipper->m_AngleFeedForward,
                     feedForward = angleFeedForward;
@@ -251,20 +251,12 @@ namespace garage {
     }
 
     void SetPointFlipperController::ProcessCommand(garage::Command& command) {
-        m_SetPoint += math::threshold(command.flipper, DEFAULT_INPUT_THRESHOLD);
-        m_SetPoint = math::clamp(m_SetPoint, FLIPPER_LOWER, FLIPPER_UPPER);
+        m_SetPoint = math::clamp(m_SetPoint + command.flipper, FLIPPER_LOWER, FLIPPER_UPPER);
     }
 
     void SetPointFlipperController::Control() {
         auto flipper = m_Subsystem.lock();
-        double encoderPosition = flipper->m_EncoderPosition;
-        const bool inMiddle = encoderPosition > FLIPPER_SET_POINT_LOWER && encoderPosition < FLIPPER_SET_POINT_UPPER;
-        bool wantingToGoOtherWay = false;
-        if ((encoderPosition < FLIPPER_SET_POINT_LOWER && m_SetPoint > FLIPPER_SET_POINT_LOWER) ||
-            (encoderPosition > FLIPPER_SET_POINT_UPPER && m_SetPoint < FLIPPER_SET_POINT_UPPER)) {
-            wantingToGoOtherWay = true;
-        }
-        if (inMiddle || wantingToGoOtherWay) {
+        if (flipper->ShouldOutputMotors(m_SetPoint, FLIPPER_SET_POINT_LOWER, FLIPPER_SET_POINT_UPPER)) {
             const double
                     clampedSetPoint = math::clamp(m_SetPoint, FLIPPER_SET_POINT_LOWER, FLIPPER_SET_POINT_UPPER),
                     angleFeedForward = std::cos(d2r(flipper->m_Angle + FLIPPER_COM_ANGLE_FF_OFFSET)) * flipper->m_AngleFeedForward,

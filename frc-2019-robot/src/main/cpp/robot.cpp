@@ -32,8 +32,6 @@ namespace garage {
         m_Pointer = std::shared_ptr<Robot>(this, [](auto robot) {});
         // Setup routine manager
         m_RoutineManager = std::make_shared<lib::RoutineManager>(m_Pointer);
-        // Read the json configuration file on the rio
-        ReadConfig();
         // Manage subsystems
         if (m_Config.enableElevator) AddSubsystem(m_Elevator = std::make_shared<Elevator>(m_Pointer));
         if (m_Config.enableDrive) AddSubsystem(m_Drive = std::make_shared<Drive>(m_Pointer));
@@ -80,7 +78,6 @@ namespace garage {
         m_LoadingBallIntakeRoutine = std::make_shared<BallIntakeRoutine>(m_Pointer, m_Config.loadingIntakeBallHeight, FLIPPER_LOWER_ANGLE);
         /* End game routines */
         m_EndGameRoutine = std::make_shared<LockFlipperRoutine>(m_Pointer);
-
         // Testing routine
         auto
                 testWaitRoutineOne = std::make_shared<lib::WaitRoutine>(m_Pointer, 500l),
@@ -88,71 +85,6 @@ namespace garage {
 //        m_TestRoutine = std::make_shared<lib::ParallelRoutine>
 //                (m_Pointer, "Test Routine", lib::RoutineVector{testWaitRoutineOne, testWaitRoutineTwo});
         m_TestRoutine = std::make_shared<SetFlipperAngleRoutine>(m_Pointer, 90.0, "Meme");
-    }
-
-    void Robot::ReadConfig() {
-        wpi::SmallString<PATH_LENGTH> deployDirectory;
-        frc::filesystem::GetDeployDirectory(deployDirectory);
-        wpi::sys::path::append(deployDirectory, "settings.json");
-        std::error_code errorCode;
-        wpi::raw_fd_istream settingsFile(deployDirectory, errorCode);
-        if (errorCode) {
-            lib::Logger::Log(lib::Logger::LogLevel::k_Fatal,
-                             lib::Logger::Format("Error reading robot settings file: %s", FMT_STR(errorCode.message())));
-        } else {
-            try {
-                auto json = wpi::json::parse(settingsFile);
-                lib::Logger::Log(lib::Logger::LogLevel::k_Info, lib::Logger::Format("Read settings: %s", FMT_STR(json.dump())));
-                m_Config.shouldOutput = json.at("should_output_motors").get<bool>();
-                {
-                    auto subsystemsJson = json.at("subsystems");
-                    m_Config.enableElevator = subsystemsJson.at("enable_elevator").get<bool>();
-                    m_Config.enableDrive = subsystemsJson.at("enable_drive").get<bool>();
-                    m_Config.enableFlipper = subsystemsJson.at("enable_flipper").get<bool>();
-                    m_Config.enableBallIntake = subsystemsJson.at("enable_ball_intake").get<bool>();
-                    m_Config.enableHatchIntake = subsystemsJson.at("enable_hatch_intake").get<bool>();
-                    m_Config.enableOutrigger = subsystemsJson.at("enable_outrigger").get<bool>();
-                }
-                {
-                    auto routinesJson = json.at("routines");
-                    {
-                        auto ballRoutines = routinesJson.at("ball");
-                        {
-                            auto intakeRoutines = ballRoutines.at("intake");
-                            m_Config.groundIntakeBallHeight = intakeRoutines.at("ground_set_point").get<double>();
-                            m_Config.loadingIntakeBallHeight = intakeRoutines.at("loading_set_point").get<double>();
-                        }
-                        {
-                            auto rocketRoutines = ballRoutines.at("rocket");
-                            // Set Points
-                            m_Config.rocketBottomBallHeight = rocketRoutines.at("bottom_set_point").get<double>();
-                            m_Config.rocketMiddleBallHeight = rocketRoutines.at("middle_set_point").get<double>();
-                            m_Config.rocketTopBallHeight = rocketRoutines.at("top_set_point").get<double>();
-                            // Angles
-                            m_Config.rocketBottomBallAngle = rocketRoutines.at("bottom_angle").get<double>();
-                            m_Config.rocketMiddleBallAngle = rocketRoutines.at("middle_angle").get<double>();
-                            m_Config.rocketTopBallAngle = rocketRoutines.at("top_angle").get<double>();
-                        }
-                        {
-                            auto cargoRoutines = ballRoutines.at("cargo");
-                            m_Config.cargoBallHeightUp = cargoRoutines.at("up_set_point").get<double>();
-                            m_Config.cargoBallHeightDown = cargoRoutines.at("down_set_point").get<double>();
-                        }
-                    }
-                    {
-                        auto hatchRoutines = routinesJson.at("hatch");
-                        m_Config.bottomHatchHeight = hatchRoutines.at("bottom").get<double>();
-                        {
-                            auto rocketRoutines = hatchRoutines.at("rocket");
-                            m_Config.rocketMiddleHatchHeight = rocketRoutines.at("middle").get<double>();
-                            m_Config.rocketTopHatchHeight = rocketRoutines.at("top").get<double>();
-                        }
-                    }
-                }
-            } catch (wpi::detail::parse_error& error) {
-                lib::Logger::Log(lib::Logger::LogLevel::k_Fatal, lib::Logger::Format("Error parsing robot settings: %s", error.what()));
-            }
-        }
     }
 
     void Robot::AddSubsystem(std::shared_ptr<lib::Subsystem> subsystem) {
@@ -241,16 +173,16 @@ namespace garage {
 //                m_Command.routines.push_back(m_ResetWithServoRoutine);
 //            }
 //        }
-        const int pov = m_PrimaryController.GetPOV(), secondaryPOV = m_SecondaryController.GetPOV();
+        const int primaryPOV = m_PrimaryController.GetPOV(), secondaryPOV = m_SecondaryController.GetPOV();
         const bool
         // Left button
-                elevatorHatch = pov == 90 || secondaryPOV == 90,
+                elevatorHatch = primaryPOV == 90 || secondaryPOV == 90,
         // Button button
-                elevatorDown = pov == 180 || secondaryPOV == 180,
+                elevatorDown = primaryPOV == 180 || secondaryPOV == 180,
         // Right button
-                elevatorBall = pov == 270 || secondaryPOV == 270,
+                elevatorBall = primaryPOV == 270 || secondaryPOV == 270,
         // Top button
-                elevatorSoftLand = pov == 0 || secondaryPOV == 0;
+                elevatorSoftLand = primaryPOV == 0 || secondaryPOV == 0;
 //        if (!m_Command.offTheBooksModeEnabled) {
         if (m_PrimaryController.GetAButtonPressed() || m_SecondaryController.GetAButtonPressed()) {
             if (elevatorBall) {
@@ -293,7 +225,6 @@ namespace garage {
             m_RoutineManager->TerminateAllRoutines();
             m_Command.routines.push_back(m_FlipOverRoutine);
         }
-        const int secondaryPov = m_SecondaryController.GetPOV();
         if (elevatorDown) {
             m_RoutineManager->TerminateAllRoutines();
             m_Command.routines.push_back(m_ResetRoutine);

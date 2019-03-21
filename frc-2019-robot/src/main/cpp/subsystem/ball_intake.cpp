@@ -32,9 +32,9 @@ namespace garage {
     void BallIntake::UpdateUnlocked(Command& command) {
         double input = command.ballIntake, absoluteInput = std::fabs(input);
         if (absoluteInput > 0.5) input = math::sign(input) * 1.0;
-        if (input > DEFAULT_INPUT_THRESHOLD) {
+        if (input > 0.0) {
             SetIntakeMode(IntakeMode::k_Intaking, absoluteInput);
-        } else if (input < -DEFAULT_INPUT_THRESHOLD) {
+        } else if (input < 0.0) {
             SetIntakeMode(IntakeMode::k_Expelling, absoluteInput);
         } else {
             SetOutput(0.0);

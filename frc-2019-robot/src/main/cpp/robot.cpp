@@ -8,6 +8,8 @@
 #include <routine/elevator_and_flipper_routine.hpp>
 #include <routine/set_elevator_position_routine.hpp>
 
+#include <lib/auto_routine_from_csv.hpp>
+
 #include <test/test_drive_auto_routine.hpp>
 
 #include <frc/DriverStation.h>
@@ -84,7 +86,9 @@ namespace garage {
                 testWaitRoutineTwo = std::make_shared<lib::WaitRoutine>(m_Pointer, 1000l);
 //        m_TestRoutine = std::make_shared<lib::ParallelRoutine>
 //                (m_Pointer, "Test Routine", lib::RoutineVector{testWaitRoutineOne, testWaitRoutineTwo});
-        m_TestRoutine = std::make_shared<SetFlipperAngleRoutine>(m_Pointer, 90.0, "Meme");
+//        m_TestRoutine = std::make_shared<SetFlipperAngleRoutine>(m_Pointer, 90.0, "Meme");
+        m_TestRoutine = std::make_shared<lib::AutoRoutineFromCSV>(m_Pointer, "start_to_middle_left_hatch", "Start To Middle Hatch");
+        m_TestRoutine->PostInitialize();
     }
 
     void Robot::AddSubsystem(std::shared_ptr<lib::Subsystem> subsystem) {

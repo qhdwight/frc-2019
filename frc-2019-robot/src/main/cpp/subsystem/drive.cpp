@@ -114,7 +114,9 @@ namespace garage {
     }
 
     void Drive::SetDriveOutput(double left, double right) {
-        Lock();
+        if (!m_IsLocked) {
+            Lock();
+        }
         m_LeftOutput = left;
         m_RightOutput = right;
     }

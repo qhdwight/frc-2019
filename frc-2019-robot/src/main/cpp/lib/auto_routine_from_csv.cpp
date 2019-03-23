@@ -12,7 +12,7 @@ namespace garage {
         void AutoRoutineFromCSV::PrepareWaypoints() {
             wpi::SmallString<PATH_LENGTH> fullPath;
             frc::filesystem::GetDeployDirectory(fullPath);
-            wpi::sys::path::append(fullPath, m_Path, "output");
+            wpi::sys::path::append(fullPath, "output", m_Path);
             wpi::SmallString<PATH_LENGTH> leftPath(fullPath), rightPath(fullPath);
             leftPath.append(".left.pf1.csv");
             rightPath.append(".right.pf1.csv");
@@ -28,26 +28,37 @@ namespace garage {
 //                    lib::Logger::Log(lib::Logger::LogLevel::k_Fatal, lib::Logger::Format("Error parsing robot path: %s", error.what()));
 //                }
 //            }
-            auto* pathFile = std::fopen(fullPath.c_str(), "r");
+            ReadTrajectoryFromFile(leftPath.c_str(), m_LeftTrajectory);
+            ReadTrajectoryFromFile(rightPath.c_str(), m_RightTrajectory);
+        }
+
+        void AutoRoutineFromCSV::ReadTrajectoryFromFile(const std::string& path, std::vector<Segment>& trajectory) {
+            auto* pathFile = std::fopen(path.c_str(), "r");
             if (pathFile) {
-                int count = 0;
-                while (char c = static_cast<char>(std::getc(pathFile)) != EOF) {
-                    if (c == '\n') {
+                int count = 0, character = 0;
+                while ((character = std::getc(pathFile)) != EOF) {
+                    if (character == '\n') {
                         count++;
                     }
                 }
+                rewind(pathFile);
+                // CSV has a one line header
+                m_TrajectorySize = count - 1;
                 Logger::Log(Logger::LogLevel::k_Info,
-                            Logger::Format("Loaded path named: %s and path: %s with %d total trajectory points",
-                                           FMT_STR(m_Name), FMT_STR(m_Path), count));
-                m_LeftTrajectory.reserve(count);
-                m_RightTrajectory.reserve(count);
-                pathfinder_deserialize_csv(pathFile, m_LeftTrajectory.data());
-                pathfinder_deserialize_csv(pathFile, m_RightTrajectory.data());
+                            Logger::Format("Loaded path named: %s and path: %s with %d total segments",
+                                           FMT_STR(m_Name), FMT_STR(path), m_TrajectorySize));
+                trajectory.resize(m_TrajectorySize+1);
+                pathfinder_deserialize_csv(pathFile, trajectory.data());
                 std::fclose(pathFile);
             } else {
                 Logger::Log(Logger::LogLevel::k_Error,
-                            Logger::Format("Could not load path with name: %s and path: %s", FMT_STR(m_Name), FMT_STR(m_Path)));
+                            Logger::Format("Could not load path with name: %s and path: %s", FMT_STR(m_Name), FMT_STR(path)));
             }
+//            for (auto& segment : trajectory) {
+//                m_Subsystem->Log(Logger::LogLevel::k_Verbose, Logger::Format("%f, %f, %f, %f, %f, %f, %f, %f, %f",
+//                                                                          segment.dt, segment.x, segment.y, segment.position, segment.velocity,
+//                                                                          segment.acceleration, segment.jerk, segment.heading));
+//            }
         }
     }
 }

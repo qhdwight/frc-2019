@@ -6,7 +6,7 @@ namespace garage {
     SetElevatorPositionRoutine::SetElevatorPositionRoutine(std::shared_ptr<Robot> robot, double setPoint, const std::string& name)
             : SubsystemRoutine(robot, name), m_SetPoint(setPoint) {
         if (m_Subsystem) {
-            m_Subsystem->Log(lib::Logger::LogLevel::k_Verbose, lib::Logger::Format("[%s] Set Elevator Set Point: %f", FMT_STR(name), setPoint));
+            m_Subsystem->Log(lib::Logger::LogLevel::k_Debug, lib::Logger::Format("[%s] Set Elevator Set Point: %f", FMT_STR(name), setPoint));
         }
     }
 

@@ -34,7 +34,7 @@ namespace garage {
             EncoderConfig m_LeftEncoderConfig, m_RightEncoderConfig;
             EncoderFollower m_LeftFollower, m_RightFollower;
 
-            virtual void GetWaypoints();
+            virtual void GetWaypoints() {}
 
             virtual void PrepareWaypoints();
 
@@ -47,11 +47,11 @@ namespace garage {
         public:
             AutoRoutine(std::shared_ptr<Robot>& robot, const std::string& name);
 
-            void CalculatePath();
-
             void Start() override;
 
             void Terminate() override;
+
+            void PostInitialize() override;
         };
     }
 }

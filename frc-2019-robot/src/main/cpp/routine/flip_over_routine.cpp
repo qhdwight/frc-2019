@@ -8,9 +8,9 @@ namespace garage {
 
     void FlipOverRoutine::Start() {
         Routine::Start();
-        const double currentAngle = m_Subsystem->GetAngle();
-        m_TargetAngle = currentAngle < FLIPPER_STOW_ANGLE ? FLIPPER_UPPER_ANGLE : FLIPPER_LOWER_ANGLE;
         if (m_Subsystem) {
+            const double currentAngle = m_Subsystem->GetAngle();
+            m_TargetAngle = currentAngle < FLIPPER_STOW_ANGLE ? FLIPPER_UPPER_ANGLE : FLIPPER_LOWER_ANGLE;
             m_Subsystem->SetAngle(m_TargetAngle);
         }
     }

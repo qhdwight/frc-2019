@@ -20,6 +20,8 @@ namespace garage {
         public:
             Routine(std::shared_ptr<Robot>& robot, const std::string& name);
 
+            virtual void PostInitialize() {}
+
             virtual void Start();
 
             virtual void Terminate();

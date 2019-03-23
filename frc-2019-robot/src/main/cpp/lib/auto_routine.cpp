@@ -10,14 +10,10 @@ namespace garage {
                 : SubsystemRoutine(robot, name) {
         }
 
-        void AutoRoutine::CalculatePath() {
+        void AutoRoutine::PostInitialize() {
             GetWaypoints();
             PrepareWaypoints();
             PrepareEncoder();
-        }
-
-        void AutoRoutine::GetWaypoints() {
-            m_Waypoints = {};
         }
 
         void AutoRoutine::PrepareWaypoints() {
@@ -69,36 +65,42 @@ namespace garage {
 
         void AutoRoutine::Start() {
             Routine::Start();
-            m_Subsystem->ResetGyroAndEncoders();
+            if (m_Subsystem) {
+                m_Subsystem->ResetGyroAndEncoders();
+            }
             m_LeftFollower = m_RightFollower = {0.0, 0.0, 0.0, 0, 0};
         }
 
         void AutoRoutine::Update() {
-            const int
-                    leftEncoder = m_Subsystem->GetDiscreteLeftEncoderTicks(), rightEncoder = m_Subsystem->GetDiscreteRightEncoderTicks();
-            const double
-                    leftOutput = pathfinder_follow_encoder(m_LeftEncoderConfig, &m_LeftFollower, m_LeftTrajectory.data(), m_TrajectorySize,
-                                                           leftEncoder),
-                    rightOutput = pathfinder_follow_encoder(m_RightEncoderConfig, &m_RightFollower, m_RightTrajectory.data(), m_TrajectorySize,
-                                                            rightEncoder),
-                    heading = m_Robot->GetSubsystem<Drive>()->GetHeading(),
-                    desiredHeading = r2d(m_LeftFollower.heading);
-            const double headingDelta = math::fixAngle(desiredHeading - heading);
-            const double turn = 0.8 * (-1.0 / 80.0) * headingDelta;
-            m_Subsystem->LogSample(Logger::LogLevel::k_Debug,
-                                   Logger::Format(
-                                           "Left Output: %f, Right Output: %f, Left Encoder: %d, Right Encoder %d, Heading: %f, Heading Delta: %f",
-                                           leftOutput, rightOutput, leftEncoder, rightEncoder, heading, headingDelta));
-            m_Subsystem->SetDriveOutput(leftOutput, rightOutput);
+            if (m_Subsystem) {
+                const int
+                        leftEncoder = m_Subsystem->GetDiscreteLeftEncoderTicks(), rightEncoder = m_Subsystem->GetDiscreteRightEncoderTicks();
+                const double
+                        leftOutput = pathfinder_follow_encoder(m_LeftEncoderConfig, &m_LeftFollower, m_LeftTrajectory.data(), m_TrajectorySize,
+                                                               leftEncoder),
+                        rightOutput = pathfinder_follow_encoder(m_RightEncoderConfig, &m_RightFollower, m_RightTrajectory.data(), m_TrajectorySize,
+                                                                rightEncoder),
+                        heading = m_Subsystem->GetHeading(),
+                        desiredHeading = r2d(m_LeftFollower.heading);
+                const double headingDelta = math::fixAngle(desiredHeading - heading);
+                const double turn = 0.8 * (-1.0 / 80.0) * headingDelta;
+                m_Subsystem->LogSample(Logger::LogLevel::k_Debug,
+                                       Logger::Format(
+                                               "Left Output: %f, Right Output: %f, Left Encoder: %d, Right Encoder %d, Heading: %f, Heading Delta: %f",
+                                               leftOutput, rightOutput, leftEncoder, rightEncoder, heading, headingDelta));
+                m_Subsystem->SetDriveOutput(leftOutput, rightOutput);
+            }
         }
 
         bool AutoRoutine::CheckFinished() {
-            return m_LeftFollower.finished && m_RightFollower.finished;
+            return false;
         }
 
         void AutoRoutine::Terminate() {
             Routine::Terminate();
-            m_Subsystem->Unlock();
+            if (m_Subsystem) {
+                m_Subsystem->Unlock();
+            }
         }
     }
 }

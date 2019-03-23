@@ -10,6 +10,8 @@ namespace garage {
         protected:
             const std::string m_Path;
 
+            void ReadTrajectoryFromFile(const std::string& path, std::vector<Segment>& trajectory);
+
         public:
             AutoRoutineFromCSV(std::shared_ptr<Robot>& robot, const std::string& path, const std::string& name)
                     : lib::AutoRoutine(robot, name), m_Path(path) {}

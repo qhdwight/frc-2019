@@ -56,13 +56,14 @@ namespace garage {
                 m_TestRoutine,
         // ==== Reset
                 m_ResetRoutine, m_ResetWithServoRoutine,
+        // ==== Bottom hatch height
                 m_BottomHatchRoutine,
         // ==== Rocket hatch
                 m_RocketMiddleHatchRoutine, m_RocketTopHatchRoutine,
         // ==== Rocket ball
                 m_RocketBottomBallRoutine, m_RocketMiddleBallRoutine, m_RocketTopBallRoutine,
         // ==== Utility
-                m_FlipOverRoutine, m_GroundBallIntakeRoutine, m_LoadingBallIntakeRoutine,
+                m_FlipOverRoutine, m_StowFlipperRoutine, m_GroundBallIntakeRoutine, m_LoadingBallIntakeRoutine,
         // ==== Cargo
                 m_CargoBallRoutine,
         // ==== End game
@@ -122,4 +123,19 @@ namespace garage {
 
         void TestPeriodic() override;
     };
+
+    template<>
+    std::shared_ptr<Elevator> Robot::GetSubsystem();
+
+    template<>
+    std::shared_ptr<Drive> Robot::GetSubsystem();
+
+    template<>
+    std::shared_ptr<Flipper> Robot::GetSubsystem();
+
+    template<>
+    std::shared_ptr<BallIntake> Robot::GetSubsystem();
+
+    template<>
+    std::shared_ptr<Outrigger> Robot::GetSubsystem();
 }

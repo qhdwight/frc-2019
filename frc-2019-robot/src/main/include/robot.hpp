@@ -13,14 +13,6 @@
 #include <lib/routine.hpp>
 #include <lib/subsystem.hpp>
 #include <lib/routine_manager.hpp>
-#include <test/test_drive_auto_routine.hpp>
-#include <routine/reset_routine.hpp>
-#include <routine/flip_over_routine.hpp>
-#include <routine/ball_intake_routine.hpp>
-#include <routine/lock_flipper_routine.hpp>
-#include <routine/reset_with_servo_routine.hpp>
-#include <routine/elevator_and_flipper_routine.hpp>
-#include <routine/set_elevator_position_routine.hpp>
 
 #include <networktables/NetworkTable.h>
 #include <networktables/NetworkTableInstance.h>
@@ -113,28 +105,13 @@ namespace garage {
             return m_Command;
         }
 
+        template<typename TSubsystem>
+        std::shared_ptr<TSubsystem> GetSubsystem() {
+            return nullptr;
+        }
+
         std::shared_ptr<NetworkTable> GetNetworkTable() const {
             return m_NetworkTable;
-        }
-
-        std::shared_ptr<Elevator> GetElevator() {
-            return m_Elevator;
-        }
-
-        std::shared_ptr<Drive> GetDrive() {
-            return m_Drive;
-        }
-
-        std::shared_ptr<Outrigger> GetOutrigger() {
-            return m_Outrigger;
-        }
-
-        std::shared_ptr<BallIntake> GetBallIntake() {
-            return m_BallIntake;
-        }
-
-        std::shared_ptr<Flipper> GetFlipper() {
-            return m_Flipper;
         }
 
         std::shared_ptr<lib::RoutineManager> GetRoutineManager() {

@@ -3,8 +3,8 @@
 #include <robot.hpp>
 
 namespace garage {
-    VisionAutoAlign::VisionAutoAlign(std::shared_ptr<Robot> robot) : SubsystemRoutine(
-            robot, robot->GetDrive(), "Vision Auto Align"), m_LimelightTable(robot->GetNetworkTable()->GetSubTable(VISION_LIMELIGHT_TABLE_NAME)) {
+    VisionAutoAlign::VisionAutoAlign(std::shared_ptr<Robot> robot)
+            : SubsystemRoutine(robot, "Vision Auto Align"), m_LimelightTable(robot->GetNetworkTable()->GetSubTable(VISION_LIMELIGHT_TABLE_NAME)) {
 
     }
 
@@ -24,10 +24,10 @@ namespace garage {
 
     void VisionAutoAlign::Update() {
         const double
-            tx = m_LimelightTable->GetNumber("tx", 0.0),
-            ty = m_LimelightTable->GetNumber("ty", 0.0),
-            ta = m_LimelightTable->GetNumber("ta", 0.0),
-            tv = m_LimelightTable->GetNumber("tv", 0.0);
+                tx = m_LimelightTable->GetNumber("tx", 0.0),
+                ty = m_LimelightTable->GetNumber("ty", 0.0),
+                ta = m_LimelightTable->GetNumber("ta", 0.0),
+                tv = m_LimelightTable->GetNumber("tv", 0.0);
         double forwardOutput, turnOutput;
         if (tv < 1.0) {
             forwardOutput = 0.0;

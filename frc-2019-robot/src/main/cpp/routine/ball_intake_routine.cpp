@@ -4,7 +4,7 @@
 
 namespace garage {
     IntakeBallUntilIn::IntakeBallUntilIn(std::shared_ptr<Robot> robot)
-            : SubsystemRoutine(robot, robot->GetBallIntake(), "Intake Ball Until In") {
+            : SubsystemRoutine(robot, "Intake Ball Until In") {
 
     }
 

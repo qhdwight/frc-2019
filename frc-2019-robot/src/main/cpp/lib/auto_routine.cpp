@@ -7,7 +7,7 @@
 namespace garage {
     namespace lib {
         AutoRoutine::AutoRoutine(std::shared_ptr<Robot>& robot, const std::string& name)
-                : SubsystemRoutine(robot, robot->GetDrive(), name) {
+                : SubsystemRoutine(robot, name) {
         }
 
         void AutoRoutine::CalculatePath() {
@@ -81,7 +81,7 @@ namespace garage {
                                                            leftEncoder),
                     rightOutput = pathfinder_follow_encoder(m_RightEncoderConfig, &m_RightFollower, m_RightTrajectory.data(), m_TrajectorySize,
                                                             rightEncoder),
-                    heading = m_Robot->GetDrive()->GetHeading(),
+                    heading = m_Robot->GetSubsystem<Drive>()->GetHeading(),
                     desiredHeading = r2d(m_LeftFollower.heading);
             const double headingDelta = math::fixAngle(desiredHeading - heading);
             const double turn = 0.8 * (-1.0 / 80.0) * headingDelta;

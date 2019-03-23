@@ -3,7 +3,7 @@
 #include <robot.hpp>
 
 namespace garage {
-    FlipOverRoutine::FlipOverRoutine(std::shared_ptr<Robot> robot) : SubsystemRoutine(robot, robot->GetFlipper(), "Flip Over") {
+    FlipOverRoutine::FlipOverRoutine(std::shared_ptr<Robot> robot) : SubsystemRoutine(robot, "Flip Over") {
     }
 
     void FlipOverRoutine::Start() {

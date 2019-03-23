@@ -7,6 +7,11 @@
 #include <lib/logger.hpp>
 
 namespace garage {
+//    template<>
+//    class lib::SubsystemController<Flipper> {
+//
+//    };
+
     Flipper::Flipper(std::shared_ptr<Robot>& robot) : lib::ControllableSubsystem<Flipper>(robot, "Flipper") {
         m_FlipperMaster.RestoreFactoryDefaults();
         m_FlipperMaster.SetIdleMode(rev::CANSparkMax::IdleMode::kBrake);
@@ -144,7 +149,7 @@ namespace garage {
                 m_IsReverseLimitSwitchDown ? "true" : "false", m_IsForwardLimitSwitchDown ? "true" : "false"));
     }
 
-    bool Flipper::ShouldOutputMotors(double wantedOutput, double forwardThreshold, double reverseThreshold) {
+    bool Flipper::IsWithinMotorOutputConditions(double wantedOutput, double forwardThreshold, double reverseThreshold) {
         double encoderPosition = m_EncoderPosition;
         const bool inMiddle = encoderPosition > FLIPPER_SET_POINT_LOWER && encoderPosition < FLIPPER_SET_POINT_UPPER;
         bool wantingToGoOtherWay = false;
@@ -243,9 +248,9 @@ namespace garage {
 
     void VelocityFlipperController::Control() {
         auto flipper = m_Subsystem.lock();
-        if (flipper->ShouldOutputMotors(m_WantedVelocity, 0.0, 0.0)) {
+        if (flipper->IsWithinMotorOutputConditions(m_WantedVelocity, 0.0, 0.0)) {
             const double
-                    angleFeedForward = std::cos(d2r(flipper->m_Angle + FLIPPER_COM_ANGLE_FF_OFFSET)) * flipper->m_AngleFeedForward,
+                    angleFeedForward = std::cos(math::d2r(flipper->m_Angle + FLIPPER_COM_ANGLE_FF_OFFSET)) * flipper->m_AngleFeedForward,
                     feedForward = angleFeedForward;
             if (flipper->m_Robot->ShouldOutput()) {
                 auto error = flipper->m_FlipperController.SetReference(m_WantedVelocity, rev::ControlType::kSmartVelocity,
@@ -270,10 +275,10 @@ namespace garage {
 
     void SetPointFlipperController::Control() {
         auto flipper = m_Subsystem.lock();
-        if (flipper->ShouldOutputMotors(m_SetPoint, FLIPPER_SET_POINT_LOWER, FLIPPER_SET_POINT_UPPER)) {
+        if (flipper->IsWithinMotorOutputConditions(m_SetPoint, FLIPPER_SET_POINT_LOWER, FLIPPER_SET_POINT_UPPER)) {
             const double
                     clampedSetPoint = math::clamp(m_SetPoint, FLIPPER_SET_POINT_LOWER, FLIPPER_SET_POINT_UPPER),
-                    angleFeedForward = std::cos(d2r(flipper->m_Angle + FLIPPER_COM_ANGLE_FF_OFFSET)) * flipper->m_AngleFeedForward,
+                    angleFeedForward = std::cos(math::d2r(flipper->m_Angle + FLIPPER_COM_ANGLE_FF_OFFSET)) * flipper->m_AngleFeedForward,
                     feedForward = angleFeedForward;
             if (flipper->m_Robot->ShouldOutput()) {
                 auto error = flipper->m_FlipperController.SetReference(m_SetPoint, rev::ControlType::kSmartMotion,

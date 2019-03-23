@@ -1,5 +1,15 @@
 #include <robot.hpp>
 
+#include <routine/reset_routine.hpp>
+#include <routine/flip_over_routine.hpp>
+#include <routine/ball_intake_routine.hpp>
+#include <routine/lock_flipper_routine.hpp>
+#include <routine/reset_with_servo_routine.hpp>
+#include <routine/elevator_and_flipper_routine.hpp>
+#include <routine/set_elevator_position_routine.hpp>
+
+#include <test/test_drive_auto_routine.hpp>
+
 #include <frc/DriverStation.h>
 
 namespace garage {
@@ -272,6 +282,31 @@ namespace garage {
 
     void Robot::TestPeriodic() {
         ControllablePeriodic();
+    }
+
+    template<>
+    std::shared_ptr<Elevator> Robot::GetSubsystem() {
+        return m_Elevator;
+    }
+
+    template<>
+    std::shared_ptr<Drive> Robot::GetSubsystem() {
+        return m_Drive;
+    }
+
+    template<>
+    std::shared_ptr<Flipper> Robot::GetSubsystem() {
+        return m_Flipper;
+    }
+
+    template<>
+    std::shared_ptr<BallIntake> Robot::GetSubsystem() {
+        return m_BallIntake;
+    }
+
+    template<>
+    std::shared_ptr<Outrigger> Robot::GetSubsystem() {
+        return m_Outrigger;
     }
 }
 

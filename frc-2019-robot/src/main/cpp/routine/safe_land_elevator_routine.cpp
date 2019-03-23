@@ -4,7 +4,7 @@
 
 namespace garage {
     SoftLandElevatorRoutine::SoftLandElevatorRoutine(std::shared_ptr<Robot> robot)
-            : SubsystemRoutine(robot, robot->GetElevator(), "Lower Elevator") {
+            : SubsystemRoutine(robot, "Lower Elevator") {
 
     }
 

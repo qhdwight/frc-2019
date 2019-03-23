@@ -10,6 +10,7 @@ namespace garage {
         template<typename TSubsystem>
         class ControllableSubsystem : public std::enable_shared_from_this<TSubsystem>, public Subsystem {
             using Controller=SubsystemController<TSubsystem>;
+
         protected:
             std::vector<std::shared_ptr<Controller>> m_Controllers;
             std::shared_ptr<Controller> m_Controller, m_UnlockedController, m_ResetController;
@@ -29,8 +30,7 @@ namespace garage {
                 return different;
             }
 
-            virtual void AddController(std::shared_ptr<Controller> controller)
-            {
+            virtual void AddController(std::shared_ptr<Controller> controller) {
                 if (controller) {
                     m_Controllers.push_back(controller);
                 } else {

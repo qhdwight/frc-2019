@@ -21,7 +21,7 @@
 namespace garage {
     class Drive : public lib::Subsystem {
     private:
-        double m_LeftOutput = 0.0, m_RightOutput = 0.0, m_ForwardInput = 0.0;
+        double m_LeftOutput = 0.0, m_RightOutput = 0.0;
         double m_RightEncoderPosition = 0.0, m_LeftEncoderPosition = 0.0;
         rev::CANSparkMax
                 m_RightMaster{DRIVE_RIGHT_MASTER, rev::CANSparkMax::MotorType::kBrushless},

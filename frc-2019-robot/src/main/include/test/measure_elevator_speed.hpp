@@ -16,7 +16,7 @@ namespace garage {
 
         public:
             MeasureElevatorSpeed(std::shared_ptr<Robot>& robot, const std::string& name, double output)
-                    : SubsystemRoutine(robot, robot->GetElevator(), name), m_Output(output) {}
+                    : SubsystemRoutine(robot, name), m_Output(output) {}
 
             void Start() override;
 

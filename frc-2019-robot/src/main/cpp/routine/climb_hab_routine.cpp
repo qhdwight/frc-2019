@@ -16,15 +16,16 @@ namespace garage {
     }
 
     void OutriggerAutoLevelRoutine::Update() {
-        const double tilt = m_Robot->GetDrive()->GetTilt();
-        m_Robot->GetDrive()->LogSample(lib::Logger::LogLevel::k_Debug, lib::Logger::Format(" [%s] Tilt: %f", FMT_STR(m_Name), tilt));
+        auto drive = m_Robot->GetSubsystem<Drive>();
+        const double tilt = drive->GetTilt();
+        drive->LogSample(lib::Logger::LogLevel::k_Debug, lib::Logger::Format(" [%s] Tilt: %f", FMT_STR(m_Name), tilt));
 //        const double p = 1.0 / 90.0;
-//        m_Robot->GetOutrigger()->SetOutput(tilt * p);
+//        m_Robot->GetSubsystem<Outrigger>()->SetOutput(tilt * p);
     }
 
     void OutriggerAutoLevelRoutine::Terminate() {
         Routine::Terminate();
-        m_Robot->GetOutrigger()->Unlock();
+        m_Robot->GetSubsystem<Outrigger>()->Unlock();
     }
 
     ElevatorRaiseRoutine::ElevatorRaiseRoutine(std::shared_ptr<Robot>& robot) : lib::Routine(robot, "Elevator Climb Routine") {
@@ -34,7 +35,7 @@ namespace garage {
     void ElevatorRaiseRoutine::Start() {
         Routine::Start();
         // TODO tune
-        m_Robot->GetElevator()->SetWantedSetPoint(150000);
+        m_Robot->GetSubsystem<Elevator>()->SetWantedSetPoint(150000);
     }
 
     void ElevatorRaiseRoutine::Update() {
@@ -43,7 +44,7 @@ namespace garage {
 
     void ElevatorRaiseRoutine::Terminate() {
         Routine::Terminate();
-        m_Robot->GetElevator()->Unlock();
+        m_Robot->GetSubsystem<Elevator>()->Unlock();
     }
 
     ClimbHabRoutine::ClimbHabRoutine(std::shared_ptr<Robot>& robot) : lib::ParallelRoutine(robot, "Climb Hab", {

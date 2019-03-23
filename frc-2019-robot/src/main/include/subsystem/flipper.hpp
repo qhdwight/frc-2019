@@ -17,8 +17,9 @@
 
 #define FLIPPER_COM_ANGLE_FF_OFFSET 25.0
 
-#define FLIPPER_SET_POINT_LOWER (FLIPPER_LOWER + 1.0) // Raw set point
-#define FLIPPER_SET_POINT_UPPER (FLIPPER_UPPER - 1.0) // Raw set point
+#define FLIPPER_SET_POINT_THRESHOLD 1.0
+#define FLIPPER_SET_POINT_LOWER (FLIPPER_LOWER + FLIPPER_SET_POINT_THRESHOLD) // Raw set point
+#define FLIPPER_SET_POINT_UPPER (FLIPPER_UPPER - FLIPPER_SET_POINT_THRESHOLD) // Raw set point
 
 //#define FLIPPER_P 0.000015
 #define FLIPPER_P 0.0001
@@ -148,7 +149,7 @@ namespace garage {
 
         bool ShouldUnlock(Command& command) override;
 
-        bool ShouldOutputMotors(double wantedOutput, double forwardThreshold, double reverseThreshold);
+        bool IsWithinMotorOutputConditions(double wantedOutput, double forwardThreshold, double reverseThreshold);
 
         void HandleLimitSwitch(rev::CANDigitalInput& limitSwitch, bool& isLimitSwitchDown, bool& isFirstHit, double resetEncoderValue);
 

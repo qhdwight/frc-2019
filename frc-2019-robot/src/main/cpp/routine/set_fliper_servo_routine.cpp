@@ -15,7 +15,7 @@ namespace garage {
     }
 
     SetFlipperServoRoutine::SetFlipperServoRoutine(std::shared_ptr<Robot> robot, bool shouldLock, const std::string& name)
-        : SubsystemRoutine(robot, robot->GetFlipper(), name), m_ShouldLock(shouldLock) {
+        : SubsystemRoutine(robot, name), m_ShouldLock(shouldLock) {
 
     }
 }

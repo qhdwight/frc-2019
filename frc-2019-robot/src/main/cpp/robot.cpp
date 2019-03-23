@@ -235,7 +235,7 @@ namespace garage {
 //        }
         double angle = FLIPPER_UPPER_ANGLE;
         if (m_Flipper) {
-            angle = m_Flipper->GetAngle();
+            angle = m_Flipper->GetWantedAngle();
         }
         const bool shouldInvertDrive = angle < FLIPPER_STOW_ANGLE;
         m_Command.driveForward = math::threshold(-m_PrimaryController.GetY(frc::GenericHID::JoystickHand::kRightHand), DEFAULT_INPUT_THRESHOLD);

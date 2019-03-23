@@ -194,9 +194,19 @@ namespace garage {
         return m_Angle;
     }
 
+    double Flipper::GetWantedAngle() {
+        // TODO fix
+        auto controller = std::dynamic_pointer_cast<FlipperController>(m_Controller);
+        return controller ? controller->GetWantedAngle() : GetAngle();
+    }
+
     /* =============================================================== Controllers ===============================================================
 
        =========================================================================================================================================== */
+
+    double FlipperController::GetWantedAngle() {
+        return m_Subsystem.lock()->GetAngle();
+    }
 
     void RawFlipperController::Reset() {
         m_Output = 0.0;

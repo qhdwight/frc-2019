@@ -1,7 +1,10 @@
 #pragma once
 
+#include <lib/logger.hpp>
+
 namespace garage {
     struct RobotConfig {
+        lib::Logger::LogLevel logLevel = lib::Logger::LogLevel::k_Info;
         bool
                 shouldOutput = true,
         // Subsystems

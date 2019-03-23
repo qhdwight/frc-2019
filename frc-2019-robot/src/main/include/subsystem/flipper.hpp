@@ -138,6 +138,8 @@ namespace garage {
         frc::Servo m_CameraServo{CAMERA_SERVO}, m_LockServo{LOCK_SERVO};
         uint16_t m_CameraServoOutput = CAMERA_SERVO_LOWER, m_LockServoOutput = LOCK_SERVO_LOWER;
 
+        void SetupNetworkTableValues();
+
         void Update() override;
 
         void UpdateUnlocked(Command& command) override;

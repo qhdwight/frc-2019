@@ -36,6 +36,10 @@ namespace garage {
         AddController(m_SetPointController = std::make_shared<SetPointFlipperController>(flipper));
         AddController(m_VelocityController = std::make_shared<VelocityFlipperController>(flipper));
         SetUnlockedController(m_VelocityController);
+//        SetupNetworkTableValues();
+    }
+
+    void Flipper::SetupNetworkTableValues() {
         AddNetworkTableListener("Angle FF", FLIPPER_ANGLE_FF, [this](const double angleFF) {
             m_AngleFeedForward = angleFF;
             return true;

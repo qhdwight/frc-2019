@@ -34,8 +34,6 @@
 #include <chrono>
 #include <memory>
 
-#define PATH_LENGTH 256
-
 namespace garage {
     class Robot : public frc::TimedRobot {
     private:

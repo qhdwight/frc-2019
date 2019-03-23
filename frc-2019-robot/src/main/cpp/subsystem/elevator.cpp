@@ -43,7 +43,7 @@ namespace garage {
         AddController(m_VelocityController = std::make_shared<VelocityElevatorController>(elevator));
         AddController(m_SoftLandController = std::make_shared<SoftLandElevatorController>(elevator));
         SetUnlockedController(m_VelocityController);
-        SetupNetworkTableEntries();
+//        SetupNetworkTableEntries();
     }
 
     void Elevator::Reset() {

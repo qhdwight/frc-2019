@@ -1,14 +1,5 @@
 #include <robot.hpp>
 
-#include <lib/wait_routine.hpp>
-#include <lib/sequential_routine.hpp>
-
-#include <wpi/json.h>
-#include <wpi/Path.h>
-#include <wpi/FileSystem.h>
-#include <wpi/raw_istream.h>
-
-#include <frc/Filesystem.h>
 #include <frc/DriverStation.h>
 
 namespace garage {
@@ -21,9 +12,8 @@ namespace garage {
         m_NetworkTable = m_NetworkTableInstance.GetTable("Garage Robotics");
         m_DashboardNetworkTable = m_NetworkTable->GetSubTable("Dashboard");
         // Setup logging system
-        const auto defaultLogLevel = lib::Logger::LogLevel::k_Info;
-        lib::Logger::SetLogLevel(defaultLogLevel);
-        m_NetworkTable->PutNumber("Log Level", static_cast<double>(defaultLogLevel));
+        lib::Logger::SetLogLevel(m_Config.logLevel);
+        m_NetworkTable->PutNumber("Log Level", static_cast<double>(m_Config.logLevel));
         m_NetworkTable->GetEntry("Log Level").AddListener([&](const nt::EntryNotification& notification) {
             auto logLevel = static_cast<lib::Logger::LogLevel>(std::lround(notification.value->GetDouble()));
             lib::Logger::SetLogLevel(logLevel);

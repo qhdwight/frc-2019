@@ -9,13 +9,13 @@
 //#define AUTO_MAX_VELOCITY 5.0
 //#define AUTO_MAX_ACCELERATION 10.0
 //#define AUTO_MAX_JERK 60.0
-#define AUTO_MAX_VELOCITY 5.0
-#define AUTO_MAX_ACCELERATION 2.0
-#define AUTO_MAX_JERK 15.0
+#define AUTO_MAX_VELOCITY 2.0
+#define AUTO_MAX_ACCELERATION 1.5
+#define AUTO_MAX_JERK 40.0
 #define AUTO_P 0.0000001
 #define AUTO_I 0.0
 #define AUTO_D 0.0
-#define AUTO_V (1.0 / (AUTO_MAX_VELOCITY * 5.0))
+#define AUTO_V (1.0 / AUTO_MAX_VELOCITY)
 #define AUTO_A 0.0
 
 #define AUTO_TIME_STEP (1.0 / 50.0)
@@ -36,7 +36,7 @@ namespace garage {
 
             virtual void GetWaypoints();
 
-            void PrepareWaypoints();
+            virtual void PrepareWaypoints();
 
             void PrepareEncoder();
 

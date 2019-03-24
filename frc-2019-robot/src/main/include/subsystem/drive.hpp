@@ -3,7 +3,7 @@
 #include <command.hpp>
 #include <hardware_map.hpp>
 
-#include <lib/subsystem.hpp>
+#include <lib/controllable_subsystem.hpp>
 
 #include <garage_math/garage_math.hpp>
 
@@ -19,7 +19,23 @@
 #define DRIVE_PRECISION_POWER 0.09
 
 namespace garage {
-    class Drive : public lib::Subsystem {
+    class Drive;
+
+    using DriveController=lib::SubsystemController<Drive>;
+
+    class ManualDriveController : DriveController {
+    public:
+        ManualDriveController(std::weak_ptr<Drive>& drive)
+                : DriveController(drive, "Manual Drive") {}
+    };
+
+    class AutoAlignController : DriveController {
+    public:
+        AutoAlignController(std::weak_ptr<Drive>& drive)
+                : DriveController(drive, "Auto Align Drive") {}
+    };
+
+    class Drive : public lib::ControllableSubsystem<Drive> {
     private:
         double m_LeftOutput = 0.0, m_RightOutput = 0.0;
         double m_RightEncoderPosition = 0.0, m_LeftEncoderPosition = 0.0;
@@ -30,6 +46,8 @@ namespace garage {
                 m_LeftSlave{DRIVE_LEFT_SLAVE, rev::CANSparkMax::MotorType::kBrushless};
         rev::CANEncoder m_LeftEncoder = m_LeftMaster.GetEncoder(), m_RightEncoder = m_RightMaster.GetEncoder();
         ctre::phoenix::sensors::PigeonIMU m_Pigeon{PIGEON_IMU};
+        std::shared_ptr<ManualDriveController> m_ManualController;
+        std::shared_ptr<AutoAlignController> m_AutoAlignController;
 
     protected:
         double InputFromCommand(double commandInput);

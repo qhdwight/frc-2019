@@ -12,7 +12,7 @@ namespace garage {
 //
 //    };
 
-    Flipper::Flipper(std::shared_ptr<Robot>& robot) : lib::ControllableSubsystem<Flipper>(robot, "Flipper") {
+    Flipper::Flipper(std::shared_ptr<Robot>& robot) : ControllableSubsystem(robot, "Flipper") {
         m_FlipperMaster.RestoreFactoryDefaults();
         m_FlipperMaster.SetIdleMode(rev::CANSparkMax::IdleMode::kBrake);
         m_FlipperMaster.SetClosedLoopRampRate(FLIPPER_CLOSED_LOOP_RAMP);

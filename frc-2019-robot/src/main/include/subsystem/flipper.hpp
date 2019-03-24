@@ -53,8 +53,8 @@ namespace garage {
 
     class FlipperController : public lib::SubsystemController<Flipper> {
     public:
-        FlipperController(std::weak_ptr<Flipper>& subsystem, const std::string& name)
-                : SubsystemController(subsystem, name) {}
+        FlipperController(std::weak_ptr<Flipper>& flipper, const std::string& name)
+                : SubsystemController(flipper, name) {}
 
         double GetWantedAngle();
     };
@@ -64,8 +64,8 @@ namespace garage {
         double m_Output = 0.0;
 
     public:
-        RawFlipperController(std::weak_ptr<Flipper>& subsystem)
-                : FlipperController(subsystem, "Raw Controller") {}
+        RawFlipperController(std::weak_ptr<Flipper>& flipper)
+                : FlipperController(flipper, "Raw Controller") {}
 
         void Reset() override;
 
@@ -81,8 +81,8 @@ namespace garage {
         double m_WantedVelocity = 0.0;
 
     public:
-        VelocityFlipperController(std::weak_ptr<Flipper>& subsystem)
-                : FlipperController(subsystem, "Velocity Controller") {}
+        VelocityFlipperController(std::weak_ptr<Flipper>& flipper)
+                : FlipperController(flipper, "Velocity Controller") {}
 
         void SetWantedVelocity(double velocity) {
             m_WantedVelocity = velocity;
@@ -100,8 +100,8 @@ namespace garage {
         double m_SetPoint = 0.0;
 
     public:
-        SetPointFlipperController(std::weak_ptr<Flipper>& subsystem)
-                : FlipperController(subsystem, "Set Point Controller") {}
+        SetPointFlipperController(std::weak_ptr<Flipper>& flipper)
+                : FlipperController(flipper, "Set Point Controller") {}
 
         void SetSetPoint(double setPoint) {
             m_SetPoint = setPoint;

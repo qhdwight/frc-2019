@@ -1,6 +1,7 @@
 #include <robot.hpp>
 
 #include <routine/reset_routine.hpp>
+#include <routine/vision_auto_align.hpp>
 #include <routine/flip_over_routine.hpp>
 #include <routine/ball_intake_routine.hpp>
 #include <routine/lock_flipper_routine.hpp>
@@ -87,8 +88,9 @@ namespace garage {
 //        m_TestRoutine = std::make_shared<lib::ParallelRoutine>
 //                (m_Pointer, "Test Routine", lib::RoutineVector{testWaitRoutineOne, testWaitRoutineTwo});
 //        m_TestRoutine = std::make_shared<SetFlipperAngleRoutine>(m_Pointer, 90.0, "Meme");
-        m_TestRoutine = std::make_shared<lib::AutoRoutineFromCSV>(m_Pointer, "start_to_middle_left_hatch", "Start To Middle Hatch");
-        m_TestRoutine->PostInitialize();
+//        m_TestRoutine = std::make_shared<lib::AutoRoutineFromCSV>(m_Pointer, "start_to_middle_left_hatch", "Start To Middle Hatch");
+//        m_TestRoutine->PostInitialize();
+        m_TestRoutine = std::make_shared<VisionAutoAlign>(m_Pointer);
     }
 
     void Robot::AddSubsystem(std::shared_ptr<lib::Subsystem> subsystem) {

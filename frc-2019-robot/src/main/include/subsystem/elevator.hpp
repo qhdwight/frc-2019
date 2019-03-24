@@ -50,7 +50,8 @@ namespace garage {
         double m_Output = 0.0;
 
     public:
-        RawElevatorController(std::weak_ptr<Elevator>& subsystem) : lib::SubsystemController<Elevator>(subsystem, "Raw Controller") {}
+        RawElevatorController(std::weak_ptr<Elevator>& elevator)
+                : SubsystemController(elevator, "Raw Controller") {}
 
         void Reset() override;
 
@@ -68,7 +69,8 @@ namespace garage {
         double m_WantedSetPoint = 0;
 
     public:
-        SetPointElevatorController(std::weak_ptr<Elevator>& subsystem) : lib::SubsystemController<Elevator>(subsystem, "Set Point Controller") {}
+        SetPointElevatorController(std::weak_ptr<Elevator>& elevator)
+                : SubsystemController(elevator, "Set Point Controller") {}
 
         void ProcessCommand(Command& command) override;
 
@@ -86,7 +88,8 @@ namespace garage {
         double m_WantedVelocity = 0.0;
 
     public:
-        VelocityElevatorController(std::weak_ptr<Elevator>& subsystem) : lib::SubsystemController<Elevator>(subsystem, "Velocity Controller") {}
+        VelocityElevatorController(std::weak_ptr<Elevator>& elevator)
+                : SubsystemController(elevator, "Velocity Controller") {}
 
         void ProcessCommand(Command& command) override;
 
@@ -97,7 +100,8 @@ namespace garage {
 
     class SoftLandElevatorController : public lib::SubsystemController<Elevator> {
     public:
-        SoftLandElevatorController(std::weak_ptr<Elevator>& subsystem) : lib::SubsystemController<Elevator>(subsystem, "Soft Land Controller") {}
+        SoftLandElevatorController(std::weak_ptr<Elevator>& elevator)
+                : SubsystemController(elevator, "Soft Land Controller") {}
 
         void Control() override;
     };

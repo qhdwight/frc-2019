@@ -7,7 +7,7 @@
 #include <frc/DriverStation.h>
 
 namespace garage {
-    Elevator::Elevator(std::shared_ptr<Robot>& robot) : lib::ControllableSubsystem<Elevator>(robot, "Elevator") {
+    Elevator::Elevator(std::shared_ptr<Robot>& robot) : ControllableSubsystem(robot, "Elevator") {
         ConfigSpeedControllers();
     }
 

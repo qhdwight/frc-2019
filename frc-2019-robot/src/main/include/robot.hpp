@@ -54,18 +54,11 @@ namespace garage {
 //        std::shared_ptr<test::TestDriveAutoRoutine> m_DriveForwardRoutine;
         std::shared_ptr<lib::Routine>
                 m_TestRoutine,
+                m_AutoAlignRoutine,
         // ==== Reset
-                m_ResetRoutine, m_ResetWithServoRoutine,
-        // ==== Bottom hatch height
-                m_BottomHatchRoutine,
-        // ==== Rocket hatch
-                m_RocketMiddleHatchRoutine, m_RocketTopHatchRoutine,
-        // ==== Rocket ball
-                m_RocketBottomBallRoutine, m_RocketMiddleBallRoutine, m_RocketTopBallRoutine,
+                m_ResetWithServoRoutine,
         // ==== Utility
-                m_FlipOverRoutine, m_StowFlipperRoutine, m_GroundBallIntakeRoutine, m_LoadingBallIntakeRoutine,
-        // ==== Cargo
-                m_CargoBallRoutine,
+                m_GroundBallIntakeRoutine, m_LoadingBallIntakeRoutine,
         // ==== End game
                 m_EndGameRoutine;
 

@@ -12,7 +12,7 @@ namespace garage {
 //
 //    };
 
-    Flipper::Flipper(std::shared_ptr<Robot>& robot) : lib::ControllableSubsystem<Flipper>(robot, "Flipper") {
+    Flipper::Flipper(std::shared_ptr<Robot>& robot) : ControllableSubsystem(robot, "Flipper") {
         m_FlipperMaster.RestoreFactoryDefaults();
         m_FlipperMaster.SetIdleMode(rev::CANSparkMax::IdleMode::kBrake);
         m_FlipperMaster.SetClosedLoopRampRate(FLIPPER_CLOSED_LOOP_RAMP);
@@ -124,8 +124,15 @@ namespace garage {
             Log(lib::Logger::LogLevel::k_Error, lib::Logger::Format("Sticky Fault Error: %d", faults));
             m_FlipperMaster.ClearFaults();
         }
-        // TODO check direction
-        m_CameraServoOutput = static_cast<uint16_t>(m_Angle > 120.0 ? CAMERA_SERVO_LOWER : CAMERA_SERVO_UPPER);
+        int cameraServoOutput;
+        if (m_Angle < 3.0) {
+            cameraServoOutput = CAMERA_SERVO_LOWER;
+        } else if (m_Angle > FLIPPER_UPPER_ANGLE - 3.0) {
+            cameraServoOutput = CAMERA_SERVO_UPPER;
+        } else {
+            cameraServoOutput = CAMERA_SERVO_MIDDLE;
+        }
+        m_CameraServoOutput = static_cast<uint16_t>(cameraServoOutput);
         m_CameraServo.SetRaw(m_CameraServoOutput);
 //        m_LockServo.SetRaw(m_LockServoOutput);
         if (m_Controller) {

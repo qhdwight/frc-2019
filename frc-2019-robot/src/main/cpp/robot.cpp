@@ -54,29 +54,8 @@ namespace garage {
         // Render drive trajectory in initialization because it takes a couple of seconds
 //        m_DriveForwardRoutine = std::make_shared<test::TestDriveAutoRoutine>(m_Pointer, "Test Drive");
 //        m_DriveForwardRoutine->CalculatePath();
-        m_ResetRoutine = std::make_shared<SetElevatorPositionRoutine>(m_Pointer, 0.0, "Reset");
         m_ResetWithServoRoutine = std::make_shared<ResetWithServoRoutine>(m_Pointer);
-        /* Hatch routines */
-        m_BottomHatchRoutine = std::make_shared<SetElevatorPositionRoutine>
-                (m_Pointer, m_Config.bottomHatchHeight, "Bottom Hatch");
-        // Rocket hatch routines
-        m_RocketMiddleHatchRoutine = std::make_shared<SetElevatorPositionRoutine>
-                (m_Pointer, m_Config.rocketMiddleHatchHeight, "Middle Rocket Hatch");
-        m_RocketTopHatchRoutine = std::make_shared<SetElevatorPositionRoutine>
-                (m_Pointer, m_Config.rocketTopHatchHeight, "Top Rocket Hatch");
-        /* Ball routines */
-        // Rocket
-        m_RocketBottomBallRoutine = std::make_shared<SetElevatorPositionRoutine>
-                (m_Pointer, m_Config.rocketBottomBallHeight, "Bottom Rocket Ball");
-        m_RocketMiddleBallRoutine = std::make_shared<SetElevatorPositionRoutine>
-                (m_Pointer, m_Config.rocketMiddleBallHeight, "Middle Rocket Ball");
-        m_RocketTopBallRoutine = std::make_shared<SetElevatorPositionRoutine>
-                (m_Pointer, m_Config.rocketTopBallHeight, "Top Rocket Ball");
-        // Cargo
-        m_CargoBallRoutine = std::make_shared<SetElevatorPositionRoutine>
-                (m_Pointer, m_Config.cargoBallHeightDown, "Down Cargo Ball");
         /* Utility routines */
-        m_FlipOverRoutine = std::make_shared<FlipOverRoutine>(m_Pointer);
         m_GroundBallIntakeRoutine = std::make_shared<BallIntakeRoutine>(m_Pointer, m_Config.groundIntakeBallHeight, FLIPPER_UPPER_ANGLE);
         m_LoadingBallIntakeRoutine = std::make_shared<BallIntakeRoutine>(m_Pointer, m_Config.loadingIntakeBallHeight, FLIPPER_LOWER_ANGLE);
         /* End game routines */
@@ -90,7 +69,7 @@ namespace garage {
 //        m_TestRoutine = std::make_shared<SetFlipperAngleRoutine>(m_Pointer, 90.0, "Meme");
 //        m_TestRoutine = std::make_shared<lib::AutoRoutineFromCSV>(m_Pointer, "start_to_middle_left_hatch", "Start To Middle Hatch");
 //        m_TestRoutine->PostInitialize();
-        m_TestRoutine = std::make_shared<VisionAutoAlign>(m_Pointer);
+        m_AutoAlignRoutine = std::make_shared<VisionAutoAlign>(m_Pointer);
     }
 
     void Robot::AddSubsystem(std::shared_ptr<lib::Subsystem> subsystem) {
@@ -157,10 +136,6 @@ namespace garage {
             m_RoutineManager->TerminateAllRoutines();
             m_Command.routines.push_back(m_TestRoutine);
         }
-        if (m_SecondaryController.GetStartButtonPressed()) {
-            m_RoutineManager->TerminateAllRoutines();
-            m_Command.routines.push_back(m_BottomHatchRoutine);
-        }
         if (m_PrimaryController.GetStickButtonPressed(frc::GenericHID::kRightHand)) {
             m_Command.drivePrecisionEnabled = !m_Command.drivePrecisionEnabled;
             m_DashboardNetworkTable->PutString("Drive Mode", m_Command.drivePrecisionEnabled ? "Precise" : "Coarse");
@@ -179,75 +154,40 @@ namespace garage {
 //                m_Command.routines.push_back(m_ResetWithServoRoutine);
 //            }
 //        }
-        const int primaryPOV = m_PrimaryController.GetPOV(), secondaryPOV = m_SecondaryController.GetPOV();
-        const bool
-        // Left button
-                elevatorHatch = primaryPOV == 90 || secondaryPOV == 90,
-        // Button button
-                elevatorDown = primaryPOV == 180 || secondaryPOV == 180,
-        // Right button
-                elevatorBall = primaryPOV == 270 || secondaryPOV == 270,
-        // Top button
-                elevatorSoftLand = primaryPOV == 0 || secondaryPOV == 0;
-//        if (!m_Command.offTheBooksModeEnabled) {
-        if (m_PrimaryController.GetAButtonPressed() || m_SecondaryController.GetAButtonPressed()) {
-            if (elevatorBall) {
-                m_RoutineManager->TerminateAllRoutines();
-                m_Command.routines.push_back(m_RocketBottomBallRoutine);
-            } else if (elevatorHatch) {
-                m_RoutineManager->TerminateAllRoutines();
-                m_Command.routines.push_back(m_BottomHatchRoutine);
-            } else {
-                m_RoutineManager->TerminateAllRoutines();
-                m_Command.routines.push_back(m_GroundBallIntakeRoutine);
-            }
+        /* Four buttons */
+        if (m_PrimaryController.GetAButton() || m_SecondaryController.GetAButton()) {
+            m_Command.routines.push_back(m_AutoAlignRoutine);
         }
-        if (m_PrimaryController.GetBButtonPressed() || m_SecondaryController.GetBButtonPressed()) {
-            if (elevatorBall) {
-                m_RoutineManager->TerminateAllRoutines();
-                m_Command.routines.push_back(m_RocketMiddleBallRoutine);
-            } else if (elevatorHatch) {
-                m_RoutineManager->TerminateAllRoutines();
-                m_Command.routines.push_back(m_RocketMiddleHatchRoutine);
-            } else {
-                m_RoutineManager->TerminateAllRoutines();
-                m_Command.routines.push_back(m_CargoBallRoutine);
-            }
+        if (m_PrimaryController.GetBButton() || m_SecondaryController.GetBButton()) {
+            m_Command.routines.push_back(m_GroundBallIntakeRoutine);
         }
-        if (m_PrimaryController.GetYButtonPressed() || m_SecondaryController.GetYButtonPressed()) {
-            if (elevatorBall) {
-                m_RoutineManager->TerminateAllRoutines();
-                m_Command.routines.push_back(m_RocketTopBallRoutine);
-            } else if (elevatorHatch) {
-                m_RoutineManager->TerminateAllRoutines();
-                m_Command.routines.push_back(m_RocketTopHatchRoutine);
-            } else {
-                m_Command.hatchIntakeDown = true;
-            }
-        } else {
-            m_Command.hatchIntakeDown = false;
-        }
-        if (m_PrimaryController.GetXButtonPressed() || m_SecondaryController.GetXButtonPressed()) {
-            m_RoutineManager->TerminateAllRoutines();
-            m_Command.routines.push_back(m_FlipOverRoutine);
-        }
-        if (elevatorDown) {
-            m_RoutineManager->TerminateAllRoutines();
-            m_Command.routines.push_back(m_ResetRoutine);
-        } else if (elevatorSoftLand) {
-            m_RoutineManager->TerminateAllRoutines();
-            m_Elevator->SoftLand();
-        }
-//        }
-        double angle = FLIPPER_UPPER_ANGLE;
         if (m_Flipper) {
-            angle = m_Flipper->GetWantedAngle();
+            if (m_PrimaryController.GetXButton() || m_SecondaryController.GetXButton()) {
+                m_Flipper->SetAngle(m_Flipper->GetAngle() > FLIPPER_STOW_ANGLE ? FLIPPER_LOWER_ANGLE : FLIPPER_UPPER_ANGLE);
+            }
         }
-        const bool shouldInvertDrive = angle < FLIPPER_STOW_ANGLE;
+        m_Command.hatchIntakeDown = m_PrimaryController.GetYButtonPressed() || m_SecondaryController.GetYButtonPressed();
+        /* DPad */
+        if (m_Elevator) {
+            const int primaryPOV = m_PrimaryController.GetPOV(), secondaryPOV = m_SecondaryController.GetPOV();
+            const bool
+            // ==== Button button
+                    elevatorDown = primaryPOV == 180 || secondaryPOV == 180,
+            // ==== Top button
+                    elevatorStow = primaryPOV == 0 || secondaryPOV == 0;
+            if (elevatorDown) {
+                m_Elevator->SetWantedSetPoint(0.0);
+            } else if (elevatorStow) {
+                m_Elevator->SetWantedSetPoint(m_Config.bottomHatchHeight);
+            }
+        }
+        double wantedAngle = m_Flipper ? m_Flipper->GetWantedAngle() : FLIPPER_UPPER_ANGLE;
+        const bool shouldInvertDrive = wantedAngle < FLIPPER_STOW_ANGLE;
+        /* Joysticks */
         m_Command.driveForward = math::threshold(-m_PrimaryController.GetY(frc::GenericHID::JoystickHand::kRightHand), DEFAULT_INPUT_THRESHOLD);
         m_Command.driveTurn = math::threshold(m_PrimaryController.GetX(frc::GenericHID::JoystickHand::kRightHand), DEFAULT_INPUT_THRESHOLD);
         m_Command.driveForward += math::threshold(-m_SecondaryController.GetY(frc::GenericHID::kRightHand), XBOX_360_STICK_INPUT_THRESHOLD);
-        m_Command.driveTurn += math::threshold(m_SecondaryController.GetX(frc::GenericHID::kRightHand), XBOX_360_STICK_INPUT_THRESHOLD) * 0.5;
+        m_Command.driveTurn += math::threshold(m_SecondaryController.GetX(frc::GenericHID::kRightHand), XBOX_360_STICK_INPUT_THRESHOLD) * 0.35;
 //        const auto bet = m_PrimaryController.GetX(frc::GenericHID::kRightHand), meme = m_SecondaryController.GetX(frc::GenericHID::kRightHand);
 //        lib::Logger::Log(lib::Logger::LogLevel::k_Info, lib::Logger::Format("%f, %f, %f, %f, %f", bet, math::threshold(bet, 0.225), meme, math::threshold(meme, 0.225), m_Command.driveTurn));
         if (shouldInvertDrive) {
@@ -255,6 +195,7 @@ namespace garage {
         }
         m_Command.elevatorInput = math::threshold(-m_PrimaryController.GetY(frc::GenericHID::kLeftHand), DEFAULT_INPUT_THRESHOLD);
         m_Command.elevatorInput += math::threshold(-m_SecondaryController.GetY(frc::GenericHID::kLeftHand), XBOX_360_STICK_INPUT_THRESHOLD);
+        /* Triggers */
         double triggers = math::threshold(
                 m_PrimaryController.GetTriggerAxis(frc::GenericHID::JoystickHand::kRightHand) -
                 m_PrimaryController.GetTriggerAxis(frc::GenericHID::JoystickHand::kLeftHand), DEFAULT_INPUT_THRESHOLD);
@@ -262,6 +203,7 @@ namespace garage {
                 m_SecondaryController.GetTriggerAxis(frc::GenericHID::JoystickHand::kRightHand) -
                 m_SecondaryController.GetTriggerAxis(frc::GenericHID::JoystickHand::kLeftHand), DEFAULT_INPUT_THRESHOLD);
         triggers = math::clamp(triggers, -1.0, 1.0);
+        /* Bumpers */
         auto bumpers = math::axis<double>(
                 m_PrimaryController.GetBumper(frc::GenericHID::JoystickHand::kRightHand),
                 m_PrimaryController.GetBumper(frc::GenericHID::JoystickHand::kLeftHand));
@@ -269,6 +211,7 @@ namespace garage {
                 m_SecondaryController.GetBumper(frc::GenericHID::JoystickHand::kRightHand),
                 m_SecondaryController.GetBumper(frc::GenericHID::JoystickHand::kLeftHand));
         bumpers = math::clamp(bumpers, -1.0, 1.0);
+        /* Off the books */
         if (m_Command.offTheBooksModeEnabled) {
             m_Command.outrigger = triggers;
             m_Command.outriggerWheel = bumpers;

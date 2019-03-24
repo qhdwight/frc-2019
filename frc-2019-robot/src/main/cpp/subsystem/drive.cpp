@@ -142,7 +142,7 @@ namespace garage {
         m_OldTurnInput = turnInput;
         double negativeInertiaScalar;
         if (turnInput * negativeInertia > 0.0) {
-            negativeInertiaScalar = DRIVE_NEGATIVE_INTERTIA_TURN_SCALAR;
+            negativeInertiaScalar = DRIVE_NEGATIVE_INERTIA_TURN_SCALAR;
         } else {
             if (std::fabs(turnInput) > DRIVE_NEGATIVE_INERTIA_THRESHOLD) {
                 negativeInertiaScalar = DRIVE_NEGATIVE_INERTIA_FAR_SCALAR;
@@ -181,20 +181,20 @@ namespace garage {
             }
         }
         double leftOutput = linearPower, rightOutput = linearPower;
-        rightOutput += angularPower;
+        leftOutput += angularPower;
         rightOutput -= angularPower;
-        if (rightOutput > 1.0) {
-            leftOutput -= overPower * (rightOutput - 1.0);
-            rightOutput = 1.0;
-        } else if (leftOutput > 1.0) {
+        if (leftOutput > 1.0) {
             rightOutput -= overPower * (leftOutput - 1.0);
             leftOutput = 1.0;
-        } else if (rightOutput < -1.0) {
-            leftOutput += overPower * (-1.0 - rightOutput);
-            rightOutput = -1.0;
+        } else if (rightOutput > 1.0) {
+            leftOutput -= overPower * (rightOutput - 1.0);
+            rightOutput = 1.0;
         } else if (leftOutput < -1.0) {
             rightOutput += overPower * (-1.0 - leftOutput);
             leftOutput = -1.0;
+        } else if (rightOutput < -1.0) {
+            leftOutput += overPower * (-1.0 - rightOutput);
+            rightOutput = -1.0;
         }
         auto drive = m_Subsystem.lock();
         drive->m_LeftOutput = leftOutput;

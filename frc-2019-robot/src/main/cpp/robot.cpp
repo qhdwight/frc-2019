@@ -145,7 +145,7 @@ namespace garage {
         if (m_Drive) {
             if (m_PrimaryController.GetAButton() || m_SecondaryController.GetAButton()) {
                 m_Drive->AutoAlign();
-            } else {
+            } else if (m_Drive->IsLocked()) {
                 m_Drive->Unlock();
             }
         }

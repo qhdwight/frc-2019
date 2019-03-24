@@ -10,6 +10,9 @@
 #include <rev/CANSparkMax.h>
 #include <ctre/phoenix/sensors/PigeonIMU.h>
 
+#include <networktables/NetworkTable.h>
+#include <networktables/NetworkTableInstance.h>
+
 #include <memory>
 
 #define DRIVE_RAMPING 0.15
@@ -59,9 +62,13 @@ namespace garage {
 
     class AutoAlignDriveController : public DriveController {
     public:
-        AutoAlignDriveController(std::weak_ptr<Drive>& drive) : DriveController(drive, "Auto Align Controller") {}
+        AutoAlignDriveController(std::weak_ptr<Drive>& drive) : DriveController(drive, "Auto Align Controller") {
+            m_LimelightTable = nt::NetworkTableInstance::GetDefault().GetTable(VISION_LIMELIGHT_TABLE_NAME);
+        }
 
     protected:
+        std::shared_ptr<nt::NetworkTable> m_LimelightTable;
+
         void Control() override;
     };
 
@@ -82,7 +89,6 @@ namespace garage {
         ctre::phoenix::sensors::PigeonIMU m_Pigeon{PIGEON_IMU};
         std::shared_ptr<ManualDriveController> m_ManualController;
         std::shared_ptr<AutoAlignDriveController> m_AutoAlignController;
-        std::shared_ptr<nt::NetworkTable> m_LimelightTable;
 
     protected:
         void SpacedUpdate(Command& command) override;

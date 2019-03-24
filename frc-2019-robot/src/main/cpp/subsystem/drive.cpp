@@ -26,7 +26,6 @@ namespace garage {
         m_LeftMaster.EnableVoltageCompensation(DEFAULT_VOLTAGE_COMPENSATION);
         m_RightMaster.EnableVoltageCompensation(DEFAULT_VOLTAGE_COMPENSATION);
         StopMotors();
-        m_LimelightTable = nt::NetworkTableInstance::GetDefault().GetTable(VISION_LIMELIGHT_TABLE_NAME);
     }
 
     void Drive::OnPostInitialize() {
@@ -205,9 +204,9 @@ namespace garage {
     void AutoAlignDriveController::Control() {
         auto drive = m_Subsystem.lock();
         const double
-                tx = drive->m_LimelightTable->GetNumber("tx", 0.0),
-                ta = drive->m_LimelightTable->GetNumber("ta", 0.0),
-                tv = drive->m_LimelightTable->GetNumber("tv", 0.0);
+                tx = m_LimelightTable->GetNumber("tx", 0.0),
+                ta = m_LimelightTable->GetNumber("ta", 0.0),
+                tv = m_LimelightTable->GetNumber("tv", 0.0);
 //        drive->Log(lib::Logger::LogLevel::k_Info, lib::Logger::Format("%f, %f, %f, %f", tx, ty, ta, tv));
         double forwardOutput, turnOutput;
         if (tv < 1.0) {

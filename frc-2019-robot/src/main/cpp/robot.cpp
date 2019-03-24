@@ -188,12 +188,10 @@ namespace garage {
         m_Command.elevatorInput += math::threshold(-m_SecondaryController.GetY(frc::GenericHID::kLeftHand), XBOX_360_STICK_INPUT_THRESHOLD);
         /* Triggers */
         double triggers = math::threshold(
-                m_PrimaryController.GetTriggerAxis(frc::GenericHID::JoystickHand::kRightHand) -
-                m_PrimaryController.GetTriggerAxis(frc::GenericHID::JoystickHand::kLeftHand), DEFAULT_INPUT_THRESHOLD);
-        triggers += math::threshold(
                 m_SecondaryController.GetTriggerAxis(frc::GenericHID::JoystickHand::kRightHand) -
                 m_SecondaryController.GetTriggerAxis(frc::GenericHID::JoystickHand::kLeftHand), DEFAULT_INPUT_THRESHOLD);
         triggers = math::clamp(triggers, -1.0, 1.0);
+        m_Command.isQuickTurn = m_PrimaryController.GetTriggerAxis(frc::GenericHID::kLeftHand) > 0.35;
         /* Bumpers */
         auto bumpers = math::axis<double>(
                 m_PrimaryController.GetBumper(frc::GenericHID::JoystickHand::kRightHand),

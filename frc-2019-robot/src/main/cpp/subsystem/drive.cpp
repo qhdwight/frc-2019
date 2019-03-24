@@ -134,6 +134,7 @@ namespace garage {
     void ManualDriveController::ProcessCommand(Command& command) {
         m_ForwardInput = command.driveForward;
         m_TurnInput = command.driveTurn;
+        m_IsQuickTurn = command.isQuickTurn;
     }
 
     void ManualDriveController::Control() {

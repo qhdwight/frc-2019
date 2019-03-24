@@ -7,23 +7,37 @@
 #include <cmath>
 
 namespace garage {
-    Drive::Drive(std::shared_ptr<Robot>& robot) : lib::Subsystem(robot, "Drive") {
+    Drive::Drive(std::shared_ptr<Robot>& robot) : ControllableSubsystem(robot, "Drive") {
         m_LeftSlave.RestoreFactoryDefaults();
         m_RightSlave.RestoreFactoryDefaults();
         m_LeftMaster.RestoreFactoryDefaults();
         m_RightMaster.RestoreFactoryDefaults();
         m_RightMaster.SetInverted(true);
+        // Following
         m_LeftSlave.Follow(m_LeftMaster);
         m_RightSlave.Follow(m_RightMaster);
+        // Open loop ramping
         m_LeftMaster.SetOpenLoopRampRate(DRIVE_RAMPING);
-        m_RightSlave.SetOpenLoopRampRate(DRIVE_RAMPING);
+        m_RightMaster.SetOpenLoopRampRate(DRIVE_RAMPING);
+        // Input dead band
+        m_LeftMaster.SetParameter(rev::CANSparkMax::ConfigParameter::kInputDeadband, DRIVE_INPUT_DEAD_BAND);
+        m_RightMaster.SetParameter(rev::CANSparkMax::ConfigParameter::kInputDeadband, DRIVE_INPUT_DEAD_BAND);
+        // Voltage compensation
         m_LeftMaster.EnableVoltageCompensation(DEFAULT_VOLTAGE_COMPENSATION);
         m_RightMaster.EnableVoltageCompensation(DEFAULT_VOLTAGE_COMPENSATION);
         StopMotors();
+        m_LimelightTable = nt::NetworkTableInstance::GetDefault().GetTable(VISION_LIMELIGHT_TABLE_NAME);
+    }
+
+    void Drive::OnPostInitialize() {
+        auto drive = std::weak_ptr<Drive>(shared_from_this());
+        AddController(m_ManualController = std::make_shared<ManualDriveController>(drive));
+        AddController(m_AutoAlignController = std::make_shared<AutoAlignDriveController>(drive));
+        SetUnlockedController(m_ManualController);
     }
 
     void Drive::Reset() {
-        Subsystem::Reset();
+        ControllableSubsystem::Reset();
         StopMotors();
     }
 
@@ -37,42 +51,6 @@ namespace garage {
     bool Drive::ShouldUnlock(Command& command) {
         return std::fabs(command.driveForward) > DEFAULT_INPUT_THRESHOLD ||
                std::fabs(command.driveTurn) > DEFAULT_INPUT_THRESHOLD;
-    }
-
-    double Drive::InputFromCommand(double commandInput) {
-        const double absoluteCommand = std::fabs(commandInput), sign = math::sign(commandInput);
-        return sign * std::fabs(std::pow(commandInput, 2.0));
-    }
-
-    void Drive::UpdateUnlocked(Command& command) {
-//        LogSample(lib::Logger::LogLevel::k_Info, lib::Logger::Format("%f, %f", command.driveForward, command.driveTurn));
-        if (command.drivePrecisionEnabled) {
-            const double
-                    forwardInputFine = command.driveForward,
-                    turnInputFine = command.driveTurn;
-            m_LeftOutput = (forwardInputFine + turnInputFine) * DRIVE_PRECISION_POWER;
-            m_RightOutput = (forwardInputFine - turnInputFine) * DRIVE_PRECISION_POWER;
-        } else {
-            const double
-                    forwardInput = InputFromCommand(command.driveForward),
-                    turnInput = command.driveTurn;
-//            if (forwardInput > DEFAULT_INPUT_THRESHOLD) {
-//                m_ForwardInput += DRIVE_FORWARD_INCREMENT * forwardInput;
-//            } else {
-//                if (std::fabs(m_ForwardInput) > DEFAULT_INPUT_THRESHOLD) {
-//                    if (m_ForwardInput > 0) {
-//                        m_ForwardInput -= DRIVE_FORWARD_INCREMENT;
-//                    } else {
-//                        m_ForwardInput += DRIVE_FORWARD_INCREMENT;
-//                    }
-//                } else {
-//                    m_ForwardInput = 0.0;
-//                }
-//            }
-//            m_ForwardInput = math::clamp(m_ForwardInput, -DRIVE_FORWARD_POWER, DRIVE_FORWARD_POWER);
-            m_LeftOutput = forwardInput + turnInput * DRIVE_TURN_POWER;
-            m_RightOutput = forwardInput - turnInput * DRIVE_TURN_POWER;
-        }
     }
 
     void Drive::SpacedUpdate(Command& command) {
@@ -97,6 +75,11 @@ namespace garage {
     void Drive::Update() {
         m_RightEncoderPosition = m_RightEncoder.GetPosition();
         m_LeftEncoderPosition = m_LeftEncoder.GetPosition();
+        if (m_Controller) {
+            m_Controller->Control();
+        } else {
+            LogSample(lib::Logger::LogLevel::k_Warning, "No controller detected");
+        }
         if (m_Robot->ShouldOutput()) {
             m_LeftMaster.Set(m_LeftOutput);
             m_RightMaster.Set(m_RightOutput);
@@ -133,5 +116,109 @@ namespace garage {
 
     int Drive::GetDiscreteLeftEncoderTicks() {
         return std::lround(m_LeftEncoderPosition * 100.0);
+    }
+
+    void Drive::AutoAlign() {
+        SetController(m_AutoAlignController);
+    }
+
+    void ManualDriveController::Reset() {
+        m_ForwardInput = 0.0;
+        m_TurnInput = 0.0;
+        m_OldTurnInput = 0.0;
+        m_QuickStopAccumulator = 0.0;
+        m_NegativeInertiaAccumulator = 0.0;
+        m_IsQuickTurn = false;
+    }
+
+    void ManualDriveController::ProcessCommand(Command& command) {
+        m_ForwardInput = command.driveForward;
+        m_TurnInput = command.driveTurn;
+    }
+
+    void ManualDriveController::Control() {
+        double turnInput = m_TurnInput, forwardInput = m_ForwardInput;
+        const double negativeInertia = turnInput - m_OldTurnInput;
+        m_OldTurnInput = turnInput;
+        double negativeInertiaScalar;
+        if (turnInput * negativeInertia > 0.0) {
+            negativeInertiaScalar = DRIVE_NEGATIVE_INTERTIA_TURN_SCALAR;
+        } else {
+            if (std::fabs(turnInput) > DRIVE_NEGATIVE_INERTIA_THRESHOLD) {
+                negativeInertiaScalar = DRIVE_NEGATIVE_INERTIA_FAR_SCALAR;
+            } else {
+                negativeInertiaScalar = DRIVE_NEGATIVE_INERTIA_CLOSE_SCALAR;
+            }
+        }
+        const double negativeInertiaPower = negativeInertia * negativeInertiaScalar;
+        m_NegativeInertiaAccumulator += negativeInertiaPower;
+        turnInput += m_NegativeInertiaAccumulator;
+        if (m_NegativeInertiaAccumulator > 1.0) {
+            m_NegativeInertiaAccumulator -= 1.0;
+        } else if (m_NegativeInertiaAccumulator < -1.0) {
+            m_NegativeInertiaAccumulator += 1.0;
+        } else {
+            m_NegativeInertiaAccumulator = 0.0;
+        }
+        const double linearPower = forwardInput;
+        double overPower, angularPower;
+        if (m_IsQuickTurn) {
+            if (std::fabs(linearPower) < DRIVE_QUICK_STOP_DEAD_BAND) {
+                const double alpha = DRIVE_QUICK_STOP_WEIGHT;
+                m_QuickStopAccumulator = (1 - alpha) * m_QuickStopAccumulator + alpha * math::clamp(turnInput, -1.0, 1.0) * DRIVE_QUICK_STOP_SCALAR;
+            }
+            overPower = 1.0;
+            angularPower = turnInput;
+        } else {
+            overPower = 0.0;
+            angularPower = std::fabs(forwardInput) * turnInput * DRIVE_SENSITIVITY - m_QuickStopAccumulator;
+            if (m_QuickStopAccumulator > 1.0) {
+                m_QuickStopAccumulator -= 1.0;
+            } else if (m_QuickStopAccumulator < -1.0) {
+                m_QuickStopAccumulator += 1.0;
+            } else {
+                m_QuickStopAccumulator = 0.0;
+            }
+        }
+        double leftOutput = linearPower, rightOutput = linearPower;
+        rightOutput += angularPower;
+        rightOutput -= angularPower;
+        if (rightOutput > 1.0) {
+            leftOutput -= overPower * (rightOutput - 1.0);
+            rightOutput = 1.0;
+        } else if (leftOutput > 1.0) {
+            rightOutput -= overPower * (leftOutput - 1.0);
+            leftOutput = 1.0;
+        } else if (rightOutput < -1.0) {
+            leftOutput += overPower * (-1.0 - rightOutput);
+            rightOutput = -1.0;
+        } else if (leftOutput < -1.0) {
+            rightOutput += overPower * (-1.0 - leftOutput);
+            leftOutput = -1.0;
+        }
+        auto drive = m_Subsystem.lock();
+        drive->m_LeftOutput = leftOutput;
+        drive->m_RightOutput = rightOutput;
+    }
+
+    void AutoAlignDriveController::Control() {
+        auto drive = m_Subsystem.lock();
+        const double
+                tx = drive->m_LimelightTable->GetNumber("tx", 0.0),
+                ta = drive->m_LimelightTable->GetNumber("ta", 0.0),
+                tv = drive->m_LimelightTable->GetNumber("tv", 0.0);
+//        drive->Log(lib::Logger::LogLevel::k_Info, lib::Logger::Format("%f, %f, %f, %f", tx, ty, ta, tv));
+        double forwardOutput, turnOutput;
+        if (tv < 1.0) {
+            forwardOutput = 0.0;
+            turnOutput = 0.0;
+        } else {
+            turnOutput = math::clamp(tx * VISION_TURN_P, -VISION_MAX_TURN, VISION_MAX_TURN);
+            const double delta = VISION_DESIRED_TARGET_AREA - ta;
+            const double thresholdDelta = math::absolute(delta) > VISION_AREA_THRESHOLD ? delta : 0.0;
+            forwardOutput = math::clamp(thresholdDelta * VISION_FORWARD_P, -VISION_MAX_FORWARD, VISION_MAX_FORWARD);
+        }
+        drive->m_LeftOutput = forwardOutput + turnOutput;
+        drive->m_RightOutput = forwardOutput - turnOutput;
     }
 }

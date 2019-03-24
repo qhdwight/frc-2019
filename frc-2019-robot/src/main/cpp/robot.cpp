@@ -1,13 +1,8 @@
 #include <robot.hpp>
 
-#include <routine/reset_routine.hpp>
-#include <routine/vision_auto_align.hpp>
-#include <routine/flip_over_routine.hpp>
 #include <routine/ball_intake_routine.hpp>
 #include <routine/lock_flipper_routine.hpp>
 #include <routine/reset_with_servo_routine.hpp>
-#include <routine/elevator_and_flipper_routine.hpp>
-#include <routine/set_elevator_position_routine.hpp>
 
 #include <lib/auto_routine_from_csv.hpp>
 
@@ -69,7 +64,6 @@ namespace garage {
 //        m_TestRoutine = std::make_shared<SetFlipperAngleRoutine>(m_Pointer, 90.0, "Meme");
 //        m_TestRoutine = std::make_shared<lib::AutoRoutineFromCSV>(m_Pointer, "start_to_middle_left_hatch", "Start To Middle Hatch");
 //        m_TestRoutine->PostInitialize();
-        m_AutoAlignRoutine = std::make_shared<VisionAutoAlign>(m_Pointer);
     }
 
     void Robot::AddSubsystem(std::shared_ptr<lib::Subsystem> subsystem) {
@@ -136,27 +130,24 @@ namespace garage {
             m_RoutineManager->TerminateAllRoutines();
             m_Command.routines.push_back(m_TestRoutine);
         }
-        if (m_PrimaryController.GetStickButtonPressed(frc::GenericHID::kRightHand)) {
-            m_Command.drivePrecisionEnabled = !m_Command.drivePrecisionEnabled;
-            m_DashboardNetworkTable->PutString("Drive Mode", m_Command.drivePrecisionEnabled ? "Precise" : "Coarse");
-        }
         // TODO go off the books at some point in time
 //        if (m_PrimaryController.GetStartButtonPressed()) {
 //            m_Command.offTheBooksModeEnabled = !m_Command.offTheBooksModeEnabled;
-//            m_DashboardNetworkTable->PutString("Off the Books", m_Command.drivePrecisionEnabled ? "Yeet" : "Naw");
 //            m_DashboardNetworkTable->PutNumber("Match Time Remaining", frc::DriverStation::GetInstance().GetMatchTime());
 //            m_RoutineManager->TerminateAllRoutines();
 //            if (m_Command.offTheBooksModeEnabled) {
-//                m_Command.drivePrecisionEnabled = true;
 //                m_Command.routines.push_back(m_EndGameRoutine);
 //            } else {
-//                m_Command.drivePrecisionEnabled = false;
 //                m_Command.routines.push_back(m_ResetWithServoRoutine);
 //            }
 //        }
         /* Four buttons */
-        if (m_PrimaryController.GetAButton() || m_SecondaryController.GetAButton()) {
-            m_Command.routines.push_back(m_AutoAlignRoutine);
+        if (m_Drive) {
+            if (m_PrimaryController.GetAButton() || m_SecondaryController.GetAButton()) {
+                m_Drive->AutoAlign();
+            } else {
+                m_Drive->Unlock();
+            }
         }
         if (m_PrimaryController.GetBButton() || m_SecondaryController.GetBButton()) {
             m_Command.routines.push_back(m_GroundBallIntakeRoutine);

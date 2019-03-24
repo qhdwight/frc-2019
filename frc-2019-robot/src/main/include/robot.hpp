@@ -54,7 +54,6 @@ namespace garage {
 //        std::shared_ptr<test::TestDriveAutoRoutine> m_DriveForwardRoutine;
         std::shared_ptr<lib::Routine>
                 m_TestRoutine,
-                m_AutoAlignRoutine,
         // ==== Reset
                 m_ResetWithServoRoutine,
         // ==== Utility

@@ -17,6 +17,7 @@
 #include <networktables/NetworkTable.h>
 #include <networktables/NetworkTableInstance.h>
 
+#include <frc/I2C.h>
 #include <frc/Joystick.h>
 #include <frc/TimedRobot.h>
 #include <frc/XboxController.h>
@@ -49,6 +50,7 @@ namespace garage {
         std::vector<std::shared_ptr<lib::Subsystem>> m_Subsystems;
         wpi::optional<std::chrono::system_clock::time_point> m_LastPeriodicTime;
         RobotConfig m_Config;
+        frc::I2C m_LedModule{frc::I2C::Port::kOnboard, 0};
         std::chrono::milliseconds m_Period;
         // Routines
 //        std::shared_ptr<test::TestDriveAutoRoutine> m_DriveForwardRoutine;

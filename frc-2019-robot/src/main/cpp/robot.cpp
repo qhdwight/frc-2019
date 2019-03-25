@@ -3,6 +3,7 @@
 #include <routine/ball_intake_routine.hpp>
 #include <routine/lock_flipper_routine.hpp>
 #include <routine/reset_with_servo_routine.hpp>
+#include <routine/timed_drive_routine.hpp>
 
 #include <lib/auto_routine_from_csv.hpp>
 
@@ -64,6 +65,7 @@ namespace garage {
 //        m_TestRoutine = std::make_shared<SetFlipperAngleRoutine>(m_Pointer, 90.0, "Meme");
 //        m_TestRoutine = std::make_shared<lib::AutoRoutineFromCSV>(m_Pointer, "start_to_middle_left_hatch", "Start To Middle Hatch");
 //        m_TestRoutine->PostInitialize();
+        m_TestRoutine = std::make_shared<TimedDriveRoutine>(m_Pointer, 1000l, 0.1, "Meme");
     }
 
     void Robot::AddSubsystem(std::shared_ptr<lib::Subsystem> subsystem) {
@@ -145,7 +147,7 @@ namespace garage {
         if (m_Drive) {
             if (m_PrimaryController.GetAButton() || m_SecondaryController.GetAButton()) {
                 m_Drive->AutoAlign();
-            } else if (m_Drive->IsLocked()) {
+            } else if (m_Drive->IsLocked() && (m_PrimaryController.GetAButtonReleased() || m_SecondaryController.GetAButtonReleased())) {
                 m_Drive->Unlock();
             }
         }

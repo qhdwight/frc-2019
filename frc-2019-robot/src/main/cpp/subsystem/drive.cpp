@@ -30,6 +30,7 @@ namespace garage {
 
     void Drive::OnPostInitialize() {
         auto drive = std::weak_ptr<Drive>(shared_from_this());
+        AddController(m_RawController = std::make_shared<RawDriveController>(drive));
         AddController(m_ManualController = std::make_shared<ManualDriveController>(drive));
         AddController(m_AutoAlignController = std::make_shared<AutoAlignDriveController>(drive));
         SetUnlockedController(m_ManualController);
@@ -96,11 +97,8 @@ namespace garage {
     }
 
     void Drive::SetDriveOutput(double left, double right) {
-        if (!m_IsLocked) {
-            Lock();
-        }
-        m_LeftOutput = left;
-        m_RightOutput = right;
+        SetController(m_RawController);
+        m_RawController->SetDriveOutput(left, right);
     }
 
     double Drive::GetTilt() {
@@ -121,6 +119,17 @@ namespace garage {
         SetController(m_AutoAlignController);
     }
 
+    void RawDriveController::Reset() {
+        m_LeftOutput = 0.0;
+        m_RightOutput = 0.0;
+    }
+
+    void RawDriveController::Control() {
+        auto drive = m_Subsystem.lock();
+        drive->m_LeftOutput = m_LeftOutput;
+        drive->m_RightOutput = m_RightOutput;
+    }
+
     void ManualDriveController::Reset() {
         m_ForwardInput = 0.0;
         m_TurnInput = 0.0;
@@ -137,6 +146,7 @@ namespace garage {
     }
 
     void ManualDriveController::Control() {
+        auto drive = m_Subsystem.lock();
         double turnInput = m_TurnInput, forwardInput = m_ForwardInput;
         const double negativeInertia = turnInput - m_OldTurnInput;
         m_OldTurnInput = turnInput;
@@ -196,7 +206,6 @@ namespace garage {
             leftOutput += overPower * (-1.0 - rightOutput);
             rightOutput = -1.0;
         }
-        auto drive = m_Subsystem.lock();
         drive->m_LeftOutput = leftOutput;
         drive->m_RightOutput = rightOutput;
     }

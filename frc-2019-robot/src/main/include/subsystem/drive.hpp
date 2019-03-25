@@ -46,6 +46,23 @@ namespace garage {
 
     using DriveController=lib::SubsystemController<Drive>;
 
+    class RawDriveController : public DriveController {
+    public:
+        RawDriveController(std::weak_ptr<Drive>& drive) : DriveController(drive, "Raw Drive Controller") {}
+
+        void SetDriveOutput(double leftOutput, double rightOutput) {
+            m_LeftOutput = leftOutput;
+            m_RightOutput = rightOutput;
+        }
+
+    protected:
+        double m_LeftOutput = 0.0, m_RightOutput = 0.0;
+
+        void Control() override;
+
+        void Reset() override;
+    };
+
     class ManualDriveController : public DriveController {
     public:
         ManualDriveController(std::weak_ptr<Drive>& drive) : DriveController(drive, "Manual Drive Controller") {}
@@ -74,6 +91,8 @@ namespace garage {
     };
 
     class Drive : public lib::ControllableSubsystem<Drive> {
+        friend class RawDriveController;
+
         friend class ManualDriveController;
 
         friend class AutoAlignDriveController;
@@ -88,6 +107,7 @@ namespace garage {
                 m_LeftSlave{DRIVE_LEFT_SLAVE, rev::CANSparkMax::MotorType::kBrushless};
         rev::CANEncoder m_LeftEncoder = m_LeftMaster.GetEncoder(), m_RightEncoder = m_RightMaster.GetEncoder();
         ctre::phoenix::sensors::PigeonIMU m_Pigeon{PIGEON_IMU};
+        std::shared_ptr<RawDriveController> m_RawController;
         std::shared_ptr<ManualDriveController> m_ManualController;
         std::shared_ptr<AutoAlignDriveController> m_AutoAlignController;
 

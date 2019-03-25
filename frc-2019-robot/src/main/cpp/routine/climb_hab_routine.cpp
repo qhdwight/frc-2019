@@ -7,7 +7,7 @@
 #include <frc/PIDController.h>
 
 namespace garage {
-    OutriggerAutoLevelRoutine::OutriggerAutoLevelRoutine(std::shared_ptr<Robot>& robot) : lib::Routine(robot, "Outrigger Auto Level") {
+    OutriggerAutoLevelRoutine::OutriggerAutoLevelRoutine(std::shared_ptr<Robot>& robot) : Routine(robot, "Outrigger Auto Level") {
 
     }
 
@@ -28,7 +28,7 @@ namespace garage {
         m_Robot->GetSubsystem<Outrigger>()->Unlock();
     }
 
-    ElevatorRaiseRoutine::ElevatorRaiseRoutine(std::shared_ptr<Robot>& robot) : lib::Routine(robot, "Elevator Climb Routine") {
+    ElevatorRaiseRoutine::ElevatorRaiseRoutine(std::shared_ptr<Robot>& robot) : Routine(robot, "Elevator Climb Routine") {
 
     }
 
@@ -47,7 +47,7 @@ namespace garage {
         m_Robot->GetSubsystem<Elevator>()->Unlock();
     }
 
-    ClimbHabRoutine::ClimbHabRoutine(std::shared_ptr<Robot>& robot) : lib::ParallelRoutine(robot, "Climb Hab", {
+    ClimbHabRoutine::ClimbHabRoutine(std::shared_ptr<Robot>& robot) : SequentialRoutine(robot, "Climb Hab", {
         std::make_shared<OutriggerAutoLevelRoutine>(robot)
     }) {
 

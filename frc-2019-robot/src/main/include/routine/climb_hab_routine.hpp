@@ -1,6 +1,7 @@
 #pragma once
 
 #include <lib/parallel_routine.hpp>
+#include <lib/sequential_routine.hpp>
 
 namespace garage {
     class OutriggerAutoLevelRoutine : public lib::Routine {
@@ -28,7 +29,7 @@ namespace garage {
         void Terminate() override;
     };
 
-    class ClimbHabRoutine : public lib::ParallelRoutine {
+    class ClimbHabRoutine : public lib::SequentialRoutine {
     public:
         ClimbHabRoutine(std::shared_ptr<Robot>& robot);
     };

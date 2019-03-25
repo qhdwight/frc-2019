@@ -2,6 +2,8 @@
 
 #include <robot.hpp>
 
+#include <routine/set_elevator_position_routine.hpp>
+
 #include <lib/logger.hpp>
 
 #include <frc/PIDController.h>
@@ -28,26 +30,8 @@ namespace garage {
         m_Robot->GetSubsystem<Outrigger>()->Unlock();
     }
 
-    ElevatorRaiseRoutine::ElevatorRaiseRoutine(std::shared_ptr<Robot>& robot) : Routine(robot, "Elevator Climb Routine") {
-
-    }
-
-    void ElevatorRaiseRoutine::Start() {
-        Routine::Start();
-        // TODO tune
-        m_Robot->GetSubsystem<Elevator>()->SetWantedSetPoint(150000);
-    }
-
-    void ElevatorRaiseRoutine::Update() {
-        Routine::Update();
-    }
-
-    void ElevatorRaiseRoutine::Terminate() {
-        Routine::Terminate();
-        m_Robot->GetSubsystem<Elevator>()->Unlock();
-    }
-
     ClimbHabRoutine::ClimbHabRoutine(std::shared_ptr<Robot>& robot) : SequentialRoutine(robot, "Climb Hab", {
+        std::make_shared<SetElevatorPositionRoutine>(robot, 20.0),
         std::make_shared<OutriggerAutoLevelRoutine>(robot)
     }) {
 

@@ -9,7 +9,7 @@
 #include <frc/PIDController.h>
 
 namespace garage {
-    OutriggerAutoLevelRoutine::OutriggerAutoLevelRoutine(std::shared_ptr<Robot>& robot) : Routine(robot, "Outrigger Auto Level") {
+    OutriggerAutoLevelRoutine::OutriggerAutoLevelRoutine(std::shared_ptr<Robot>& robot) : SubsystemRoutine(robot, "Outrigger Auto Level") {
 
     }
 

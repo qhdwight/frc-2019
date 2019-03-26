@@ -28,7 +28,7 @@ namespace garage {
                 ty = m_LimelightTable->GetNumber("ty", 0.0),
                 ta = m_LimelightTable->GetNumber("ta", 0.0),
                 tv = m_LimelightTable->GetNumber("tv", 0.0);
-        m_Subsystem->Log(lib::Logger::LogLevel::k_Info, lib::Logger::Format("%f, %f, %f, %f", tx, ty, ta, tv));
+        m_Subsystem->LogSample(lib::Logger::LogLevel::k_Debug, lib::Logger::Format("%f, %f, %f, %f", tx, ty, ta, tv));
         double forwardOutput, turnOutput;
         if (tv < 1.0) {
             forwardOutput = 0.0;

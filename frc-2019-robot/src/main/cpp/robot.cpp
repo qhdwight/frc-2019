@@ -146,9 +146,15 @@ namespace garage {
         /* Four buttons */
         if (m_Drive) {
             if (m_PrimaryController.GetAButton() || m_SecondaryController.GetAButton()) {
-                m_Drive->AutoAlign();
+                if (m_Drive->HasVisionTarget()) {
+                    m_Drive->AutoAlign();
+                    SetLedMode(LedMode::k_HasTarget);
+                } else {
+                    SetLedMode(LedMode::k_NoTarget);
+                }
             } else if (m_Drive->IsLocked() && (m_PrimaryController.GetAButtonReleased() || m_SecondaryController.GetAButtonReleased())) {
                 m_Drive->Unlock();
+                SetLedMode(LedMode::k_Idle);
             }
         }
         if (m_PrimaryController.GetBButton() || m_SecondaryController.GetBButton()) {
@@ -222,6 +228,13 @@ namespace garage {
 
     void Robot::TestPeriodic() {
         ControllablePeriodic();
+    }
+
+    void Robot::SetLedMode(Robot::LedMode ledMode) {
+        if (ledMode != m_LedMode) {
+            m_LedMode = ledMode;
+            m_LedModule.Transaction(reinterpret_cast<uint8_t*>(&ledMode), 1, nullptr, 0);
+        }
     }
 
     template<>

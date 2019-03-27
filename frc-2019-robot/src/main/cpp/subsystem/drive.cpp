@@ -210,24 +210,26 @@ namespace garage {
         drive->m_RightOutput = rightOutput;
     }
 
+    AutoAlignDriveController::AutoAlignDriveController(std::weak_ptr<Drive>& subsystem)
+            : SubsystemController(subsystem, "Auto Align Drive Controller"), m_Limelight(subsystem.lock()->m_Robot->GetLimelight()) {
+
+    }
+
     void AutoAlignDriveController::Control() {
         auto drive = m_Subsystem.lock();
-        const double
-                tx = m_LimelightTable->GetNumber("tx", 0.0),
-                ta = m_LimelightTable->GetNumber("ta", 0.0),
-                tv = m_LimelightTable->GetNumber("tv", 0.0);
-//        drive->Log(lib::Logger::LogLevel::k_Info, lib::Logger::Format("%f, %f, %f, %f", tx, ty, ta, tv));
-        double forwardOutput, turnOutput;
-        if (tv < 1.0) {
-            forwardOutput = 0.0;
-            turnOutput = 0.0;
+        if (m_Limelight.HasTarget()) {
+            const double
+                    tx = m_Limelight.GetHorizontalAngleToTarget(),
+                    ta = m_Limelight.GetTargetPercentArea();
+            drive->LogSample(lib::Logger::LogLevel::k_Debug, lib::Logger::Format("TX: %f, TA: %f", tx, ta));
+            const double turnOutput = math::clamp(tx * VISION_TURN_P, -VISION_MAX_TURN, VISION_MAX_TURN),
+                    delta = VISION_DESIRED_TARGET_AREA - ta,
+                    thresholdDelta = std::fabs(delta) > VISION_AREA_THRESHOLD ? delta : 0.0,
+                    forwardOutput = math::clamp(thresholdDelta * VISION_FORWARD_P, -VISION_MAX_FORWARD, VISION_MAX_FORWARD);
+            drive->m_LeftOutput = forwardOutput + turnOutput;
+            drive->m_RightOutput = forwardOutput - turnOutput;
         } else {
-            turnOutput = math::clamp(tx * VISION_TURN_P, -VISION_MAX_TURN, VISION_MAX_TURN);
-            const double delta = VISION_DESIRED_TARGET_AREA - ta;
-            const double thresholdDelta = math::absolute(delta) > VISION_AREA_THRESHOLD ? delta : 0.0;
-            forwardOutput = math::clamp(thresholdDelta * VISION_FORWARD_P, -VISION_MAX_FORWARD, VISION_MAX_FORWARD);
+            drive->Unlock();
         }
-        drive->m_LeftOutput = forwardOutput + turnOutput;
-        drive->m_RightOutput = forwardOutput - turnOutput;
     }
 }

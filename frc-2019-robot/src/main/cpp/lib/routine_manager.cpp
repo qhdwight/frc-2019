@@ -62,5 +62,9 @@ namespace garage {
                 m_ActiveRoutine.reset();
             }
         }
+
+        std::weak_ptr<Routine> RoutineManager::GetActiveRoutine() {
+            return m_ActiveRoutine;
+        }
     }
 }

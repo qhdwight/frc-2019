@@ -3,6 +3,7 @@
 #include <command.hpp>
 #include <hardware_map.hpp>
 
+#include <lib/limelight.hpp>
 #include <lib/controllable_subsystem.hpp>
 
 #include <garage_math/garage_math.hpp>
@@ -80,12 +81,12 @@ namespace garage {
 
     class AutoAlignDriveController : public DriveController {
     public:
-        AutoAlignDriveController(std::weak_ptr<Drive>& drive) : DriveController(drive, "Auto Align Controller") {
-            m_LimelightTable = nt::NetworkTableInstance::GetDefault().GetTable(VISION_LIMELIGHT_TABLE_NAME);
-        }
+        AutoAlignDriveController(std::weak_ptr<Drive>& drive);
+
+        void OnEnable() override;
 
     protected:
-        std::shared_ptr<nt::NetworkTable> m_LimelightTable;
+        lib::Limelight& m_Limelight;
 
         void Control() override;
     };

@@ -27,6 +27,8 @@ namespace garage {
 
             void Update();
 
+            std::weak_ptr<Routine> GetActiveRoutine();
+
             void TerminateAllRoutines();
 
             void TerminateActiveRoutine();

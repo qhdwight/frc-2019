@@ -11,14 +11,12 @@ namespace garage {
 
     class VisionAutoAlign : public lib::SubsystemRoutine<Drive> {
     protected:
-        std::shared_ptr<nt::NetworkTable> m_LimelightTable;
-
         void Update() override;
 
         bool CheckFinished() override;
 
     public:
-        VisionAutoAlign(std::shared_ptr<Robot> robot);
+        VisionAutoAlign(std::shared_ptr<Robot> robot) : SubsystemRoutine(robot, "Vision Auto Align") {}
 
         void Start() override;
 

@@ -130,6 +130,8 @@ namespace garage {
         if (m_PrimaryController.GetBackButtonPressed()) {
             // TODO remove after testing
             m_RoutineManager->TerminateAllRoutines();
+        }
+        if (m_PrimaryController.GetStartButtonPressed()) {
             m_Command.routines.push_back(m_TestRoutine);
         }
         // TODO go off the books at some point in time
@@ -147,7 +149,7 @@ namespace garage {
         if (m_Drive) {
             if (m_PrimaryController.GetAButton() || m_SecondaryController.GetAButton()) {
                 m_Drive->AutoAlign();
-            } else if (m_Drive->IsLocked() && (m_PrimaryController.GetAButtonReleased() || m_SecondaryController.GetAButtonReleased())) {
+            } else if (m_PrimaryController.GetAButtonReleased() || m_SecondaryController.GetAButtonReleased()) {
                 m_Drive->Unlock();
             }
         }

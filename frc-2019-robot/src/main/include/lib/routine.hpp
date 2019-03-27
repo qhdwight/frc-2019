@@ -6,8 +6,8 @@
 namespace garage {
     class Robot;
     namespace lib {
+        class Subsystem;
         class Routine {
-
         protected:
             std::shared_ptr<Robot> m_Robot;
             std::string m_Name;
@@ -27,6 +27,10 @@ namespace garage {
             virtual void Terminate();
 
             virtual bool Periodic();
+
+            virtual bool ShouldTerminateBasedOnUnlock(std::weak_ptr<Subsystem> subsystem) {
+                return true;
+            }
 
             virtual bool IsFinished() {
                 return m_IsFinished;

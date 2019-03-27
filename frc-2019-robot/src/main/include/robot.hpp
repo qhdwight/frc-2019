@@ -12,6 +12,7 @@
 #include <lib/logger.hpp>
 #include <lib/routine.hpp>
 #include <lib/subsystem.hpp>
+#include <lib/limelight.hpp>
 #include <lib/routine_manager.hpp>
 
 #include <networktables/NetworkTable.h>
@@ -51,6 +52,7 @@ namespace garage {
         wpi::optional<std::chrono::system_clock::time_point> m_LastPeriodicTime;
         RobotConfig m_Config;
         frc::I2C m_LedModule{frc::I2C::Port::kOnboard, 0};
+        lib::Limelight m_LimeLight;
         std::chrono::milliseconds m_Period;
         // Routines
 //        std::shared_ptr<test::TestDriveAutoRoutine> m_DriveForwardRoutine;
@@ -94,6 +96,10 @@ namespace garage {
 
         RobotConfig& GetConfig() {
             return m_Config;
+        }
+
+        lib::Limelight& GetLimelight() {
+            return m_LimeLight;
         }
 
         Command GetLatestCommand() {

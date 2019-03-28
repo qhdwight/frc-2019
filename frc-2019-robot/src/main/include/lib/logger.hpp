@@ -12,7 +12,7 @@ namespace garage {
                 k_Silent = 0, k_Fatal = 1, k_Error = 2, k_Warning = 3, k_Info = 4, k_Debug = 5, k_Verbose = 6
             };
 
-        private:
+        protected:
             static LogLevel s_LogLevel;
 
         public:

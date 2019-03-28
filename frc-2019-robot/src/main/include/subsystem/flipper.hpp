@@ -62,14 +62,16 @@ namespace garage {
     };
 
     class RawFlipperController : public FlipperController {
-    private:
+    protected:
         double m_Output = 0.0;
 
     public:
         RawFlipperController(std::weak_ptr<Flipper>& flipper)
                 : FlipperController(flipper, "Raw Controller") {}
 
-        void Reset() override;
+        void Reset() override {
+            m_Output = 0.0;
+        }
 
         void SetOutput(double output);
 
@@ -79,7 +81,7 @@ namespace garage {
     };
 
     class VelocityFlipperController : public FlipperController {
-    private:
+    protected:
         double m_WantedVelocity = 0.0;
 
     public:
@@ -90,7 +92,9 @@ namespace garage {
             m_WantedVelocity = velocity;
         }
 
-        void Reset() override;
+        void Reset() override {
+            m_WantedVelocity = 0.0;
+        }
 
         void ProcessCommand(Command& command) override;
 
@@ -98,18 +102,20 @@ namespace garage {
     };
 
     class SetPointFlipperController : public FlipperController {
-    private:
+    protected:
         double m_SetPoint = 0.0;
 
     public:
-        SetPointFlipperController(std::weak_ptr<Flipper>& subsystem)
-                : FlipperController(subsystem, "Set Point Controller") {}
+        SetPointFlipperController(std::weak_ptr<Flipper>& flipper)
+                : FlipperController(flipper, "Set Point Controller") {}
 
         void SetSetPoint(double setPoint) {
             m_SetPoint = setPoint;
         }
 
-        void Reset() override;
+        void Reset() override {
+            m_SetPoint = 0.0;
+        }
 
         void ProcessCommand(Command& command) override;
 
@@ -144,8 +150,6 @@ namespace garage {
         void SetupNetworkTableValues();
 
         void Update() override;
-
-        void UpdateUnlocked(Command& command) override;
 
         void SpacedUpdate(Command& command) override;
 

@@ -97,7 +97,7 @@ namespace garage {
 
         friend class AutoAlignDriveController;
 
-    private:
+    protected:
         double m_LeftOutput = 0.0, m_RightOutput = 0.0;
         double m_RightEncoderPosition = 0.0, m_LeftEncoderPosition = 0.0;
         rev::CANSparkMax
@@ -111,7 +111,6 @@ namespace garage {
         std::shared_ptr<ManualDriveController> m_ManualController;
         std::shared_ptr<AutoAlignDriveController> m_AutoAlignController;
 
-    protected:
         void SpacedUpdate(Command& command) override;
 
         void Update() override;

@@ -3,7 +3,7 @@
 #include <garage_math/garage_math.hpp>
 
 namespace garage {
-    Outrigger::Outrigger(std::shared_ptr<Robot>& robot) : lib::Subsystem(robot, "Outrigger") {
+    Outrigger::Outrigger(std::shared_ptr<Robot>& robot) : Subsystem(robot, "Outrigger") {
         m_OutriggerMaster.RestoreFactoryDefaults();
         m_OutriggerSlave.RestoreFactoryDefaults();
         m_OutriggerWheel.RestoreFactoryDefaults();
@@ -30,8 +30,8 @@ namespace garage {
     }
 
     bool Outrigger::ShouldUnlock(Command& command) {
-        return math::absolute(command.outrigger) > DEFAULT_INPUT_THRESHOLD ||
-               math::absolute(command.outriggerWheel) > DEFAULT_INPUT_THRESHOLD;
+        return std::fabs(command.outrigger) > DEFAULT_INPUT_THRESHOLD ||
+               std::fabs(command.outriggerWheel) > DEFAULT_INPUT_THRESHOLD;
     }
 
     void Outrigger::UpdateUnlocked(Command& command) {

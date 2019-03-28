@@ -26,5 +26,9 @@ namespace garage {
     class BallIntakeRoutine : public lib::SequentialRoutine {
     public:
         BallIntakeRoutine(std::shared_ptr<Robot> robot, double setPoint, double angle);
+
+        void Start() override;
+
+        void Terminate() override;
     };
 }

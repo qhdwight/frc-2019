@@ -27,6 +27,7 @@ namespace garage {
         m_FlipperController.SetSmartMotionMinOutputVelocity(0.0, FLIPPER_SMART_MOTION_PID_SLOT);
         m_FlipperController.SetSmartMotionMaxAccel(FLIPPER_ACCELERATION, FLIPPER_SMART_MOTION_PID_SLOT);
         m_FlipperController.SetSmartMotionAllowedClosedLoopError(FLIPPER_ALLOWABLE_ERROR, FLIPPER_SMART_MOTION_PID_SLOT);
+        m_FlipperMaster.SetParameter(rev::CANSparkMax::ConfigParameter::kInputDeadband, 0.02);
         // TODO yay or nay with s-curve?
         m_FlipperController.SetSmartMotionAccelStrategy(rev::CANPIDController::AccelStrategy::kSCurve, FLIPPER_SMART_MOTION_PID_SLOT);
         m_FlipperMaster.EnableVoltageCompensation(DEFAULT_VOLTAGE_COMPENSATION);
@@ -125,9 +126,9 @@ namespace garage {
             m_FlipperMaster.ClearFaults();
         }
         int cameraServoOutput;
-        if (m_Angle < 3.0) {
+        if (m_Angle < FLIPPER_CAMERA_STOW_THRESHOLD_ANGLE) {
             cameraServoOutput = CAMERA_SERVO_LOWER;
-        } else if (m_Angle > FLIPPER_UPPER_ANGLE - 3.0) {
+        } else if (m_Angle > FLIPPER_UPPER_ANGLE - FLIPPER_CAMERA_STOW_THRESHOLD_ANGLE) {
             cameraServoOutput = CAMERA_SERVO_UPPER;
         } else {
             cameraServoOutput = CAMERA_SERVO_MIDDLE;

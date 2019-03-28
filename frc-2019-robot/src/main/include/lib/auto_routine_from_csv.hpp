@@ -14,7 +14,7 @@ namespace garage {
 
         public:
             AutoRoutineFromCSV(std::shared_ptr<Robot>& robot, const std::string& path, const std::string& name)
-                    : lib::AutoRoutine(robot, name), m_Path(path) {}
+                    : AutoRoutine(robot, name), m_Path(path) {}
 
         protected:
             void PrepareWaypoints() override;

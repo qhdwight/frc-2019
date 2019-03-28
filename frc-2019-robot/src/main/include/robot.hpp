@@ -30,16 +30,17 @@
 
 namespace garage {
     class Robot : public frc::TimedRobot {
+    public:
+        enum class LedMode {
+            k_Idle = 0, k_NoTarget = 1, k_HasTarget = 2, k_BallIntake = 3, k_Climb = 4
+        };
+
     private:
         std::shared_ptr<Robot> m_Pointer;
 
         void UpdateCommand();
 
     protected:
-        enum class LedMode {
-            k_Idle = 0, k_NoTarget = 1, k_HasTarget = 2
-        };
-
         nt::NetworkTableInstance m_NetworkTableInstance;
         std::shared_ptr<nt::NetworkTable> m_NetworkTable, m_DashboardNetworkTable;
         frc::XboxController m_PrimaryController{0}, m_SecondaryController{1};
@@ -56,8 +57,8 @@ namespace garage {
         wpi::optional<std::chrono::system_clock::time_point> m_LastPeriodicTime;
         RobotConfig m_Config;
         frc::I2C m_LedModule{frc::I2C::Port::kOnboard, 1};
-        lib::Limelight m_LimeLight;
         LedMode m_LedMode;
+        lib::Limelight m_LimeLight;
         std::chrono::milliseconds m_Period;
         // Routines
 //        std::shared_ptr<test::TestDriveAutoRoutine> m_DriveForwardRoutine;
@@ -68,7 +69,7 @@ namespace garage {
         // ==== Utility
                 m_GroundBallIntakeRoutine, m_LoadingBallIntakeRoutine,
         // ==== End game
-                m_EndGameRoutine;
+                m_EndGameRoutine, m_SecondLevelClimbRoutine, m_ThirdLevelClimbRoutine;
 
     public:
         void RobotInit() override;

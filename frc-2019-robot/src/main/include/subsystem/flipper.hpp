@@ -9,17 +9,18 @@
 
 #include <rev/CANSparkMax.h>
 
-#define FLIPPER_LOWER 0.0
-#define FLIPPER_UPPER 40.0
+#define FLIPPER_LOWER 0.0 //  Raw encoder set point
+#define FLIPPER_UPPER 40.0 // Raw encoder set point
 #define FLIPPER_LOWER_ANGLE 0.0 // Degrees
 #define FLIPPER_STOW_ANGLE 90.0 // Degrees
 #define FLIPPER_UPPER_ANGLE 180.0 // Degrees
+#define FLIPPER_CAMERA_STOW_THRESHOLD_ANGLE 3.0 // Degrees
 
-#define FLIPPER_COM_ANGLE_FF_OFFSET 25.0
+#define FLIPPER_COM_ANGLE_FF_OFFSET 25.0 // Degrees
 
-#define FLIPPER_SET_POINT_THRESHOLD 1.0
-#define FLIPPER_SET_POINT_LOWER (FLIPPER_LOWER + FLIPPER_SET_POINT_THRESHOLD) // Raw set point
-#define FLIPPER_SET_POINT_UPPER (FLIPPER_UPPER - FLIPPER_SET_POINT_THRESHOLD) // Raw set point
+#define FLIPPER_SET_POINT_THRESHOLD 1.0 // Raw encoder set point
+#define FLIPPER_SET_POINT_LOWER (FLIPPER_LOWER + FLIPPER_SET_POINT_THRESHOLD) // Raw encoder set point
+#define FLIPPER_SET_POINT_UPPER (FLIPPER_UPPER - FLIPPER_SET_POINT_THRESHOLD) // Raw encoder set point
 
 //#define FLIPPER_P 0.000015
 #define FLIPPER_P 0.0001

@@ -150,6 +150,13 @@ namespace garage {
         double turnInput = m_TurnInput, forwardInput = m_ForwardInput;
         const double negativeInertia = turnInput - m_OldTurnInput;
         m_OldTurnInput = turnInput;
+        // Apply a sine wave non-linearity on turning
+        const double beta = GARAGE_PI / 2.0 * DRIVE_TURN_NON_LINEARITY;
+        const double denominator = std::sin(beta);
+        turnInput = std::sin(beta * turnInput) / denominator;
+        turnInput = std::sin(beta * turnInput) / denominator;
+        turnInput = std::sin(beta * turnInput) / denominator;
+        // Negative inertia to make changes gradual over time
         double negativeInertiaScalar;
         if (turnInput * negativeInertia > 0.0) {
             negativeInertiaScalar = DRIVE_NEGATIVE_INERTIA_TURN_SCALAR;

@@ -26,7 +26,17 @@ namespace garage {
         }
     }
 
-    BallIntakeRoutine::BallIntakeRoutine(std::shared_ptr<Robot> robot, double setPoint, double angle) : lib::SequentialRoutine(robot, "Intake Ball", {
+    void BallIntakeRoutine::Start() {
+        SequentialRoutine::Start();
+        m_Robot->SetLedMode(Robot::LedMode::k_BallIntake);
+    }
+
+    void BallIntakeRoutine::Terminate() {
+        SequentialRoutine::Terminate();
+        m_Robot->SetLedMode(Robot::LedMode::k_Idle);
+    }
+
+    BallIntakeRoutine::BallIntakeRoutine(std::shared_ptr<Robot> robot, double setPoint, double angle) : SequentialRoutine(robot, "Intake Ball", {
             // TODO tune values
             std::make_shared<ElevatorAndFlipperRoutine>(robot, setPoint, angle, "Flipper Ball Intake"),
             std::make_shared<IntakeBallUntilIn>(robot)

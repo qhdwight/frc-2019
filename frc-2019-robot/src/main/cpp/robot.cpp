@@ -123,6 +123,7 @@ namespace garage {
         // Update each subsystem
         for (const auto& subsystem : m_Subsystems)
             subsystem->Periodic();
+//        m_DashboardNetworkTable->PutNumber("Match Time Remaining", frc::DriverStation::GetInstance().GetMatchTime());
     }
 
     void Robot::TeleopPeriodic() {
@@ -132,24 +133,20 @@ namespace garage {
     void Robot::UpdateCommand() {
         /* Routines */
         m_Command.routines.clear();
-        if (m_PrimaryController.GetBackButtonPressed()) {
-            // TODO remove after testing
-            m_RoutineManager->TerminateAllRoutines();
+        if (m_PrimaryController.GetBackButtonPressed() || m_SecondaryController.GetBackButtonPressed()) {
+            m_RoutineManager->TerminateActiveRoutine();
         }
-        if (m_PrimaryController.GetStartButtonPressed()) {
+        if (m_PrimaryController.GetStartButtonPressed() || m_SecondaryController.GetStartButtonPressed()) {
             m_Command.routines.push_back(m_TestRoutine);
         }
-        // TODO go off the books at some point in time
-//        if (m_PrimaryController.GetStartButtonPressed()) {
-//            m_Command.offTheBooksModeEnabled = !m_Command.offTheBooksModeEnabled;
-//            m_DashboardNetworkTable->PutNumber("Match Time Remaining", frc::DriverStation::GetInstance().GetMatchTime());
-//            m_RoutineManager->TerminateAllRoutines();
-//            if (m_Command.offTheBooksModeEnabled) {
-//                m_Command.routines.push_back(m_EndGameRoutine);
-//            } else {
-//                m_Command.routines.push_back(m_ResetWithServoRoutine);
-//            }
-//        }
+        if (m_) {
+            m_Command.offTheBooksModeEnabled = !m_Command.offTheBooksModeEnabled;
+            if (m_Command.offTheBooksModeEnabled) {
+                m_Command.routines.push_back(m_EndGameRoutine);
+            } else {
+                m_Command.routines.push_back(m_ResetWithServoRoutine);
+            }
+        }
         /* Four buttons */
         if (m_Drive) {
             if (m_PrimaryController.GetAButton() || m_SecondaryController.GetAButton()) {

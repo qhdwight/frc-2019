@@ -11,7 +11,7 @@ namespace garage {
     public:
         SoftLandElevatorRoutine(std::shared_ptr<Robot> robot);
 
-    private:
+    protected:
         void Start() override;
 
         void Terminate() override;

@@ -35,16 +35,12 @@ namespace garage {
             k_Idle = 0, k_NoTarget = 1, k_HasTarget = 2, k_BallIntake = 3, k_Climb = 4
         };
 
-    private:
-        std::shared_ptr<Robot> m_Pointer;
-
-        void UpdateCommand();
-
     protected:
+        std::shared_ptr<Robot> m_Pointer;
         nt::NetworkTableInstance m_NetworkTableInstance;
         std::shared_ptr<nt::NetworkTable> m_NetworkTable, m_DashboardNetworkTable;
         frc::XboxController m_PrimaryController{0}, m_SecondaryController{1};
-//        frc::Joystick m_Joystick{0};
+        frc::Joystick m_ButtonBoard{2};
         Command m_Command;
         std::shared_ptr<lib::RoutineManager> m_RoutineManager;
         std::shared_ptr<Drive> m_Drive;
@@ -93,6 +89,8 @@ namespace garage {
         void TeleopPeriodic() override;
 
         void AddSubsystem(std::shared_ptr<lib::Subsystem> subsystem);
+
+        void UpdateCommand();
 
         void ControllablePeriodic();
 

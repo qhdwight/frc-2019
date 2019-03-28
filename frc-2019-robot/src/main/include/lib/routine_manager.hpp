@@ -12,10 +12,11 @@ namespace garage {
     class Robot;
     namespace lib {
         class RoutineManager {
-        private:
+        protected:
             std::shared_ptr<Robot> m_Robot;
             std::deque<std::shared_ptr<Routine>> m_QueuedRoutines;
             std::shared_ptr<Routine> m_ActiveRoutine;
+
         public:
             RoutineManager(std::shared_ptr<Robot>& robot);
 

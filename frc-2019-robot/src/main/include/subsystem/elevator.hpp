@@ -53,7 +53,9 @@ namespace garage {
         RawElevatorController(std::weak_ptr<Elevator>& elevator)
                 : SubsystemController(elevator, "Raw Controller") {}
 
-        void Reset() override;
+        void Reset() override {
+            m_Output = 0.0;
+        }
 
         void ProcessCommand(Command& command) override;
 
@@ -76,7 +78,9 @@ namespace garage {
 
         void Control() override;
 
-        void Reset() override;
+        void Reset() override {
+            m_WantedSetPoint = 0.0;
+        }
 
         void SetWantedSetPoint(double wantedSetPoint) {
             m_WantedSetPoint = wantedSetPoint;
@@ -95,7 +99,9 @@ namespace garage {
 
         void Control() override;
 
-        void Reset() override;
+        void Reset() override {
+            m_WantedVelocity = 0.0;
+        }
     };
 
     class SoftLandElevatorController : public lib::SubsystemController<Elevator> {

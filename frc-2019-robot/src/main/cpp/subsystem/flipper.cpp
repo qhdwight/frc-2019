@@ -89,10 +89,6 @@ namespace garage {
         return std::fabs(command.flipper) > DEFAULT_INPUT_THRESHOLD && m_LockServoOutput != LOCK_SERVO_UPPER;
     }
 
-    void Flipper::UpdateUnlocked(Command& command) {
-        ControllableSubsystem::UpdateUnlocked(command);
-    }
-
     void Flipper::HandleLimitSwitch(rev::CANDigitalInput& limitSwitch, bool& isLimitSwitchDown, bool& isFirstHit, double resetEncoderValue) {
         isLimitSwitchDown = limitSwitch.Get();
         if (isLimitSwitchDown) {
@@ -225,10 +221,6 @@ namespace garage {
         return m_Subsystem.lock()->GetAngle();
     }
 
-    void RawFlipperController::Reset() {
-        m_Output = 0.0;
-    }
-
     void RawFlipperController::ProcessCommand(Command& command) {
         m_Output = command.flipper * FLIPPER_RAW_POWER;
     }
@@ -243,10 +235,6 @@ namespace garage {
 
     void RawFlipperController::SetOutput(double output) {
         m_Output = output;
-    }
-
-    void VelocityFlipperController::Reset() {
-        m_WantedVelocity = 0.0;
     }
 
     void VelocityFlipperController::ProcessCommand(Command& command) {
@@ -301,9 +289,5 @@ namespace garage {
             flipper->LogSample(lib::Logger::LogLevel::k_Debug, lib::Logger::Format("Not doing anything, wanted set point: %f", m_SetPoint));
             flipper->m_FlipperMaster.Set(0.0);
         }
-    }
-
-    void SetPointFlipperController::Reset() {
-        m_SetPoint = 0.0;
     }
 }

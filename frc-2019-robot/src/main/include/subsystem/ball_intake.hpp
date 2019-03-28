@@ -21,7 +21,7 @@ namespace garage {
     };
 
     class BallIntake : public lib::Subsystem {
-    private:
+    protected:
         ctre::phoenix::motorcontrol::can::TalonSRX m_RightIntake{BALL_INTAKE_MASTER}, m_LeftIntake{BALL_INTAKE_SLAVE};
         double m_LastOpenLoopRamp = 0.0, m_LastOutput = 0.0;
         int m_HasBallCount = 0;
@@ -30,7 +30,6 @@ namespace garage {
 
         void ConfigOpenLoopRamp(double ramp);
 
-    protected:
         void UpdateUnlocked(Command& command) override;
 
         void SpacedUpdate(Command& command) override;

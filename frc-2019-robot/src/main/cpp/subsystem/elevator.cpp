@@ -47,6 +47,7 @@ namespace garage {
     }
 
     void Elevator::Reset() {
+        ControllableSubsystem::Reset();
         m_IsFirstLimitSwitchHit = true;
     }
 
@@ -203,10 +204,6 @@ namespace garage {
         }
     }
 
-    void RawElevatorController::Reset() {
-        m_Output = 0.0;
-    }
-
     void SetPointElevatorController::ProcessCommand(Command& command) {
         auto elevator = m_Subsystem.lock();
         const double input = math::threshold(command.elevatorInput, DEFAULT_INPUT_THRESHOLD);
@@ -229,10 +226,6 @@ namespace garage {
             elevator->Log(lib::Logger::LogLevel::k_Warning, "Not in closed loop range for set point");
             elevator->SoftLand();
         }
-    }
-
-    void SetPointElevatorController::Reset() {
-        m_WantedSetPoint = 0;
     }
 
     void VelocityElevatorController::ProcessCommand(Command& command) {
@@ -258,10 +251,6 @@ namespace garage {
             elevator->Log(lib::Logger::LogLevel::k_Warning, "Not in closed loop range for velocity");
             elevator->SoftLand();
         }
-    }
-
-    void VelocityElevatorController::Reset() {
-        m_WantedVelocity = 0.0;
     }
 
     void SoftLandElevatorController::Control() {

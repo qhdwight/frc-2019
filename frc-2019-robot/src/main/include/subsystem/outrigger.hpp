@@ -2,25 +2,66 @@
 
 #include <hardware_map.hpp>
 
-#include <lib/subsystem.hpp>
+#include <lib/controllable_subsystem.hpp>
 
 #include <rev/CANSparkMax.h>
 
+#define OUTRIGGER_LOWER 0.0
+#define OUTRIGGER_UPPER 90.0
+
+#define OUTRIGGER_STOW_ANGLE 90.0
+#define OUTRIGGER_FULL_EXTENDED_ANGLE 270.0
+
 #define OUTRIGGER_RAMPING 0.25
 
+#define OUTRIGGER_P 0.0
+#define OUTRIGGER_I 0.0
+#define OUTRIGGER_D 0.0
+#define OUTRIGGER_MAX_ACCUM 0.0
+#define OUTRIGGER_I_ZONE 0.0
+#define OUTRIGGER_FF 0.0
+#define OUTRIGGER_VELOCITY 2000.0
+#define OUTRIGGER_ACCELERATION 1000.0
+#define OUTRIGGER_ALLOWABLE_ERROR 0.0
+#define OUTRIGGER_ANGLE_FF 0.0
+
+#define OUTRIGGER_SET_POINT_PID_SLOT 0
+
 namespace garage {
-    class Outrigger : public lib::Subsystem {
-    private:
-        double m_OutriggerOutput = 0.0, m_OutriggerWheelOutput = 0.0;
+    class Outrigger;
+
+    using OutriggerController = lib::SubsystemController<Outrigger>;
+
+    class SetPointOutriggerController : public OutriggerController {
+    protected:
+        double m_SetPoint = OUTRIGGER_LOWER;
+
+    public:
+        SetPointOutriggerController(std::weak_ptr<Outrigger>& subsystem, const std::string& name)
+            : OutriggerController(subsystem, "Set Point Outrigger Controller") {}
+
+        void SetSetPoint(double setPoint) {
+            m_SetPoint = setPoint;
+        }
+
+        void Reset() override {
+            m_SetPoint = 0.0;
+        }
+
+        void Control() override;
+    };
+
+    class Outrigger : public lib::ControllableSubsystem<Outrigger>{
+        friend class SetPointOutriggerController;
+
+    protected:
         rev::CANSparkMax
                 m_OutriggerMaster{OUTRIGGER_ARM_MASTER, rev::CANSparkMax::MotorType::kBrushless},
                 m_OutriggerSlave{OUTRIGGER_ARM_SLAVE, rev::CANSparkMax::MotorType::kBrushless},
                 m_OutriggerWheel{OUTRIGGER_WHEEL, rev::CANSparkMax::MotorType::kBrushless};
-        rev::CANPIDController m_Controller = m_OutriggerMaster.GetPIDController();
+        rev::CANPIDController m_OutriggerController = m_OutriggerMaster.GetPIDController();
         rev::CANEncoder m_Encoder = m_OutriggerMaster.GetEncoder();
-
-    protected:
-        void UpdateUnlocked(Command& command) override;
+        double m_EncoderPosition = OUTRIGGER_UPPER, m_Angle = OUTRIGGER_STOW_ANGLE;
 
         void StopMotors();
 
@@ -30,8 +71,6 @@ namespace garage {
 
     public:
         Outrigger(std::shared_ptr<Robot>& robot);
-
-        void SetOutput(double output);
 
         void Reset() override;
     };

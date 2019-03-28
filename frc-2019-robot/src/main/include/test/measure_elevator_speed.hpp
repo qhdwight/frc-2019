@@ -10,7 +10,7 @@
 namespace garage {
     namespace test {
         class MeasureElevatorSpeed : public lib::SubsystemRoutine<Elevator> {
-        private:
+        protected:
             std::vector<double> m_Velocities;
             double m_Output;
 

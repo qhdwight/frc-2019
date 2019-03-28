@@ -139,7 +139,7 @@ namespace garage {
         if (m_PrimaryController.GetStartButtonPressed() || m_SecondaryController.GetStartButtonPressed()) {
             m_Command.routines.push_back(m_TestRoutine);
         }
-        if (m_) {
+        if (m_ButtonBoard) {
             m_Command.offTheBooksModeEnabled = !m_Command.offTheBooksModeEnabled;
             if (m_Command.offTheBooksModeEnabled) {
                 m_Command.routines.push_back(m_EndGameRoutine);

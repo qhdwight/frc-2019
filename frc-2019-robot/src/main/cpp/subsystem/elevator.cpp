@@ -37,7 +37,7 @@ namespace garage {
     }
 
     void Elevator::OnPostInitialize() {
-        auto elevator = std::weak_ptr<Elevator>(shared_from_this());
+        auto elevator = std::weak_ptr<Elevator>(std::dynamic_pointer_cast<Elevator>(shared_from_this()));
         AddController(m_RawController = std::make_shared<RawElevatorController>(elevator));
         AddController(m_SetPointController = std::make_shared<SetPointElevatorController>(elevator));
         AddController(m_VelocityController = std::make_shared<VelocityElevatorController>(elevator));

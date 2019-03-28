@@ -36,6 +36,10 @@ namespace garage {
         void UpdateCommand();
 
     protected:
+        enum class LedMode {
+            k_Idle = 0, k_NoTarget = 1, k_HasTarget = 2
+        };
+
         nt::NetworkTableInstance m_NetworkTableInstance;
         std::shared_ptr<nt::NetworkTable> m_NetworkTable, m_DashboardNetworkTable;
         frc::XboxController m_PrimaryController{0}, m_SecondaryController{1};
@@ -51,8 +55,9 @@ namespace garage {
         std::vector<std::shared_ptr<lib::Subsystem>> m_Subsystems;
         wpi::optional<std::chrono::system_clock::time_point> m_LastPeriodicTime;
         RobotConfig m_Config;
-        frc::I2C m_LedModule{frc::I2C::Port::kOnboard, 0};
+        frc::I2C m_LedModule{frc::I2C::Port::kOnboard, 1};
         lib::Limelight m_LimeLight;
+        LedMode m_LedMode;
         std::chrono::milliseconds m_Period;
         // Routines
 //        std::shared_ptr<test::TestDriveAutoRoutine> m_DriveForwardRoutine;
@@ -89,6 +94,8 @@ namespace garage {
         void AddSubsystem(std::shared_ptr<lib::Subsystem> subsystem);
 
         void ControllablePeriodic();
+
+        void SetLedMode(LedMode ledMode);
 
         bool ShouldOutput() const {
             return m_Config.shouldOutput;

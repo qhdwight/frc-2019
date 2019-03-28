@@ -36,7 +36,7 @@ namespace garage {
     }
 
     void Flipper::OnPostInitialize() {
-        auto flipper = std::weak_ptr<Flipper>(shared_from_this());
+        auto flipper = std::weak_ptr<Flipper>(std::dynamic_pointer_cast<Flipper>(shared_from_this()));
         AddController(m_RawController = std::make_shared<RawFlipperController>(flipper));
         AddController(m_SetPointController = std::make_shared<SetPointFlipperController>(flipper));
         AddController(m_VelocityController = std::make_shared<VelocityFlipperController>(flipper));

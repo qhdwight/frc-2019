@@ -16,7 +16,7 @@ namespace garage {
             SubsystemRoutine(std::shared_ptr<Robot> robot, const std::string& name)
                 : Routine(robot, name), m_Subsystem(robot->GetSubsystem<TSubsystem>()) { }
 
-            bool ShouldTerminateBasedOnUnlock(std::weak_ptr<Subsystem> subsystem) override {
+            bool ShouldTerminateBasedOnUnlock(std::shared_ptr<Subsystem> subsystem) override {
                 return subsystem == m_Subsystem;
             }
         };

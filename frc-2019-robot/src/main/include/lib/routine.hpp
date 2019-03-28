@@ -28,7 +28,7 @@ namespace garage {
 
             virtual bool Periodic();
 
-            virtual bool ShouldTerminateBasedOnUnlock(std::weak_ptr<Subsystem> subsystem) {
+            virtual bool ShouldTerminateBasedOnUnlock(std::shared_ptr<Subsystem> subsystem) {
                 return true;
             }
 

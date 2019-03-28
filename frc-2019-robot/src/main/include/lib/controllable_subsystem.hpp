@@ -8,7 +8,7 @@
 namespace garage {
     namespace lib {
         template<typename TSubsystem>
-        class ControllableSubsystem : public std::enable_shared_from_this<TSubsystem>, public Subsystem {
+        class ControllableSubsystem : public Subsystem {
             using Controller=SubsystemController<TSubsystem>;
 
         protected:

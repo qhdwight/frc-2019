@@ -29,7 +29,7 @@ namespace garage {
     }
 
     void Drive::OnPostInitialize() {
-        auto drive = std::weak_ptr<Drive>(shared_from_this());
+        auto drive = std::weak_ptr<Drive>(std::dynamic_pointer_cast<Drive>(shared_from_this()));
         AddController(m_RawController = std::make_shared<RawDriveController>(drive));
         AddController(m_ManualController = std::make_shared<ManualDriveController>(drive));
         AddController(m_AutoAlignController = std::make_shared<AutoAlignDriveController>(drive));
@@ -212,7 +212,6 @@ namespace garage {
 
     AutoAlignDriveController::AutoAlignDriveController(std::weak_ptr<Drive>& subsystem)
             : SubsystemController(subsystem, "Auto Align Drive Controller"), m_Limelight(subsystem.lock()->m_Robot->GetLimelight()) {
-
     }
 
     void AutoAlignDriveController::Control() {

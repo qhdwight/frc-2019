@@ -75,7 +75,10 @@ namespace garage {
 
     void Robot::RobotPeriodic() {}
 
-    void Robot::DisabledInit() {}
+    void Robot::DisabledInit() {
+        m_LimeLight.SetLedMode(lib::Limelight::LedMode::k_Off);
+        SetLedMode(LedMode::k_Idle);
+    }
 
     void Robot::DisabledPeriodic() {}
 
@@ -88,6 +91,8 @@ namespace garage {
     }
 
     void Robot::Reset() {
+        m_LimeLight.SetLedMode(lib::Limelight::LedMode::k_Off);
+        SetLedMode(LedMode::k_Idle);
         m_LastPeriodicTime.reset();
         m_Command = {};
         m_RoutineManager->Reset();
@@ -148,9 +153,20 @@ namespace garage {
         /* Four buttons */
         if (m_Drive) {
             if (m_PrimaryController.GetAButton() || m_SecondaryController.GetAButton()) {
-                m_Drive->AutoAlign();
-            } else if (m_PrimaryController.GetAButtonReleased() || m_SecondaryController.GetAButtonReleased()) {
+                if (m_LimeLight.HasTarget()) {
+                    m_Drive->AutoAlign();
+                    SetLedMode(LedMode::k_HasTarget);
+                } else {
+                    SetLedMode(LedMode::k_NoTarget);
+                }
+            }
+            if (m_PrimaryController.GetAButtonReleased() || m_SecondaryController.GetAButtonReleased()) {
                 m_Drive->Unlock();
+                SetLedMode(LedMode::k_Idle);
+                m_LimeLight.SetLedMode(lib::Limelight::LedMode::k_Off);
+            }
+            if (m_PrimaryController.GetAButtonPressed() || m_SecondaryController.GetAButtonPressed()) {
+                m_LimeLight.SetLedMode(lib::Limelight::LedMode::k_On);
             }
         }
         if (m_PrimaryController.GetBButton() || m_SecondaryController.GetBButton()) {
@@ -224,6 +240,14 @@ namespace garage {
 
     void Robot::TestPeriodic() {
         ControllablePeriodic();
+    }
+
+    void Robot::SetLedMode(Robot::LedMode ledMode) {
+        if (ledMode != m_LedMode) {
+            m_LedMode = ledMode;
+            auto ledModeInt = static_cast<uint8_t>(ledMode);
+            m_LedModule.Transaction(&ledModeInt, 1, nullptr, 0);
+        }
     }
 
     template<>

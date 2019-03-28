@@ -83,8 +83,6 @@ namespace garage {
     public:
         AutoAlignDriveController(std::weak_ptr<Drive>& drive);
 
-        void OnEnable() override;
-
     protected:
         lib::Limelight& m_Limelight;
 

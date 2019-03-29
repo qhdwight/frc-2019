@@ -38,7 +38,8 @@
 
 #define ELEVATOR_SAFE_DOWN 0.0 // Percent output
 
-#define ELEVATOR_CLOSED_LOOP_SLOT 0
+#define ELEVATOR_NORMAL_PID_SLOT 0
+#define ELEVATOR_CLIMB_PID_SLOT 1
 
 #define ELEVATOR_LAND_TIME 3.0 // Seconds left in match when elevator tries to land to avoid damage
 

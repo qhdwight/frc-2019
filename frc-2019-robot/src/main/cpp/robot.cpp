@@ -123,6 +123,7 @@ namespace garage {
         // Update each subsystem
         for (const auto& subsystem : m_Subsystems)
             subsystem->Periodic();
+//        m_DashboardNetworkTable->PutNumber("Match Time Remaining", frc::DriverStation::GetInstance().GetMatchTime());
     }
 
     void Robot::TeleopPeriodic() {
@@ -140,16 +141,15 @@ namespace garage {
             m_Command.routines.push_back(m_TestRoutine);
         }
         // TODO go off the books at some point in time
-//        if (m_PrimaryController.GetStartButtonPressed()) {
-//            m_Command.offTheBooksModeEnabled = !m_Command.offTheBooksModeEnabled;
-//            m_DashboardNetworkTable->PutNumber("Match Time Remaining", frc::DriverStation::GetInstance().GetMatchTime());
-//            m_RoutineManager->TerminateAllRoutines();
-//            if (m_Command.offTheBooksModeEnabled) {
-//                m_Command.routines.push_back(m_EndGameRoutine);
-//            } else {
-//                m_Command.routines.push_back(m_ResetWithServoRoutine);
-//            }
-//        }
+        if (m_ButtonBoard.GetRawButtonPressed(0)) {
+            m_Command.offTheBooksModeEnabled = !m_Command.offTheBooksModeEnabled;
+            m_RoutineManager->TerminateAllRoutines();
+            if (m_Command.offTheBooksModeEnabled) {
+                m_Command.routines.push_back(m_EndGameRoutine);
+            } else {
+                m_Command.routines.push_back(m_ResetWithServoRoutine);
+            }
+        }
         /* Four buttons */
         if (m_Drive) {
             if (m_PrimaryController.GetAButton() || m_SecondaryController.GetAButton()) {
@@ -169,11 +169,11 @@ namespace garage {
                 m_LimeLight.SetLedMode(lib::Limelight::LedMode::k_On);
             }
         }
-        if (m_PrimaryController.GetBButton() || m_SecondaryController.GetBButton()) {
+        if (m_PrimaryController.GetBButtonPressed() || m_SecondaryController.GetBButtonPressed()) {
             m_Command.routines.push_back(m_GroundBallIntakeRoutine);
         }
         if (m_Flipper) {
-            if (m_PrimaryController.GetXButton() || m_SecondaryController.GetXButton()) {
+            if (m_PrimaryController.GetXButtonPressed() || m_SecondaryController.GetXButtonPressed()) {
                 m_Flipper->SetAngle(m_Flipper->GetAngle() > FLIPPER_STOW_ANGLE ? FLIPPER_LOWER_ANGLE : FLIPPER_UPPER_ANGLE);
             }
         }

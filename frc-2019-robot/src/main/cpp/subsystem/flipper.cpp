@@ -208,7 +208,7 @@ namespace garage {
     }
 
     double Flipper::GetWantedAngle() {
-        // TODO fix
+        // TODO fix architecture
         auto controller = std::dynamic_pointer_cast<FlipperController>(m_Controller);
         return controller ? controller->GetWantedAngle() : GetAngle();
     }

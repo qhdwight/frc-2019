@@ -19,18 +19,18 @@ namespace garage {
         m_SparkSlave.SetIdleMode(rev::CANSparkMax::IdleMode::kBrake);
         m_SparkMaster.SetClosedLoopRampRate(ELEVATOR_CLOSED_LOOP_RAMP);
         m_SparkMaster.SetOpenLoopRampRate(ELEVATOR_OPEN_LOOP_RAMP);
-        m_SparkController.SetP(ELEVATOR_P, ELEVATOR_CLOSED_LOOP_SLOT);
-        m_SparkController.SetI(ELEVATOR_I, ELEVATOR_CLOSED_LOOP_SLOT);
-        m_SparkController.SetD(ELEVATOR_D, ELEVATOR_CLOSED_LOOP_SLOT);
-        m_SparkController.SetIZone(ELEVATOR_I_ZONE, ELEVATOR_CLOSED_LOOP_SLOT);
-        m_SparkController.SetIMaxAccum(ELEVATOR_MAX_ACCUM, ELEVATOR_CLOSED_LOOP_SLOT);
-        m_SparkController.SetFF(ELEVATOR_F, ELEVATOR_CLOSED_LOOP_SLOT);
-        m_SparkController.SetOutputRange(-1.0, 1.0, ELEVATOR_CLOSED_LOOP_SLOT);
-        m_SparkController.SetSmartMotionMaxVelocity(ELEVATOR_VELOCITY, ELEVATOR_CLOSED_LOOP_SLOT);
-        m_SparkController.SetSmartMotionMinOutputVelocity(0.0, ELEVATOR_CLOSED_LOOP_SLOT);
-        m_SparkController.SetSmartMotionMaxAccel(ELEVATOR_ACCELERATION, ELEVATOR_CLOSED_LOOP_SLOT);
-        m_SparkController.SetSmartMotionAllowedClosedLoopError(ELEVATOR_ALLOWABLE_CLOSED_LOOP_ERROR, ELEVATOR_CLOSED_LOOP_SLOT);
-        m_SparkController.SetSmartMotionAccelStrategy(rev::CANPIDController::AccelStrategy::kSCurve, ELEVATOR_CLOSED_LOOP_SLOT);
+        m_SparkController.SetP(ELEVATOR_P, ELEVATOR_NORMAL_PID_SLOT);
+        m_SparkController.SetI(ELEVATOR_I, ELEVATOR_NORMAL_PID_SLOT);
+        m_SparkController.SetD(ELEVATOR_D, ELEVATOR_NORMAL_PID_SLOT);
+        m_SparkController.SetIZone(ELEVATOR_I_ZONE, ELEVATOR_NORMAL_PID_SLOT);
+        m_SparkController.SetIMaxAccum(ELEVATOR_MAX_ACCUM, ELEVATOR_NORMAL_PID_SLOT);
+        m_SparkController.SetFF(ELEVATOR_F, ELEVATOR_NORMAL_PID_SLOT);
+        m_SparkController.SetOutputRange(-1.0, 1.0, ELEVATOR_NORMAL_PID_SLOT);
+        m_SparkController.SetSmartMotionMaxVelocity(ELEVATOR_VELOCITY, ELEVATOR_NORMAL_PID_SLOT);
+        m_SparkController.SetSmartMotionMinOutputVelocity(0.0, ELEVATOR_NORMAL_PID_SLOT);
+        m_SparkController.SetSmartMotionMaxAccel(ELEVATOR_ACCELERATION, ELEVATOR_NORMAL_PID_SLOT);
+        m_SparkController.SetSmartMotionAllowedClosedLoopError(ELEVATOR_ALLOWABLE_CLOSED_LOOP_ERROR, ELEVATOR_NORMAL_PID_SLOT);
+        m_SparkController.SetSmartMotionAccelStrategy(rev::CANPIDController::AccelStrategy::kSCurve, ELEVATOR_NORMAL_PID_SLOT);
         m_SparkMaster.EnableVoltageCompensation(DEFAULT_VOLTAGE_COMPENSATION);
         m_ReverseLimitSwitch.EnableLimitSwitch(true);
         m_SparkMaster.Set(0.0);
@@ -54,28 +54,28 @@ namespace garage {
     void Elevator::SetupNetworkTableEntries() {
         // Add listeners for each entry when a value is updated on the dashboard
         AddNetworkTableListener("Acceleration", ELEVATOR_ACCELERATION, [this](const double acceleration) {
-            auto error = m_SparkController.SetSmartMotionMaxAccel(acceleration, ELEVATOR_CLOSED_LOOP_SLOT);
+            auto error = m_SparkController.SetSmartMotionMaxAccel(acceleration, ELEVATOR_NORMAL_PID_SLOT);
             return error == rev::CANError::kOK;
         });
         AddNetworkTableListener("Velocity", ELEVATOR_VELOCITY, [this](const int velocity) {
             m_MaxVelocity = velocity;
-            auto error = m_SparkController.SetSmartMotionMinOutputVelocity(velocity, ELEVATOR_CLOSED_LOOP_SLOT);
+            auto error = m_SparkController.SetSmartMotionMinOutputVelocity(velocity, ELEVATOR_NORMAL_PID_SLOT);
             return error == rev::CANError::kOK;
         });
         AddNetworkTableListener("I", ELEVATOR_I, [this](const double i) {
-            auto error = m_SparkController.SetI(i, ELEVATOR_CLOSED_LOOP_SLOT);
+            auto error = m_SparkController.SetI(i, ELEVATOR_NORMAL_PID_SLOT);
             return error == rev::CANError::kOK;
         });
         AddNetworkTableListener("I Zone", ELEVATOR_I_ZONE, [this](const int iZone) {
-            auto error = m_SparkController.SetIZone(iZone, ELEVATOR_CLOSED_LOOP_SLOT);
+            auto error = m_SparkController.SetIZone(iZone, ELEVATOR_NORMAL_PID_SLOT);
             return error == rev::CANError::kOK;
         });
         AddNetworkTableListener("Max Accum", ELEVATOR_MAX_ACCUM, [this](const int maxAccum) {
-            auto error = m_SparkController.SetIMaxAccum(maxAccum, ELEVATOR_CLOSED_LOOP_SLOT);
+            auto error = m_SparkController.SetIMaxAccum(maxAccum, ELEVATOR_NORMAL_PID_SLOT);
             return error == rev::CANError::kOK;
         });
         AddNetworkTableListener("F", ELEVATOR_F, [this](const double f) {
-            auto error = m_SparkController.SetFF(f, ELEVATOR_CLOSED_LOOP_SLOT);
+            auto error = m_SparkController.SetFF(f, ELEVATOR_NORMAL_PID_SLOT);
             return error == rev::CANError::kOK;
         });
         AddNetworkTableListener("FF", ELEVATOR_FF, [this](const double ff) {
@@ -83,11 +83,11 @@ namespace garage {
             return true;
         });
         AddNetworkTableListener("P", ELEVATOR_P, [this](const double p) {
-            auto error = m_SparkController.SetP(p, ELEVATOR_CLOSED_LOOP_SLOT);
+            auto error = m_SparkController.SetP(p, ELEVATOR_NORMAL_PID_SLOT);
             return error == rev::CANError::kOK;
         });
         AddNetworkTableListener("D", ELEVATOR_D, [this](const double d) {
-            auto error = m_SparkController.SetD(d, ELEVATOR_CLOSED_LOOP_SLOT);
+            auto error = m_SparkController.SetD(d, ELEVATOR_NORMAL_PID_SLOT);
             return error == rev::CANError::kOK;
         });
     }
@@ -220,7 +220,7 @@ namespace garage {
             elevator->LogSample(lib::Logger::LogLevel::k_Debug, "Theoretically Okay and Working");
             if (elevator->m_Robot->ShouldOutput()) {
                 elevator->m_SparkController.SetReference(m_WantedSetPoint, rev::ControlType::kSmartMotion,
-                                                         ELEVATOR_CLOSED_LOOP_SLOT, elevator->m_FeedForward);
+                                                         ELEVATOR_NORMAL_PID_SLOT, elevator->m_FeedForward);
             }
         } else {
             elevator->Log(lib::Logger::LogLevel::k_Warning, "Not in closed loop range for set point");
@@ -241,7 +241,7 @@ namespace garage {
                 elevator->LogSample(lib::Logger::LogLevel::k_Debug, lib::Logger::Format("Wanted Velocity: %f", m_WantedVelocity));
                 if (elevator->m_Robot->ShouldOutput()) {
                     elevator->m_SparkController.SetReference(m_WantedVelocity, rev::ControlType::kSmartVelocity,
-                                                             ELEVATOR_CLOSED_LOOP_SLOT, elevator->m_FeedForward);
+                                                             ELEVATOR_NORMAL_PID_SLOT, elevator->m_FeedForward);
                 }
             } else {
                 elevator->Log(lib::Logger::LogLevel::k_Warning, "Trying to go too high");

@@ -37,8 +37,8 @@ namespace garage {
         double m_SetPoint = OUTRIGGER_LOWER;
 
     public:
-        SetPointOutriggerController(std::weak_ptr<Outrigger>& subsystem, const std::string& name)
-            : OutriggerController(subsystem, "Set Point Outrigger Controller") {}
+        SetPointOutriggerController(std::weak_ptr<Outrigger>& outrigger)
+                : OutriggerController(outrigger, "Set Point Outrigger Controller") {}
 
         void SetSetPoint(double setPoint) {
             m_SetPoint = setPoint;
@@ -51,7 +51,28 @@ namespace garage {
         void Control() override;
     };
 
-    class Outrigger : public lib::ControllableSubsystem<Outrigger>{
+    class RawOutriggerController : public OutriggerController {
+    protected:
+        double m_Output = 0.0;
+
+    public:
+        RawOutriggerController(std::weak_ptr<Outrigger>& outrigger)
+                : OutriggerController(outrigger, "Raw Outrigger Controller") {}
+
+        void SetRawOutput(double output) {
+            m_Output = output;
+        }
+
+        void Reset() override {
+            m_Output = 0.0;
+        }
+
+        void Control() override;
+    };
+
+    class Outrigger : public lib::ControllableSubsystem<Outrigger> {
+        friend class RawOutriggerController;
+
         friend class SetPointOutriggerController;
 
     protected:
@@ -62,6 +83,8 @@ namespace garage {
         rev::CANPIDController m_OutriggerController = m_OutriggerMaster.GetPIDController();
         rev::CANEncoder m_Encoder = m_OutriggerMaster.GetEncoder();
         double m_EncoderPosition = OUTRIGGER_UPPER, m_Angle = OUTRIGGER_STOW_ANGLE;
+        std::shared_ptr<SetPointOutriggerController> m_SetPointController;
+        std::shared_ptr<RawOutriggerController> m_RawController;
 
         void StopMotors();
 
@@ -73,5 +96,7 @@ namespace garage {
         Outrigger(std::shared_ptr<Robot>& robot);
 
         void Reset() override;
+
+        void OnPostInitialize() override;
     };
 }

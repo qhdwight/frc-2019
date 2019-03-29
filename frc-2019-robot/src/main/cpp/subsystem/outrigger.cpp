@@ -1,5 +1,7 @@
 #include <subsystem/outrigger.hpp>
 
+#include <robot.hpp>
+
 #include <garage_math/garage_math.hpp>
 
 namespace garage {
@@ -31,6 +33,12 @@ namespace garage {
         StopMotors();
     }
 
+    void Outrigger::oOnPostInitialize() {
+        auto flipper = std::weak_ptr<Outrigger>(std::dynamic_pointer_cast<Outrigger>(shared_from_this()));
+        AddController(m_RawController = std::make_shared<RawOutriggerController>(flipper));
+        AddController(m_SetPointController = std::make_shared<SetPointOutriggerController>(flipper));
+    }
+
     void Outrigger::Reset() {
         ControllableSubsystem::Reset();
         m_Encoder.SetPosition(OUTRIGGER_LOWER);
@@ -59,6 +67,23 @@ namespace garage {
 
     void SetPointOutriggerController::Control() {
         auto outrigger = m_Subsystem.lock();
-        std::cos(math::d2r(outrigger->m_Angle));
+        const double feedForward = std::cos(math::d2r(outrigger->m_Angle)) * OUTRIGGER_ANGLE_FF;
+        if (outrigger->m_Robot->ShouldOutput()) {
+            auto error = outrigger->m_OutriggerController.SetReference(m_SetPoint, rev::ControlType::kSmartMotion,
+                                                                       OUTRIGGER_SET_POINT_PID_SLOT,
+                                                                       feedForward * DEFAULT_VOLTAGE_COMPENSATION);
+            if (error == rev::CANError::kOK) {
+                Log(lib::Logger::LogLevel::k_Debug, lib::Logger::Format("Wanted set point: %f", m_SetPoint));
+            } else {
+                Log(lib::Logger::LogLevel::k_Error, lib::Logger::Format("CAN Error: %d", error));
+            }
+        }
+    }
+
+    void RawOutriggerController::Control() {
+        auto outrigger = m_Subsystem.lock();
+        if (outrigger->m_Robot->ShouldOutput()) {
+            outrigger->m_OutriggerMaster.Set(m_Output);
+        }
     }
 }

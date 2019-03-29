@@ -139,7 +139,7 @@ namespace garage {
         if (m_PrimaryController.GetStartButtonPressed() || m_SecondaryController.GetStartButtonPressed()) {
             m_Command.routines.push_back(m_TestRoutine);
         }
-        if (m_ButtonBoard) {
+        if (m_ButtonBoard.GetRawButtonPressed(0)) {
             m_Command.offTheBooksModeEnabled = !m_Command.offTheBooksModeEnabled;
             if (m_Command.offTheBooksModeEnabled) {
                 m_Command.routines.push_back(m_EndGameRoutine);
@@ -166,11 +166,11 @@ namespace garage {
                 m_LimeLight.SetLedMode(lib::Limelight::LedMode::k_On);
             }
         }
-        if (m_PrimaryController.GetBButton() || m_SecondaryController.GetBButton()) {
+        if (m_PrimaryController.GetBButtonPressed() || m_SecondaryController.GetBButtonPressed()) {
             m_Command.routines.push_back(m_GroundBallIntakeRoutine);
         }
         if (m_Flipper) {
-            if (m_PrimaryController.GetXButton() || m_SecondaryController.GetXButton()) {
+            if (m_PrimaryController.GetXButtonPressed() || m_SecondaryController.GetXButtonPressed()) {
                 m_Flipper->SetAngle(m_Flipper->GetAngle() > FLIPPER_STOW_ANGLE ? FLIPPER_LOWER_ANGLE : FLIPPER_UPPER_ANGLE);
             }
         }

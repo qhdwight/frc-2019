@@ -140,9 +140,7 @@ namespace garage {
             m_RoutineManager->TerminateActiveRoutine();
         }
         if (m_PrimaryController.GetStartButtonPressed() || m_SecondaryController.GetStartButtonPressed()) {
-            m_Command.routines.push_back(m_TestRoutine);
-        }
-        if (m_ButtonBoard.GetRawButtonPressed(0)) {
+//            m_Command.routines.push_back(m_TestRoutine);
             m_Command.offTheBooksModeEnabled = !m_Command.offTheBooksModeEnabled;
             if (m_Command.offTheBooksModeEnabled) {
                 m_Command.routines.push_back(m_EndGameRoutine);
@@ -185,7 +183,9 @@ namespace garage {
             // ==== Button button
                     elevatorDown = primaryPOV == 180 || secondaryPOV == 180,
             // ==== Top button
-                    elevatorStow = primaryPOV == 0 || secondaryPOV == 0;
+                    elevatorStow = primaryPOV == 0 || secondaryPOV == 0,
+                    elevatorHatch = primaryPOV == 90 || secondaryPOV == 90,
+                    elevatorBall = primaryPOV == 270 || secondaryPOV == 270;
             if (elevatorDown) {
                 m_Elevator->SetWantedSetPoint(0.0);
             } else if (elevatorStow || m_ButtonBoard.GetRawButtonPressed(0)) {
@@ -231,6 +231,11 @@ namespace garage {
                 m_SecondaryController.GetBumper(frc::GenericHID::JoystickHand::kLeftHand));
         bumpers = math::clamp(bumpers, -1.0, 1.0);
         /* Off the books */
+        if (m_ButtonBoard.GetRawButtonPressed(0)) {
+            m_Command.routines.push_back(m_SecondLevelClimbRoutine);
+        } else if (m_ButtonBoard.GetRawButtonPressed(0)) {
+            m_Command.routines.push_back(m_ThirdLevelClimbRoutine);
+        }
         if (m_Command.offTheBooksModeEnabled) {
             m_Command.outrigger = triggers;
             m_Command.outriggerWheel = bumpers;

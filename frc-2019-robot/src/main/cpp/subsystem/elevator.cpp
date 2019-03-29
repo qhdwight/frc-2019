@@ -19,6 +19,10 @@ namespace garage {
         m_SparkSlave.SetIdleMode(rev::CANSparkMax::IdleMode::kBrake);
         m_SparkMaster.SetClosedLoopRampRate(ELEVATOR_CLOSED_LOOP_RAMP);
         m_SparkMaster.SetOpenLoopRampRate(ELEVATOR_OPEN_LOOP_RAMP);
+        m_SparkMaster.EnableVoltageCompensation(DEFAULT_VOLTAGE_COMPENSATION);
+        m_ReverseLimitSwitch.EnableLimitSwitch(true);
+        /* Gains */
+        // Normal PID Gains
         m_SparkController.SetP(ELEVATOR_P, ELEVATOR_NORMAL_PID_SLOT);
         m_SparkController.SetI(ELEVATOR_I, ELEVATOR_NORMAL_PID_SLOT);
         m_SparkController.SetD(ELEVATOR_D, ELEVATOR_NORMAL_PID_SLOT);
@@ -31,17 +35,29 @@ namespace garage {
         m_SparkController.SetSmartMotionMaxAccel(ELEVATOR_ACCELERATION, ELEVATOR_NORMAL_PID_SLOT);
         m_SparkController.SetSmartMotionAllowedClosedLoopError(ELEVATOR_ALLOWABLE_CLOSED_LOOP_ERROR, ELEVATOR_NORMAL_PID_SLOT);
         m_SparkController.SetSmartMotionAccelStrategy(rev::CANPIDController::AccelStrategy::kSCurve, ELEVATOR_NORMAL_PID_SLOT);
-        m_SparkMaster.EnableVoltageCompensation(DEFAULT_VOLTAGE_COMPENSATION);
-        m_ReverseLimitSwitch.EnableLimitSwitch(true);
+        // Climb PID Gains
+        m_SparkController.SetP(ELEVATOR_P, ELEVATOR_CLIMB_PID_SLOT);
+        m_SparkController.SetI(ELEVATOR_CLIMB_I, ELEVATOR_CLIMB_PID_SLOT);
+        m_SparkController.SetD(ELEVATOR_CLIMB_D, ELEVATOR_CLIMB_PID_SLOT);
+        m_SparkController.SetIZone(ELEVATOR_CLIMB_I_ZONE, ELEVATOR_CLIMB_PID_SLOT);
+        m_SparkController.SetIMaxAccum(ELEVATOR_CLIMB_MAX_ACCUM, ELEVATOR_CLIMB_PID_SLOT);
+        m_SparkController.SetFF(ELEVATOR_CLIMB_F, ELEVATOR_CLIMB_PID_SLOT);
+        m_SparkController.SetOutputRange(-1.0, 1.0, ELEVATOR_CLIMB_PID_SLOT);
+        m_SparkController.SetSmartMotionMaxVelocity(ELEVATOR_CLIMB_VELOCITY, ELEVATOR_CLIMB_PID_SLOT);
+        m_SparkController.SetSmartMotionMinOutputVelocity(0.0, ELEVATOR_CLIMB_PID_SLOT);
+        m_SparkController.SetSmartMotionMaxAccel(ELEVATOR_CLIMB_ACCELERATION, ELEVATOR_CLIMB_PID_SLOT);
+        m_SparkController.SetSmartMotionAllowedClosedLoopError(ELEVATOR_ALLOWABLE_CLOSED_LOOP_ERROR, ELEVATOR_CLIMB_PID_SLOT);
+        m_SparkController.SetSmartMotionAccelStrategy(rev::CANPIDController::AccelStrategy::kSCurve, ELEVATOR_CLIMB_PID_SLOT);
         m_SparkMaster.Set(0.0);
     }
 
     void Elevator::OnPostInitialize() {
-        auto elevator = std::weak_ptr<Elevator>(std::dynamic_pointer_cast<Elevator>(shared_from_this()));
+        auto elevator = WeakFromThis();
         AddController(m_RawController = std::make_shared<RawElevatorController>(elevator));
         AddController(m_SetPointController = std::make_shared<SetPointElevatorController>(elevator));
         AddController(m_VelocityController = std::make_shared<VelocityElevatorController>(elevator));
         AddController(m_SoftLandController = std::make_shared<SoftLandElevatorController>(elevator));
+        AddController(m_ClimbController = std::make_shared<ClimbElevatorController>(elevator));
         SetUnlockedController(m_VelocityController);
 //        SetupNetworkTableEntries();
     }
@@ -150,15 +166,6 @@ namespace garage {
         return math::withinRange(m_EncoderPosition, targetPosition, ELEVATOR_WITHIN_SET_POINT_AMOUNT);
     }
 
-    void Elevator::UpdateUnlocked(Command& command) {
-//        if (command.offTheBooksModeEnabled) {
-//            SetUnlockedController(m_RawController);
-//        } else {
-//            SetUnlockedController(m_RawController);
-//        }
-        ControllableSubsystem::UpdateUnlocked(command);
-    }
-
     bool Elevator::ShouldUnlock(Command& command) {
 //        auto& driverStation = frc::DriverStation::GetInstance();
 //        const double timeRemaining = driverStation.GetMatchTime();
@@ -180,12 +187,17 @@ namespace garage {
         SetController(m_SoftLandController);
     }
 
+    void Elevator::Climb() {
+        Log(lib::Logger::LogLevel::k_Info, "Climb");
+        SetController(m_ClimbController);
+    }
+
     void Elevator::ResetEncoder() {
         m_Encoder.SetPosition(0.0);
     }
 
     void RawElevatorController::ProcessCommand(Command& command) {
-        m_Output = math::clamp(command.elevatorInput, 0.0, 0.65);
+        m_Output = math::clamp(command.elevatorInput, -0.5, 0.5);
     }
 
     void RawElevatorController::Control() {
@@ -205,9 +217,7 @@ namespace garage {
     }
 
     void SetPointElevatorController::ProcessCommand(Command& command) {
-        auto elevator = m_Subsystem.lock();
-        const double input = math::threshold(command.elevatorInput, DEFAULT_INPUT_THRESHOLD);
-        m_WantedSetPoint += static_cast<int>(input * 5000.0);
+        m_WantedSetPoint += command.elevatorInput * 0.5;
     }
 
     void SetPointElevatorController::Control() {
@@ -256,7 +266,20 @@ namespace garage {
     void SoftLandElevatorController::Control() {
         auto elevator = m_Subsystem.lock();
         if (elevator->m_Robot->ShouldOutput()) {
-            elevator->m_SparkMaster.Set(elevator->m_EncoderPosition > 500 ? ELEVATOR_SAFE_DOWN : 0.0);
+            elevator->m_SparkMaster.Set(elevator->m_EncoderPosition > ELEVATOR_SAFE_DOWN_THRESHOLD_HEIGHT ? ELEVATOR_SAFE_DOWN : 0.0);
+        }
+    }
+
+    void ClimbElevatorController::Control() {
+        auto elevator = m_Subsystem.lock();
+        if (elevator->m_EncoderPosition < ELEVATOR_MAX) {
+            if (elevator->m_Robot->ShouldOutput()) {
+                elevator->m_SparkController.SetReference(ELEVATOR_CLIMB_HEIGHT, rev::ControlType::kSmartMotion,
+                                                         ELEVATOR_CLIMB_PID_SLOT, ELEVATOR_CLIMB_FF);
+            }
+        } else {
+            elevator->Log(lib::Logger::LogLevel::k_Warning, "For some reason too high");
+            elevator->SoftLand();
         }
     }
 }

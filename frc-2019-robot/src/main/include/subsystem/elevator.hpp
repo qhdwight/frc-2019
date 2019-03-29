@@ -11,16 +11,28 @@
 #define ELEVATOR_MIN 0.0 // Encoder ticks
 
 /* Gains and Motion Magic */
+// Normal
 #define ELEVATOR_VELOCITY 5000.0
 #define ELEVATOR_ACCELERATION 5000.0
 #define ELEVATOR_P 0.00002
 #define ELEVATOR_I 0.0
 #define ELEVATOR_MAX_ACCUM 0.0
-#define ELEVATOR_I_ZONE 0 // Encoder ticks
+#define ELEVATOR_I_ZONE 0.0 // Encoder ticks
 #define ELEVATOR_D 0.0
-//#define ELEVATOR_D ELEVATOR_P * 3.3
 #define ELEVATOR_F 0.00018
 #define ELEVATOR_FF 0.3
+// Climb
+#define ELEVATOR_CLIMB_VELOCITY 500.0
+#define ELEVATOR_CLIMB_ACCELERATION 100.0
+#define ELEVATOR_CLIMB_P 0.0
+#define ELEVATOR_CLIMB_I 0.0
+#define ELEVATOR_CLIMB_MAX_ACCUM 0.0
+#define ELEVATOR_CLIMB_I_ZONE 0.0
+#define ELEVATOR_CLIMB_D 0.0
+#define ELEVATOR_CLIMB_F 0.0
+#define ELEVATOR_CLIMB_FF 0.0
+#define ELEVATOR_CLIMB_HEIGHT 10.0 // Encoder ticks
+// Safety
 #define ELEVATOR_MAX_CLOSED_LOOP_HEIGHT (ELEVATOR_MAX - 0)
 #define ELEVATOR_MIN_CLOSED_LOOP_HEIGHT 2.0 // Encoder ticks
 #define ELEVATOR_MIN_RAW_HEIGHT 0 // Encoder ticks
@@ -37,6 +49,7 @@
 #define ELEVATOR_CLOSED_LOOP_RAMP 0.1 // Seconds
 
 #define ELEVATOR_SAFE_DOWN 0.0 // Percent output
+#define ELEVATOR_SAFE_DOWN_THRESHOLD_HEIGHT 2.0 // Encoder Ticks
 
 #define ELEVATOR_NORMAL_PID_SLOT 0
 #define ELEVATOR_CLIMB_PID_SLOT 1
@@ -46,13 +59,15 @@
 namespace garage {
     class Elevator;
 
-    class RawElevatorController : public lib::SubsystemController<Elevator> {
+    using ElevatorController=lib::SubsystemController<Elevator>;
+
+    class RawElevatorController : public ElevatorController {
     protected:
         double m_Output = 0.0;
 
     public:
         RawElevatorController(std::weak_ptr<Elevator>& elevator)
-                : SubsystemController(elevator, "Raw Controller") {}
+                : ElevatorController(elevator, "Raw Controller") {}
 
         void Reset() override {
             m_Output = 0.0;
@@ -67,13 +82,13 @@ namespace garage {
         }
     };
 
-    class SetPointElevatorController : public lib::SubsystemController<Elevator> {
+    class SetPointElevatorController : public ElevatorController {
     protected:
         double m_WantedSetPoint = 0;
 
     public:
         SetPointElevatorController(std::weak_ptr<Elevator>& elevator)
-                : SubsystemController(elevator, "Set Point Controller") {}
+                : ElevatorController(elevator, "Set Point Controller") {}
 
         void ProcessCommand(Command& command) override;
 
@@ -88,13 +103,13 @@ namespace garage {
         }
     };
 
-    class VelocityElevatorController : public lib::SubsystemController<Elevator> {
+    class VelocityElevatorController : public ElevatorController {
     protected:
         double m_WantedVelocity = 0.0;
 
     public:
         VelocityElevatorController(std::weak_ptr<Elevator>& elevator)
-                : SubsystemController(elevator, "Velocity Controller") {}
+                : ElevatorController(elevator, "Velocity Controller") {}
 
         void ProcessCommand(Command& command) override;
 
@@ -105,12 +120,25 @@ namespace garage {
         }
     };
 
-    class SoftLandElevatorController : public lib::SubsystemController<Elevator> {
+    class SoftLandElevatorController : public ElevatorController {
     public:
         SoftLandElevatorController(std::weak_ptr<Elevator>& elevator)
-                : SubsystemController(elevator, "Soft Land Controller") {}
+                : ElevatorController(elevator, "Soft Land Controller") {}
 
         void Control() override;
+    };
+
+    class ClimbElevatorController : public ElevatorController {
+    protected:
+        void Control() override;
+
+        void Reset() override {
+
+        }
+
+    public:
+        ClimbElevatorController(std::weak_ptr<Elevator>& elevator)
+                : ElevatorController(elevator, "Climb Elevator Controller") {}
     };
 
     class Elevator : public lib::ControllableSubsystem<Elevator> {
@@ -121,6 +149,8 @@ namespace garage {
         friend class VelocityElevatorController;
 
         friend class SoftLandElevatorController;
+
+        friend class ClimbElevatorController;
 
     protected:
         double m_EncoderPosition = 0, m_EncoderVelocity = 0, m_FeedForward = ELEVATOR_FF, m_MaxVelocity = ELEVATOR_VELOCITY;
@@ -135,6 +165,7 @@ namespace garage {
         std::shared_ptr<SetPointElevatorController> m_SetPointController;
         std::shared_ptr<VelocityElevatorController> m_VelocityController;
         std::shared_ptr<SoftLandElevatorController> m_SoftLandController;
+        std::shared_ptr<ClimbElevatorController> m_ClimbController;
 
         void ConfigSpeedControllers();
 
@@ -143,8 +174,6 @@ namespace garage {
         bool ShouldUnlock(Command& command) override;
 
         void Update() override;
-
-        void UpdateUnlocked(Command& command) override;
 
         void SpacedUpdate(Command& command) override;
 
@@ -160,6 +189,8 @@ namespace garage {
         void SetRawOutput(double output);
 
         void SoftLand();
+
+        void Climb();
 
         void ResetEncoder();
 

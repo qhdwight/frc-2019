@@ -33,10 +33,10 @@ namespace garage {
         StopMotors();
     }
 
-    void Outrigger::oOnPostInitialize() {
-        auto flipper = std::weak_ptr<Outrigger>(std::dynamic_pointer_cast<Outrigger>(shared_from_this()));
-        AddController(m_RawController = std::make_shared<RawOutriggerController>(flipper));
-        AddController(m_SetPointController = std::make_shared<SetPointOutriggerController>(flipper));
+    void Outrigger::OnPostInitialize() {
+        auto outrigger = WeakFromThis();
+        AddController(m_RawController = std::make_shared<RawOutriggerController>(outrigger));
+        AddController(m_SetPointController = std::make_shared<SetPointOutriggerController>(outrigger));
     }
 
     void Outrigger::Reset() {
@@ -48,6 +48,11 @@ namespace garage {
     void Outrigger::StopMotors() {
         m_OutriggerMaster.Set(0.0);
         m_OutriggerWheel.Set(0.0);
+    }
+
+    void Outrigger::UpdateUnlocked(Command& command) {
+        ControllableSubsystem::UpdateUnlocked(command);
+        m_WheelOutput = command.outriggerWheel * 0.1;
     }
 
     bool Outrigger::ShouldUnlock(Command& command) {
@@ -63,6 +68,27 @@ namespace garage {
         } else {
             LogSample(lib::Logger::LogLevel::k_Warning, "No controller detected");
         }
+        if (m_Robot->ShouldOutput()) {
+            m_OutriggerWheel.Set(m_WheelOutput);
+        }
+    }
+
+    void Outrigger::SetRawOutput(double output) {
+        SetController(m_RawController);
+        m_RawController->SetRawOutput(output);
+    }
+
+    void Outrigger::SetWantedAngle(double angle) {
+        SetController(m_SetPointController);
+        m_SetPointController->SetSetPoint(math::map(angle, OUTRIGGER_STOW_ANGLE, OUTRIGGER_FULL_EXTENDED_ANGLE, OUTRIGGER_LOWER, OUTRIGGER_UPPER));
+    }
+
+    void Outrigger::SetWheelRawOutput(double output) {
+        m_WheelOutput = output;
+    }
+
+    bool Outrigger::WithinAngle(double angle) {
+        return math::withinRange(m_Angle, angle, OUTRIGGER_WITHIN_ANGLE);
     }
 
     void SetPointOutriggerController::Control() {
@@ -80,10 +106,18 @@ namespace garage {
         }
     }
 
+    void SetPointOutriggerController::ProcessCommand(Command& command) {
+        m_SetPoint += command.outrigger * 0.5;
+    }
+
     void RawOutriggerController::Control() {
         auto outrigger = m_Subsystem.lock();
         if (outrigger->m_Robot->ShouldOutput()) {
             outrigger->m_OutriggerMaster.Set(m_Output);
         }
+    }
+
+    void RawOutriggerController::ProcessCommand(Command& command) {
+        m_Output = math::clamp(command.elevatorInput, -0.5, 0.5);
     }
 }

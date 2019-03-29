@@ -12,7 +12,7 @@
 #define OUTRIGGER_STOW_ANGLE 90.0
 #define OUTRIGGER_FULL_EXTENDED_ANGLE 270.0
 
-#define OUTRIGGER_RAMPING 0.25
+#define OUTRIGGER_RAMPING 0.1
 
 #define OUTRIGGER_P 0.0
 #define OUTRIGGER_I 0.0
@@ -24,6 +24,8 @@
 #define OUTRIGGER_ACCELERATION 1000.0
 #define OUTRIGGER_ALLOWABLE_ERROR 0.0
 #define OUTRIGGER_ANGLE_FF 0.0
+
+#define OUTRIGGER_WITHIN_ANGLE 5.0 // Degrees
 
 #define OUTRIGGER_SET_POINT_PID_SLOT 0
 
@@ -49,6 +51,8 @@ namespace garage {
         }
 
         void Control() override;
+
+        void ProcessCommand(Command& command) override;
     };
 
     class RawOutriggerController : public OutriggerController {
@@ -58,6 +62,8 @@ namespace garage {
     public:
         RawOutriggerController(std::weak_ptr<Outrigger>& outrigger)
                 : OutriggerController(outrigger, "Raw Outrigger Controller") {}
+
+        void ProcessCommand(Command& command) override;
 
         void SetRawOutput(double output) {
             m_Output = output;
@@ -82,7 +88,7 @@ namespace garage {
                 m_OutriggerWheel{OUTRIGGER_WHEEL, rev::CANSparkMax::MotorType::kBrushless};
         rev::CANPIDController m_OutriggerController = m_OutriggerMaster.GetPIDController();
         rev::CANEncoder m_Encoder = m_OutriggerMaster.GetEncoder();
-        double m_EncoderPosition = OUTRIGGER_UPPER, m_Angle = OUTRIGGER_STOW_ANGLE;
+        double m_EncoderPosition = OUTRIGGER_UPPER, m_Angle = OUTRIGGER_STOW_ANGLE, m_WheelOutput = 0.0;
         std::shared_ptr<SetPointOutriggerController> m_SetPointController;
         std::shared_ptr<RawOutriggerController> m_RawController;
 
@@ -92,11 +98,21 @@ namespace garage {
 
         bool ShouldUnlock(Command& command) override;
 
+        void UpdateUnlocked(Command& command) override;
+
     public:
         Outrigger(std::shared_ptr<Robot>& robot);
 
         void Reset() override;
 
         void OnPostInitialize() override;
+
+        bool WithinAngle(double angle);
+
+        void SetWantedAngle(double angle);
+
+        void SetRawOutput(double output);
+
+        void SetWheelRawOutput(double output);
     };
 }

@@ -70,6 +70,10 @@ namespace garage {
                 }
             }
 
+            std::weak_ptr<TSubsystem> WeakFromThis() {
+                return std::dynamic_pointer_cast<TSubsystem>(shared_from_this());
+            }
+
         public:
             using Subsystem::Subsystem;
 

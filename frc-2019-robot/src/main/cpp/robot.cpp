@@ -1,5 +1,6 @@
 #include <robot.hpp>
 
+#include <routine/climb_hab_routine.hpp>
 #include <routine/ball_intake_routine.hpp>
 #include <routine/timed_drive_routine.hpp>
 #include <routine/lock_flipper_routine.hpp>
@@ -56,6 +57,8 @@ namespace garage {
         m_LoadingBallIntakeRoutine = std::make_shared<BallIntakeRoutine>(m_Pointer, m_Config.loadingIntakeBallHeight, FLIPPER_LOWER_ANGLE);
         /* End game routines */
         m_EndGameRoutine = std::make_shared<LockFlipperRoutine>(m_Pointer);
+        m_SecondLevelClimbRoutine = std::make_shared<ClimbHabRoutine>(m_Pointer, m_Config.secondLevelClimbHeight);
+        m_ThirdLevelClimbRoutine = std::make_shared<ClimbHabRoutine>(m_Pointer, m_Config.thirdLevelClimbHeight);
         // Testing routine
         auto
                 testWaitRoutineOne = std::make_shared<lib::WaitRoutine>(m_Pointer, 500l),
@@ -185,8 +188,18 @@ namespace garage {
                     elevatorStow = primaryPOV == 0 || secondaryPOV == 0;
             if (elevatorDown) {
                 m_Elevator->SetWantedSetPoint(0.0);
-            } else if (elevatorStow) {
+            } else if (elevatorStow || m_ButtonBoard.GetRawButtonPressed(0)) {
                 m_Elevator->SetWantedSetPoint(m_Config.bottomHatchHeight);
+            } else if (m_ButtonBoard.GetRawButtonPressed(0)) {
+                m_Elevator->SetWantedSetPoint(m_Config.rocketMiddleHatchHeight);
+            } else if (m_ButtonBoard.GetRawButtonPressed(0)) {
+                m_Elevator->SetWantedSetPoint(m_Config.rocketTopHatchHeight);
+            } else if (m_ButtonBoard.GetRawButtonPressed(0)) {
+                m_Elevator->SetWantedSetPoint(m_Config.rocketBottomBallHeight);
+            } else if (m_ButtonBoard.GetRawButtonPressed(0)) {
+                m_Elevator->SetWantedSetPoint(m_Config.rocketMiddleBallHeight);
+            } else if (m_ButtonBoard.GetRawButtonPressed(0)) {
+                m_Elevator->SetWantedSetPoint(m_Config.rocketTopBallHeight);
             }
         }
         double wantedAngle = m_Flipper ? m_Flipper->GetWantedAngle() : FLIPPER_UPPER_ANGLE;

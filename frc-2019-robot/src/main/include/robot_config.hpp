@@ -25,6 +25,8 @@ namespace garage {
                 cargoBallHeightDown = 0.0, cargoBallHeightUp = 0.0,
                 cargoBallAngle = 0.0,
         /* Intake */
-                groundIntakeBallHeight = bottomHatchHeight, loadingIntakeBallHeight = 0.0;
+                groundIntakeBallHeight = bottomHatchHeight, loadingIntakeBallHeight = 0.0,
+        /* Climb */
+                secondLevelClimbHeight = 10.0, thirdLevelClimbHeight = 20.0;
     };
 }

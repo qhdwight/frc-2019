@@ -99,7 +99,7 @@ namespace garage {
                                                                        OUTRIGGER_SET_POINT_PID_SLOT,
                                                                        feedForward * DEFAULT_VOLTAGE_COMPENSATION);
             if (error == rev::CANError::kOK) {
-                Log(lib::Logger::LogLevel::k_Debug, lib::Logger::Format("Wanted set point: %f", m_SetPoint));
+//                Log(lib::Logger::LogLevel::k_Debug, lib::Logger::Format("Wanted set point: %f", m_SetPoint));
             } else {
                 Log(lib::Logger::LogLevel::k_Error, lib::Logger::Format("CAN Error: %d", error));
             }

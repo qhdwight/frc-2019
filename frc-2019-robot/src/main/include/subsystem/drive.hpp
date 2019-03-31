@@ -16,7 +16,7 @@
 
 #include <memory>
 
-#define DRIVE_RAMPING 0.12
+#define DRIVE_RAMPING 0.1
 #define DRIVE_INPUT_DEAD_BAND 0.02
 #define DRIVE_TURN_POWER 0.4
 
@@ -35,13 +35,13 @@
 
 #define VISION_LIMELIGHT_TABLE_NAME "limelight"
 
-#define VISION_MAX_FORWARD 0.1
+#define VISION_MAX_FORWARD 0.12
 #define VISION_MAX_TURN 0.06
 
-#define VISION_FORWARD_P 0.004
-#define VISION_TURN_P 0.002
-#define VISION_DESIRED_TARGET_AREA 29.0
-#define VISION_AREA_THRESHOLD 4.0
+#define VISION_FORWARD_P 0.04
+#define VISION_TURN_P 0.01
+#define VISION_DESIRED_TARGET_AREA 5.5
+#define VISION_AREA_THRESHOLD 0.5
 
 namespace garage {
     class Drive;
@@ -106,7 +106,7 @@ namespace garage {
                 m_RightSlave{DRIVE_RIGHT_SLAVE, rev::CANSparkMax::MotorType::kBrushless},
                 m_LeftSlave{DRIVE_LEFT_SLAVE, rev::CANSparkMax::MotorType::kBrushless};
         rev::CANEncoder m_LeftEncoder = m_LeftMaster.GetEncoder(), m_RightEncoder = m_RightMaster.GetEncoder();
-        ctre::phoenix::sensors::PigeonIMU m_Pigeon{PIGEON_IMU};
+//        ctre::phoenix::sensors::PigeonIMU m_Pigeon{PIGEON_IMU};
         std::shared_ptr<RawDriveController> m_RawController;
         std::shared_ptr<ManualDriveController> m_ManualController;
         std::shared_ptr<AutoAlignDriveController> m_AutoAlignController;

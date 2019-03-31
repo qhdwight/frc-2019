@@ -25,5 +25,9 @@ namespace garage {
         void Limelight::SetPipeline(int pipelineIndex) {
             m_NetworkTable->PutNumber("pipeline", pipelineIndex);
         }
+
+        double Limelight::GetSkew() {
+            return m_NetworkTable->GetNumber("ts", 0.0);
+        }
     }
 }

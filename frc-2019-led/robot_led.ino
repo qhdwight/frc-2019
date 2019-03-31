@@ -1,8 +1,9 @@
 #include <Wire.h>
 #include <FastLED.h>
 
-#define LED_PIN 2
-#define LED_COUNT 20
+#define LED_PIN 3
+#define LED_PIN_L 5
+#define LED_COUNT 28
 
 CRGB leds[LED_COUNT];
 
@@ -20,7 +21,8 @@ LedMode ledMode = k_Idle;
 void setup()
 {
     FastLED.addLeds<WS2812B, LED_PIN, GRB>(leds, LED_COUNT);
-    FastLED.setBrightness(15);
+    FastLED.addLeds<WS2812B, LED_PIN_L, GRB>(leds, LED_COUNT);
+    FastLED.setBrightness(50);
     Wire.begin(1);
     Wire.onReceive(onReceive);
 }
@@ -40,8 +42,13 @@ void loop()
     default:
     case k_Idle:
     {
-        uint8_t hue = beatsin8(30, 0, 255);
-        setAll(CHSV(hue, 255, 255));
+        uint8_t hue = beatsin8(8, 0, 255);
+        for (int i = 0; i < LED_COUNT; i++) {
+            CHSV meme(random8(255), 255, 255);
+            leds[i] = meme;
+        }
+        // setAll(CHSV(hue, 255, 255));
+        delay(2000);
         FastLED.show();
         break;
     }
@@ -58,7 +65,7 @@ void loop()
     case k_HasTarget:
     {
         CRGB green(CRGB::Green);
-        uint8_t fadeAmount = beatsin8(60, 0, 64);
+        uint8_t fadeAmount = beatsin8(20, 0, 64);
         green.fadeToBlackBy(fadeAmount);
         setAll(green);
         FastLED.show();
@@ -66,20 +73,17 @@ void loop()
     }
     case k_BallIntake:
     {
-        uint8_t leadLed = beatsin8(60, 0, LED_COUNT);
+        uint8_t leadLed = beatsin8(10, 0, LED_COUNT);
         leds[leadLed] = CRGB::Magenta;
         FastLED.show();
-        EVERY_N_MILLIS(20)
-        {
-            fadeToBlackBy(leds, LED_COUNT, 32);
-        }
+        fadeToBlackBy(leds, LED_COUNT, 2);
         break;
     }
     case k_Climb:
     {
         CRGB magenta(CRGB::Magenta);
         uint8_t leadLed = beatsin8(20, 0, LED_COUNT),
-                fadeAmount = beatsin8(45, 0, 64);
+                fadeAmount = beatsin8(25, 0, 64);
         magenta.fadeToBlackBy(fadeAmount);
         leds[leadLed] = magenta;
         FastLED.show();

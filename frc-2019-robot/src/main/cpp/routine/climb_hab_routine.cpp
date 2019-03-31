@@ -2,6 +2,7 @@
 
 #include <robot.hpp>
 
+#include <routine/timed_drive_routine.hpp>
 #include <routine/set_elevator_position_routine.hpp>
 
 #include <lib/logger.hpp>
@@ -47,8 +48,10 @@ namespace garage {
     }
 
     ClimbHabRoutine::ClimbHabRoutine(std::shared_ptr<Robot>& robot, double height) : SequentialRoutine(robot, "Climb Hab", {
-            std::make_shared<lib::ParallelRoutine>(robot, "Elevator and Outrigger initial Positions", lib::RoutineVector {
+            std::make_shared<lib::ParallelRoutine>(robot, "Elevator and Outrigger initial Positions", lib::RoutineVector{
                     std::make_shared<SetElevatorPositionRoutine>(robot, height + CLIMB_INITIAL_GAP_HEIGHT),
+                    std::make_shared<TimedDriveRoutine>(robot, 200l),
+                    std::make_shared<lib::WaitRoutine>(robot, 200l),
                     std::make_shared<SetOutriggerAngleRoutine>(robot, 180.0)
             }),
             std::make_shared<MainClimbRoutine>(robot, height)

@@ -63,7 +63,7 @@ namespace garage {
         // ==== Reset
                 m_ResetWithServoRoutine,
         // ==== Utility
-                m_GroundBallIntakeRoutine, m_LoadingBallIntakeRoutine,
+                m_GroundBallIntakeRoutine, m_LoadingBallIntakeRoutine, m_PostHatchPlacementRoutine,
         // ==== End game
                 m_EndGameRoutine, m_SecondLevelClimbRoutine, m_ThirdLevelClimbRoutine;
 
@@ -144,4 +144,7 @@ namespace garage {
 
     template<>
     std::shared_ptr<Outrigger> Robot::GetSubsystem();
+
+    template<>
+    std::shared_ptr<HatchIntake> Robot::GetSubsystem();
 }

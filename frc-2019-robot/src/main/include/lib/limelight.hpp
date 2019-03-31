@@ -25,6 +25,8 @@ namespace garage {
 
             double GetTargetPercentArea();
 
+            double GetSkew();
+
             void SetLedMode(LedMode ledMode);
 
             void SetPipeline(int pipelineIndex);

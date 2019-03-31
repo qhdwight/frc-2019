@@ -39,7 +39,10 @@ namespace garage {
         void Subsystem::Periodic() {
             auto command = m_Robot->GetLatestCommand();
             if (m_IsLocked && ShouldUnlock(command)) {
-                m_Robot->GetRoutineManager()->GetActiveRoutine().lock()->ShouldTerminateBasedOnUnlock(shared_from_this());
+                auto activeRoutine = m_Robot->GetRoutineManager()->GetActiveRoutine().lock();
+                if (activeRoutine) {
+                    activeRoutine->ShouldTerminateBasedOnUnlock(shared_from_this());
+                }
                 Unlock();
             }
             AdvanceSequence();

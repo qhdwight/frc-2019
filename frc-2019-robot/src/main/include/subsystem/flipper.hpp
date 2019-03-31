@@ -30,8 +30,8 @@
 #define FLIPPER_I_ZONE 0.0
 #define FLIPPER_FF 0.00012
 //#define FLIPPER_FF 0.00009
-#define FLIPPER_VELOCITY 4500.0
-#define FLIPPER_ACCELERATION 4500.0
+#define FLIPPER_VELOCITY 4000.0
+#define FLIPPER_ACCELERATION 4000.0
 #define FLIPPER_ALLOWABLE_ERROR 0.0
 #define FLIPPER_ANGLE_FF 0.0335
 
@@ -43,9 +43,9 @@
 #define FLIPPER_CLOSED_LOOP_RAMP 0.1
 #define FLIPPER_SMART_MOTION_PID_SLOT 0
 
-#define CAMERA_SERVO_LOWER 1700
-#define CAMERA_SERVO_MIDDLE 1000
-#define CAMERA_SERVO_UPPER 400
+#define CAMERA_SERVO_LOWER 1550
+#define CAMERA_SERVO_MIDDLE 890
+#define CAMERA_SERVO_UPPER 200
 
 #define LOCK_SERVO_LOWER 1500
 #define LOCK_SERVO_UPPER 500
@@ -58,7 +58,7 @@ namespace garage {
         FlipperController(std::weak_ptr<Flipper>& flipper, const std::string& name)
                 : SubsystemController(flipper, name) {}
 
-        double GetWantedAngle();
+        virtual double GetWantedAngle();
     };
 
     class RawFlipperController : public FlipperController {
@@ -120,6 +120,8 @@ namespace garage {
         void ProcessCommand(Command& command) override;
 
         void Control() override;
+
+        double GetWantedAngle() override;
     };
 
     class Flipper : public lib::ControllableSubsystem<Flipper> {

@@ -59,7 +59,8 @@ namespace garage {
                 rightOutput = m_RightMaster.GetAppliedOutput(),
                 leftCurrent = m_LeftMaster.GetOutputCurrent(),
                 rightCurrent = m_RightMaster.GetOutputCurrent();
-        const double heading = m_Pigeon.GetFusedHeading(), fixedHeading = math::fixAngle(heading);
+//        const double heading = m_Pigeon.GetFusedHeading(), fixedHeading = math::fixAngle(heading);
+        const double heading = 0.0, fixedHeading = 0.0;
         m_NetworkTable->PutNumber("Gyro", fixedHeading);
         m_NetworkTable->PutNumber("Left Output", leftOutput);
         m_NetworkTable->PutNumber("Right Output", rightOutput);
@@ -67,9 +68,9 @@ namespace garage {
         m_NetworkTable->PutNumber("Left Current", leftCurrent);
         m_NetworkTable->PutNumber("Right Encoder", m_RightEncoderPosition);
         m_NetworkTable->PutNumber("Right Current", rightCurrent);
-        Log(lib::Logger::LogLevel::k_Debug, lib::Logger::Format(
-                "Left Output: %f, Right Output: %f, Left Current: %f, Right Current: %f",
-                leftOutput, rightOutput, leftCurrent, rightCurrent));
+//        Log(lib::Logger::LogLevel::k_Debug, lib::Logger::Format(
+//                "Left Output: %f, Right Output: %f, Left Current: %f, Right Current: %f",
+//                leftOutput, rightOutput, leftCurrent, rightCurrent));
     }
 
     void Drive::Update() {
@@ -87,11 +88,12 @@ namespace garage {
     }
 
     double Drive::GetHeading() {
-        return m_Pigeon.GetFusedHeading();
+//        return m_Pigeon.GetFusedHeading();
+        return 0.0;
     }
 
     void Drive::ResetGyroAndEncoders() {
-        m_Pigeon.SetFusedHeading(0.0);
+//        m_Pigeon.SetFusedHeading(0.0);
         m_LeftEncoder.SetPosition(0.0);
         m_RightEncoder.SetPosition(0.0);
     }
@@ -103,7 +105,7 @@ namespace garage {
 
     double Drive::GetTilt() {
         double angles[3];
-        m_Pigeon.GetYawPitchRoll(angles);
+//        m_Pigeon.GetYawPitchRoll(angles);
         return angles[1];
     }
 
@@ -140,81 +142,83 @@ namespace garage {
     }
 
     void ManualDriveController::ProcessCommand(Command& command) {
-        m_ForwardInput = command.driveForward;
-        m_TurnInput = command.driveTurn;
+        m_ForwardInput = command.driveForward * 0.5;
+        m_TurnInput = command.driveTurn * 0.19;
         m_IsQuickTurn = command.isQuickTurn;
     }
 
     void ManualDriveController::Control() {
         auto drive = m_Subsystem.lock();
-        double turnInput = m_TurnInput, forwardInput = m_ForwardInput;
-        const double negativeInertia = turnInput - m_OldTurnInput;
-        m_OldTurnInput = turnInput;
-        // Apply a sine wave non-linearity on turning
-        const double beta = GARAGE_PI / 2.0 * DRIVE_TURN_NON_LINEARITY;
-        const double denominator = std::sin(beta);
-        turnInput = std::sin(beta * turnInput) / denominator;
-        turnInput = std::sin(beta * turnInput) / denominator;
-        turnInput = std::sin(beta * turnInput) / denominator;
-        // Negative inertia to make changes gradual over time
-        double negativeInertiaScalar;
-        if (turnInput * negativeInertia > 0.0) {
-            negativeInertiaScalar = DRIVE_NEGATIVE_INERTIA_TURN_SCALAR;
-        } else {
-            if (std::fabs(turnInput) > DRIVE_NEGATIVE_INERTIA_THRESHOLD) {
-                negativeInertiaScalar = DRIVE_NEGATIVE_INERTIA_FAR_SCALAR;
-            } else {
-                negativeInertiaScalar = DRIVE_NEGATIVE_INERTIA_CLOSE_SCALAR;
-            }
-        }
-        const double negativeInertiaPower = negativeInertia * negativeInertiaScalar;
-        m_NegativeInertiaAccumulator += negativeInertiaPower;
-        turnInput += m_NegativeInertiaAccumulator;
-        if (m_NegativeInertiaAccumulator > 1.0) {
-            m_NegativeInertiaAccumulator -= 1.0;
-        } else if (m_NegativeInertiaAccumulator < -1.0) {
-            m_NegativeInertiaAccumulator += 1.0;
-        } else {
-            m_NegativeInertiaAccumulator = 0.0;
-        }
-        const double linearPower = forwardInput;
-        double overPower, angularPower;
-        if (m_IsQuickTurn) {
-            if (std::fabs(linearPower) < DRIVE_QUICK_STOP_DEAD_BAND) {
-                const double alpha = DRIVE_QUICK_STOP_WEIGHT;
-                m_QuickStopAccumulator = (1 - alpha) * m_QuickStopAccumulator + alpha * math::clamp(turnInput, -1.0, 1.0) * DRIVE_QUICK_STOP_SCALAR;
-            }
-            overPower = 1.0;
-            angularPower = turnInput;
-        } else {
-            overPower = 0.0;
-            angularPower = std::fabs(forwardInput) * turnInput * DRIVE_SENSITIVITY - m_QuickStopAccumulator;
-            if (m_QuickStopAccumulator > 1.0) {
-                m_QuickStopAccumulator -= 1.0;
-            } else if (m_QuickStopAccumulator < -1.0) {
-                m_QuickStopAccumulator += 1.0;
-            } else {
-                m_QuickStopAccumulator = 0.0;
-            }
-        }
-        double leftOutput = linearPower, rightOutput = linearPower;
-        leftOutput += angularPower;
-        rightOutput -= angularPower;
-        if (leftOutput > 1.0) {
-            rightOutput -= overPower * (leftOutput - 1.0);
-            leftOutput = 1.0;
-        } else if (rightOutput > 1.0) {
-            leftOutput -= overPower * (rightOutput - 1.0);
-            rightOutput = 1.0;
-        } else if (leftOutput < -1.0) {
-            rightOutput += overPower * (-1.0 - leftOutput);
-            leftOutput = -1.0;
-        } else if (rightOutput < -1.0) {
-            leftOutput += overPower * (-1.0 - rightOutput);
-            rightOutput = -1.0;
-        }
-        drive->m_LeftOutput = leftOutput;
-        drive->m_RightOutput = rightOutput;
+//        double turnInput = m_TurnInput, forwardInput = m_ForwardInput;
+//        const double negativeInertia = turnInput - m_OldTurnInput;
+//        m_OldTurnInput = turnInput;
+//        // Apply a sine wave non-linearity on turning
+//        const double beta = GARAGE_PI / 2.0 * DRIVE_TURN_NON_LINEARITY;
+//        const double denominator = std::sin(beta);
+//        turnInput = std::sin(beta * turnInput) / denominator;
+//        turnInput = std::sin(beta * turnInput) / denominator;
+//        turnInput = std::sin(beta * turnInput) / denominator;
+//        // Negative inertia to make changes gradual over time
+//        double negativeInertiaScalar;
+//        if (turnInput * negativeInertia > 0.0) {
+//            negativeInertiaScalar = DRIVE_NEGATIVE_INERTIA_TURN_SCALAR;
+//        } else {
+//            if (std::fabs(turnInput) > DRIVE_NEGATIVE_INERTIA_THRESHOLD) {
+//                negativeInertiaScalar = DRIVE_NEGATIVE_INERTIA_FAR_SCALAR;
+//            } else {
+//                negativeInertiaScalar = DRIVE_NEGATIVE_INERTIA_CLOSE_SCALAR;
+//            }
+//        }
+//        const double negativeInertiaPower = negativeInertia * negativeInertiaScalar;
+//        m_NegativeInertiaAccumulator += negativeInertiaPower;
+//        turnInput += m_NegativeInertiaAccumulator;
+//        if (m_NegativeInertiaAccumulator > 1.0) {
+//            m_NegativeInertiaAccumulator -= 1.0;
+//        } else if (m_NegativeInertiaAccumulator < -1.0) {
+//            m_NegativeInertiaAccumulator += 1.0;
+//        } else {
+//            m_NegativeInertiaAccumulator = 0.0;
+//        }
+//        const double linearPower = forwardInput;
+//        double overPower, angularPower;
+//        if (m_IsQuickTurn) {
+//            if (std::fabs(linearPower) < DRIVE_QUICK_STOP_DEAD_BAND) {
+//                const double alpha = DRIVE_QUICK_STOP_WEIGHT;
+//                m_QuickStopAccumulator = (1 - alpha) * m_QuickStopAccumulator + alpha * math::clamp(turnInput, -1.0, 1.0) * DRIVE_QUICK_STOP_SCALAR;
+//            }
+//            overPower = 1.0;
+//            angularPower = turnInput;
+//        } else {
+//            overPower = 0.0;
+//            angularPower = std::fabs(forwardInput) * turnInput * DRIVE_SENSITIVITY - m_QuickStopAccumulator;
+//            if (m_QuickStopAccumulator > 1.0) {
+//                m_QuickStopAccumulator -= 1.0;
+//            } else if (m_QuickStopAccumulator < -1.0) {
+//                m_QuickStopAccumulator += 1.0;
+//            } else {
+//                m_QuickStopAccumulator = 0.0;
+//            }
+//        }
+//        double leftOutput = linearPower, rightOutput = linearPower;
+//        leftOutput += angularPower;
+//        rightOutput -= angularPower;
+//        if (leftOutput > 1.0) {
+//            rightOutput -= overPower * (leftOutput - 1.0);
+//            leftOutput = 1.0;
+//        } else if (rightOutput > 1.0) {
+//            leftOutput -= overPower * (rightOutput - 1.0);
+//            rightOutput = 1.0;
+//        } else if (leftOutput < -1.0) {
+//            rightOutput += overPower * (-1.0 - leftOutput);
+//            leftOutput = -1.0;
+//        } else if (rightOutput < -1.0) {
+//            leftOutput += overPower * (-1.0 - rightOutput);
+//            rightOutput = -1.0;
+//        }
+//        drive->m_LeftOutput = leftOutput;
+//        drive->m_RightOutput = rightOutput;
+        drive->m_LeftOutput = m_ForwardInput + m_TurnInput;
+        drive->m_RightOutput = m_ForwardInput - m_TurnInput;
     }
 
     AutoAlignDriveController::AutoAlignDriveController(std::weak_ptr<Drive>& subsystem)
@@ -226,9 +230,11 @@ namespace garage {
         if (m_Limelight.HasTarget()) {
             const double
                     tx = m_Limelight.GetHorizontalAngleToTarget(),
-                    ta = m_Limelight.GetTargetPercentArea();
-            drive->LogSample(lib::Logger::LogLevel::k_Debug, lib::Logger::Format("TX: %f, TA: %f", tx, ta));
-            const double turnOutput = math::clamp(tx * VISION_TURN_P, -VISION_MAX_TURN, VISION_MAX_TURN),
+                    ta = m_Limelight.GetTargetPercentArea(),
+                    ts = m_Limelight.GetSkew();
+//            drive->LogSample(lib::Logger::LogLevel::k_Info, lib::Logger::Format("TX: %f, TA: %f TS: %f", tx, ta, ts));
+            double thresholdTx = std::fabs(tx) > 1.5 ? tx : 0.0;
+            const double turnOutput = math::clamp(thresholdTx * VISION_TURN_P, -VISION_MAX_TURN, VISION_MAX_TURN),
                     delta = VISION_DESIRED_TARGET_AREA - ta,
                     thresholdDelta = std::fabs(delta) > VISION_AREA_THRESHOLD ? delta : 0.0,
                     forwardOutput = math::clamp(thresholdDelta * VISION_FORWARD_P, -VISION_MAX_FORWARD, VISION_MAX_FORWARD);

@@ -17,8 +17,8 @@
 #define OUTRIGGER_ARM_SLAVE 12
 #define OUTRIGGER_WHEEL 13
 #define FLIPPER 14
-#define HATCH_SERVO 0
-#define LOCK_SERVO 1
+#define LOCK_SERVO 0
+#define HATCH_SERVO 1
 #define CAMERA_SERVO 2
 
 #define CONFIG_TIMEOUT 500

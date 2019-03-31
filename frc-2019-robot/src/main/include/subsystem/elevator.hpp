@@ -12,9 +12,9 @@
 
 /* Gains and Motion Magic */
 // Normal
-#define ELEVATOR_VELOCITY 5000.0
-#define ELEVATOR_ACCELERATION 5000.0
-#define ELEVATOR_P 0.00002
+#define ELEVATOR_VELOCITY 5500.0
+#define ELEVATOR_ACCELERATION 8000.0
+#define ELEVATOR_P 0.00003
 #define ELEVATOR_I 0.0
 #define ELEVATOR_MAX_ACCUM 0.0
 #define ELEVATOR_I_ZONE 0.0 // Encoder ticks
@@ -43,7 +43,7 @@
 #define ELEVATOR_PEAK_CURRENT_DURATION 200 // Milliseconds
 
 #define ELEVATOR_ALLOWABLE_CLOSED_LOOP_ERROR 0 // Encoder ticks - Zero is always try to get to value and do not stop
-#define ELEVATOR_WITHIN_SET_POINT_AMOUNT 2.0
+#define ELEVATOR_WITHIN_SET_POINT_AMOUNT 3.0
 
 #define ELEVATOR_OPEN_LOOP_RAMP 0.2 // Seconds
 #define ELEVATOR_CLOSED_LOOP_RAMP 0.1 // Seconds

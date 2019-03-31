@@ -95,7 +95,7 @@ namespace garage {
             if (isFirstHit) {
                 auto error = m_Encoder.SetPosition(resetEncoderValue);
                 if (error == rev::CANError::kOK) {
-                    Log(lib::Logger::LogLevel::k_Info, "Limit switch hit and encoder reset");
+                    Log(lib::Logger::LogLevel::k_Info, lib::Logger::Format("Limit switch hit and encoder reset to %f", resetEncoderValue));
                     isFirstHit = false;
                 } else {
                     Log(lib::Logger::LogLevel::k_Error, lib::Logger::Format("CAN Error: %d", error));
@@ -122,6 +122,11 @@ namespace garage {
             m_FlipperMaster.ClearFaults();
         }
         int cameraServoOutput;
+//        if (GetWantedAngle() < FLIPPER_STOW_ANGLE) {
+//            cameraServoOutput = CAMERA_SERVO_LOWER;
+//        } else {
+//            cameraServoOutput = CAMERA_SERVO_UPPER;
+//        }
         if (m_Angle < FLIPPER_CAMERA_STOW_THRESHOLD_ANGLE) {
             cameraServoOutput = CAMERA_SERVO_LOWER;
         } else if (m_Angle > FLIPPER_UPPER_ANGLE - FLIPPER_CAMERA_STOW_THRESHOLD_ANGLE) {
@@ -146,11 +151,11 @@ namespace garage {
         m_NetworkTable->PutNumber("Velocity", m_EncoderVelocity);
         m_NetworkTable->PutNumber("Output", appliedOutput);
         m_NetworkTable->PutNumber("Current", appliedOutput);
-        Log(lib::Logger::LogLevel::k_Debug, lib::Logger::Format(
-                "Output: %f, Current: %f, Angle: %f, Encoder Position: %f, Encoder Velocity: %f, Reverse Limit Switch: %s, Forward Limit Switch: %s",
-                appliedOutput, current,
-                m_Angle, m_EncoderPosition, m_EncoderVelocity,
-                m_IsReverseLimitSwitchDown ? "true" : "false", m_IsForwardLimitSwitchDown ? "true" : "false"));
+//        Log(lib::Logger::LogLevel::k_Info, lib::Logger::Format(
+//                "Output: %f, Current: %f, Angle: %f, Encoder Position: %f, Encoder Velocity: %f, Reverse Limit Switch: %s, Forward Limit Switch: %s",
+//                appliedOutput, current,
+//                m_Angle, m_EncoderPosition, m_EncoderVelocity,
+//                m_IsReverseLimitSwitchDown ? "true" : "false", m_IsForwardLimitSwitchDown ? "true" : "false"));
     }
 
     bool Flipper::IsWithinMotorOutputConditions(double wantedOutput, double forwardThreshold, double reverseThreshold) {
@@ -227,7 +232,7 @@ namespace garage {
 
     void RawFlipperController::Control() {
         auto flipper = m_Subsystem.lock();
-        Log(lib::Logger::LogLevel::k_Debug, lib::Logger::Format("Wanted Output: %f", m_Output));
+//        Log(lib::Logger::LogLevel::k_Debug, lib::Logger::Format("Wanted Output: %f", m_Output));
         if (flipper->m_Robot->ShouldOutput()) {
             flipper->m_FlipperMaster.Set(m_Output);
         }
@@ -252,9 +257,9 @@ namespace garage {
                 auto error = flipper->m_FlipperController.SetReference(m_WantedVelocity, rev::ControlType::kSmartVelocity,
                                                                        FLIPPER_SMART_MOTION_PID_SLOT, feedForward * DEFAULT_VOLTAGE_COMPENSATION);
                 if (error == rev::CANError::kOK) {
-                    flipper->LogSample(lib::Logger::LogLevel::k_Debug,
-                                       lib::Logger::Format("Wanted Velocity: %f, Output Feed Forward: %f, Feed Forward: %f",
-                                                           m_WantedVelocity, angleFeedForward, flipper->m_AngleFeedForward));
+//                    flipper->LogSample(lib::Logger::LogLevel::k_Debug,
+//                                       lib::Logger::Format("Wanted Velocity: %f, Output Feed Forward: %f, Feed Forward: %f",
+//                                                           m_WantedVelocity, angleFeedForward, flipper->m_AngleFeedForward));
                 } else {
                     Log(lib::Logger::LogLevel::k_Error, lib::Logger::Format("CAN Error: %d", error));
                 }
@@ -280,14 +285,18 @@ namespace garage {
                 auto error = flipper->m_FlipperController.SetReference(m_SetPoint, rev::ControlType::kSmartMotion,
                                                                        FLIPPER_SMART_MOTION_PID_SLOT, feedForward * DEFAULT_VOLTAGE_COMPENSATION);
                 if (error == rev::CANError::kOK) {
-                    Log(lib::Logger::LogLevel::k_Debug, lib::Logger::Format("Wanted set point: %f", m_SetPoint));
+//                    Log(lib::Logger::LogLevel::k_Debug, lib::Logger::Format("Wanted set point: %f", m_SetPoint));
                 } else {
                     Log(lib::Logger::LogLevel::k_Error, lib::Logger::Format("CAN Error: %d", error));
                 }
             }
         } else {
-            flipper->LogSample(lib::Logger::LogLevel::k_Debug, lib::Logger::Format("Not doing anything, wanted set point: %f", m_SetPoint));
+//            flipper->LogSample(lib::Logger::LogLevel::k_Debug, lib::Logger::Format("Not doing anything, wanted set point: %f", m_SetPoint));
             flipper->m_FlipperMaster.Set(0.0);
         }
+    }
+
+    double SetPointFlipperController::GetWantedAngle() {
+        return m_Subsystem.lock()->RawSetPointToAngle(m_SetPoint);
     }
 }

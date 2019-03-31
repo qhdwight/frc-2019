@@ -22,9 +22,13 @@ namespace garage {
 
         void Update() override;
 
+        bool ShouldUnlock(Command& command) override;
+
     public:
         HatchIntake(std::shared_ptr<Robot>& robot);
 
         void Reset() override;
+
+        void SetIntakeOpen(bool isOpen);
     };
 }

@@ -59,6 +59,7 @@ namespace garage {
         AddController(m_SoftLandController = std::make_shared<SoftLandElevatorController>(elevator));
         AddController(m_ClimbController = std::make_shared<ClimbElevatorController>(elevator));
         SetUnlockedController(m_VelocityController);
+        SetResetController(m_SoftLandController);
 //        SetupNetworkTableEntries();
     }
 
@@ -157,9 +158,9 @@ namespace garage {
         m_NetworkTable->PutNumber("Encoder", m_EncoderPosition);
         m_NetworkTable->PutNumber("Current", current);
         m_NetworkTable->PutNumber("Output", output);
-        Log(lib::Logger::LogLevel::k_Debug, lib::Logger::Format(
-                "Output: %f, Current: %f, Encoder Position: %f, Encoder Velocity: %f",
-                output, current, m_EncoderPosition, m_EncoderVelocity));
+//        Log(lib::Logger::LogLevel::k_Debug, lib::Logger::Format(
+//                "Output: %f, Current: %f, Encoder Position: %f, Encoder Velocity: %f",
+//                output, current, m_EncoderPosition, m_EncoderVelocity));
     }
 
     bool Elevator::WithinPosition(double targetPosition) {
@@ -202,7 +203,7 @@ namespace garage {
 
     void RawElevatorController::Control() {
         auto elevator = m_Subsystem.lock();
-        Log(lib::Logger::LogLevel::k_Debug, lib::Logger::Format("Output Value: %f", m_Output));
+//        Log(lib::Logger::LogLevel::k_Debug, lib::Logger::Format("Output Value: %f", m_Output));
         if (elevator->m_Robot->ShouldOutput()) {
             elevator->m_SparkMaster.Set(m_Output);
 //            elevator->m_ElevatorMaster.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, m_Output);
@@ -223,8 +224,8 @@ namespace garage {
     void SetPointElevatorController::Control() {
         auto elevator = m_Subsystem.lock();
         m_WantedSetPoint = math::clamp(m_WantedSetPoint, ELEVATOR_MIN, ELEVATOR_MAX_CLOSED_LOOP_HEIGHT);
-        Log(lib::Logger::LogLevel::k_Debug,
-            lib::Logger::Format("Wanted Set Point: %f, Feed Forward: %f", m_WantedSetPoint, elevator->m_FeedForward));
+//        Log(lib::Logger::LogLevel::k_Debug,
+//            lib::Logger::Format("Wanted Set Point: %f, Feed Forward: %f", m_WantedSetPoint, elevator->m_FeedForward));
         if ((elevator->m_EncoderPosition > ELEVATOR_MIN_CLOSED_LOOP_HEIGHT || m_WantedSetPoint > ELEVATOR_MIN) &&
             elevator->m_EncoderPosition < ELEVATOR_MAX) {
             elevator->LogSample(lib::Logger::LogLevel::k_Debug, "Theoretically Okay and Working");
@@ -248,7 +249,7 @@ namespace garage {
         if ((elevator->m_EncoderPosition > ELEVATOR_MIN_CLOSED_LOOP_HEIGHT || m_WantedVelocity > 0.01) &&
             elevator->m_EncoderPosition < ELEVATOR_MAX) {
             if (elevator->m_EncoderPosition < ELEVATOR_MAX_CLOSED_LOOP_HEIGHT || m_WantedVelocity < -0.01) {
-                elevator->LogSample(lib::Logger::LogLevel::k_Debug, lib::Logger::Format("Wanted Velocity: %f", m_WantedVelocity));
+//                elevator->LogSample(lib::Logger::LogLevel::k_Debug, lib::Logger::Format("Wanted Velocity: %f", m_WantedVelocity));
                 if (elevator->m_Robot->ShouldOutput()) {
                     elevator->m_SparkController.SetReference(m_WantedVelocity, rev::ControlType::kSmartVelocity,
                                                              ELEVATOR_NORMAL_PID_SLOT, elevator->m_FeedForward);

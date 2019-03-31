@@ -8,16 +8,16 @@ namespace garage {
         bool
                 shouldOutput = true,
         // Subsystems
-                enableElevator = false,
+                enableElevator = true,
                 enableDrive = true,
-                enableFlipper = false,
-                enableBallIntake = false,
-                enableHatchIntake = false,
+                enableFlipper = true,
+                enableBallIntake = true,
+                enableHatchIntake = true,
                 enableOutrigger = false;
         double bottomHatchHeight = 4.7,
         /* Rocket */
         // ==== Ball
-                rocketBottomBallHeight = 0.0, rocketMiddleBallHeight = 0.0, rocketTopBallHeight = 0.0,
+                rocketBottomBallHeight = 0.0, rocketMiddleBallHeight = 64.0, rocketTopBallHeight = 0.0,
                 rocketBottomBallAngle = 0.0, rocketMiddleBallAngle = 0.0, rocketTopBallAngle = 0.0,
         // ==== Hatch
                 rocketMiddleHatchHeight = 53.8, rocketTopHatchHeight = 104.8,

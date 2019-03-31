@@ -9,6 +9,10 @@ namespace garage {
 
     }
 
+    bool HatchIntake::ShouldUnlock(Command& command) {
+        return command.hatchIntakeDown;
+    }
+
     void HatchIntake::Reset() {
         Subsystem::Reset();
         m_IntakeOpen = false;
@@ -18,12 +22,16 @@ namespace garage {
     void HatchIntake::UpdateUnlocked(Command& command) {
         if (command.hatchIntakeDown) {
             m_IntakeOpen = !m_IntakeOpen;
-            m_ServoOutput = static_cast<uint16_t>(m_IntakeOpen ? HATCH_SERVO_LOWER : HATCH_SERVO_UPPER);
         }
-        LogSample(lib::Logger::LogLevel::k_Debug, lib::Logger::Format("Servo Output: %d", m_ServoOutput));
+//        LogSample(lib::Logger::LogLevel::k_Debug, lib::Logger::Format("Servo Output: %d", m_ServoOutput));
     }
 
     void HatchIntake::Update() {
+        m_ServoOutput = static_cast<uint16_t>(m_IntakeOpen ? HATCH_SERVO_LOWER : HATCH_SERVO_UPPER);
         m_Servo.SetRaw(m_ServoOutput);
+    }
+
+    void HatchIntake::SetIntakeOpen(bool isOpen) {
+        m_IntakeOpen = isOpen;
     }
 }

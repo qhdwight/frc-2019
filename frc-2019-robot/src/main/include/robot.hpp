@@ -51,6 +51,7 @@ namespace garage {
         std::shared_ptr<HatchIntake> m_HatchIntake;
         std::vector<std::shared_ptr<lib::Subsystem>> m_Subsystems;
         wpi::optional<std::chrono::system_clock::time_point> m_LastPeriodicTime;
+        wpi::optional<std::chrono::system_clock::time_point> m_EndRumble;
         RobotConfig m_Config;
         frc::I2C m_LedModule{frc::I2C::Port::kOnboard, 1};
         LedMode m_LedMode;
@@ -63,7 +64,7 @@ namespace garage {
         // ==== Reset
                 m_ResetWithServoRoutine,
         // ==== Utility
-                m_GroundBallIntakeRoutine, m_LoadingBallIntakeRoutine, m_PostHatchPlacementRoutine,
+                m_GroundBallIntakeRoutine, m_LoadingBallIntakeRoutine, m_PostHatchPlacementRoutine, m_StowFlipperRoutine,
         // ==== End game
                 m_EndGameRoutine, m_SecondLevelClimbRoutine, m_ThirdLevelClimbRoutine;
 
@@ -98,6 +99,19 @@ namespace garage {
 
         bool ShouldOutput() const {
             return m_Config.shouldOutput;
+        }
+
+        void RumbleControllers() {
+            m_EndRumble = std::chrono::system_clock::now() + std::chrono::milliseconds(200);
+            SetControllerRumbles(0.4);
+        }
+
+        void SetControllerRumbles(double value) {
+            // TODO put them in a list then call rumble to make cleaner?
+            m_PrimaryController.SetRumble(frc::GenericHID::kLeftRumble, value);
+            m_PrimaryController.SetRumble(frc::GenericHID::kRightRumble, value);
+            m_SecondaryController.SetRumble(frc::GenericHID::kLeftRumble, value);
+            m_SecondaryController.SetRumble(frc::GenericHID::kRightRumble, value);
         }
 
         RobotConfig& GetConfig() {

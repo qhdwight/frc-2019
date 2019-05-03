@@ -14,7 +14,7 @@ namespace garage {
                 enableBallIntake = true,
                 enableHatchIntake = true,
                 enableOutrigger = false;
-        double bottomHatchHeight = 4.7,
+        double bottomHatchHeight = 5.0,
         /* Rocket */
         // ==== Ball
                 rocketBottomBallHeight = 0.0, rocketMiddleBallHeight = 64.0, rocketTopBallHeight = 0.0,

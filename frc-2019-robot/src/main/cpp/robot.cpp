@@ -18,11 +18,11 @@ namespace garage {
         lib::Logger::Log(lib::Logger::LogLevel::k_Info, "Start robot initialization");
         auto begin = std::chrono::high_resolution_clock::now();
         m_Period = std::chrono::milliseconds(std::lround(m_period * 1000.0));
-        // Setup network tables
+        /* Setup network tables */
         m_NetworkTableInstance = nt::NetworkTableInstance::GetDefault();
         m_NetworkTable = m_NetworkTableInstance.GetTable("Garage Robotics");
         m_DashboardNetworkTable = m_NetworkTable->GetSubTable("Dashboard");
-        // Setup logging system
+        /* Setup logging system */
         lib::Logger::SetLogLevel(m_Config.logLevel);
         m_NetworkTable->PutNumber("Log Level", static_cast<double>(m_Config.logLevel));
         m_NetworkTable->GetEntry("Log Level").AddListener([&](const nt::EntryNotification& notification) {
@@ -30,17 +30,20 @@ namespace garage {
             lib::Logger::SetLogLevel(logLevel);
             lib::Logger::Log(lib::Logger::LogLevel::k_Info, lib::Logger::Format("Updated log level to: %d", logLevel));
         }, NT_NOTIFY_UPDATE);
+        // Technically this is bad since we are a stack object, but we do not have access to the creation
+        // of our class, so this is one of the only ways we can get a shared pointer.
+        // It will be destroyed when it goes out of scope but by then everything should be cleaned up.
         m_Pointer = std::shared_ptr<Robot>(this, [](auto robot) {});
-        // Setup routine manager
+        /* Setup routine manager */
         m_RoutineManager = std::make_shared<lib::RoutineManager>(m_Pointer);
-        // Manage subsystems
+        /* Manage subsystems */
         if (m_Config.enableElevator) AddSubsystem(m_Elevator = std::make_shared<Elevator>(m_Pointer));
         if (m_Config.enableDrive) AddSubsystem(m_Drive = std::make_shared<Drive>(m_Pointer));
         if (m_Config.enableFlipper) AddSubsystem(m_Flipper = std::make_shared<Flipper>(m_Pointer));
         if (m_Config.enableBallIntake) AddSubsystem(m_BallIntake = std::make_shared<BallIntake>(m_Pointer));
         if (m_Config.enableHatchIntake) AddSubsystem(m_HatchIntake = std::make_shared<HatchIntake>(m_Pointer));
         if (m_Config.enableOutrigger) AddSubsystem(m_Outrigger = std::make_shared<Outrigger>(m_Pointer));
-        // Create our routines
+        /* Create our routines */
         CreateRoutines();
         // Find out how long initialization took and record it
         auto end = std::chrono::high_resolution_clock::now();
@@ -49,7 +52,7 @@ namespace garage {
     }
 
     void Robot::CreateRoutines() {
-        // Render drive trajectory in initialization because it takes a couple of seconds
+//        // Render drive trajectory in initialization because it takes a couple of seconds
 //        m_DriveForwardRoutine = std::make_shared<test::TestDriveAutoRoutine>(m_Pointer, "Test Drive");
 //        m_DriveForwardRoutine->CalculatePath();
         m_ResetWithServoRoutine = std::make_shared<ResetWithServoRoutine>(m_Pointer);
@@ -61,16 +64,17 @@ namespace garage {
         m_EndGameRoutine = std::make_shared<LockFlipperRoutine>(m_Pointer);
         m_SecondLevelClimbRoutine = std::make_shared<ClimbHabRoutine>(m_Pointer, m_Config.secondLevelClimbHeight);
         m_ThirdLevelClimbRoutine = std::make_shared<ClimbHabRoutine>(m_Pointer, m_Config.thirdLevelClimbHeight);
-        // Testing routine
-        auto
-                testWaitRoutineOne = std::make_shared<lib::WaitRoutine>(m_Pointer, 500l),
-                testWaitRoutineTwo = std::make_shared<lib::WaitRoutine>(m_Pointer, 1000l);
+        m_StowFlipperRoutine = std::make_shared<ElevatorAndFlipperRoutine>(m_Pointer, 0.0, 70.0);
+//        // Testing routines
+//        auto
+//                testWaitRoutineOne = std::make_shared<lib::WaitRoutine>(m_Pointer, 500l),
+//                testWaitRoutineTwo = std::make_shared<lib::WaitRoutine>(m_Pointer, 1000l);
 //        m_TestRoutine = std::make_shared<lib::ParallelRoutine>
 //                (m_Pointer, "Test Routine", lib::RoutineVector{testWaitRoutineOne, testWaitRoutineTwo});
 //        m_TestRoutine = std::make_shared<SetFlipperAngleRoutine>(m_Pointer, 90.0, "Meme");
 //        m_TestRoutine = std::make_shared<lib::AutoRoutineFromCSV>(m_Pointer, "start_to_middle_left_hatch", "Start To Middle Hatch");
 //        m_TestRoutine->PostInitialize();
-        m_TestRoutine = std::make_shared<TimedDriveRoutine>(m_Pointer, 1000l, 0.1, "Meme");
+//        m_TestRoutine = std::make_shared<TimedDriveRoutine>(m_Pointer, 1000l, 0.1, "Meme");
     }
 
     void Robot::AddSubsystem(std::shared_ptr<lib::Subsystem> subsystem) {
@@ -101,8 +105,9 @@ namespace garage {
         m_LastPeriodicTime.reset();
         m_Command = {};
         m_RoutineManager->Reset();
-        for (const auto& subsystem : m_Subsystems)
+        for (const auto& subsystem : m_Subsystems) {
             subsystem->Reset();
+        }
     }
 
     void Robot::TeleopInit() {
@@ -120,14 +125,16 @@ namespace garage {
             }
         }
         m_LastPeriodicTime = now;
-        // Get our most up to date command from the controllers
         UpdateCommand();
-        // Make sure our routine manager updates
+        if (m_EndRumble && std::chrono::system_clock::now() >= m_EndRumble) {
+            SetControllerRumbles(0.0);
+            m_EndRumble.reset();
+        }
         m_RoutineManager->AddRoutinesFromCommand(m_Command);
         m_RoutineManager->Update();
-        // Update each subsystem
-        for (const auto& subsystem : m_Subsystems)
+        for (const auto& subsystem : m_Subsystems) {
             subsystem->Periodic();
+        }
 //        m_DashboardNetworkTable->PutNumber("Match Time Remaining", frc::DriverStation::GetInstance().GetMatchTime());
     }
 
@@ -142,7 +149,7 @@ namespace garage {
             m_RoutineManager->TerminateAllRoutines();
         }
         if (m_PrimaryController.GetStartButtonPressed() || m_SecondaryController.GetStartButtonPressed()) {
-            m_Command.routines.push_back(m_PostHatchPlacementRoutine);
+            m_Command.routines.push_back(m_StowFlipperRoutine);
 //            m_Command.routines.push_back(m_TestRoutine);
 //            m_Command.offTheBooksModeEnabled = !m_Command.offTheBooksModeEnabled;
 //            if (m_Command.offTheBooksModeEnabled) {
@@ -181,12 +188,13 @@ namespace garage {
         const int primaryPOV = m_PrimaryController.GetPOV(), secondaryPOV = m_SecondaryController.GetPOV();
         const bool
         // ==== Button button
-                elevatorDown = primaryPOV == 180 || secondaryPOV == 180,
+                elevatorDown = primaryPOV == 180 || secondaryPOV == 180 || secondaryPOV == 135 || secondaryPOV == 225,
         // ==== Top button
-                elevatorStow = primaryPOV == 0 || secondaryPOV == 0,
+                elevatorStow = primaryPOV == 0 || secondaryPOV == 0 || secondaryPOV == 45 || secondaryPOV == 315,
                 modButton = secondaryPOV == 90;
         /* DPad */
         if (m_Elevator) {
+            // TODO hash map maybe?
             if (elevatorDown) {
                 m_Elevator->SetWantedSetPoint(0.0);
             } else if (elevatorStow || m_ButtonBoard.GetRawButtonPressed(7)) {
@@ -215,8 +223,9 @@ namespace garage {
         m_Command.driveTurn = math::threshold(m_PrimaryController.GetX(frc::GenericHID::JoystickHand::kRightHand), DEFAULT_INPUT_THRESHOLD);
         m_Command.driveForward += math::threshold(-m_SecondaryController.GetY(frc::GenericHID::kRightHand), XBOX_360_STICK_INPUT_THRESHOLD) * 0.25;
         m_Command.driveTurn += math::threshold(m_SecondaryController.GetX(frc::GenericHID::kRightHand), XBOX_360_STICK_INPUT_THRESHOLD) * 0.25;
-//        const auto bet = m_PrimaryController.GetX(frc::GenericHID::kRightHand), meme = m_SecondaryController.GetX(frc::GenericHID::kRightHand);
-//        lib::Logger::Log(lib::Logger::LogLevel::k_Info, lib::Logger::Format("%f, %f, %f, %f, %f", bet, math::threshold(bet, 0.225), meme, math::threshold(meme, 0.225), m_Command.driveTurn));
+//        const auto px = m_PrimaryController.GetX(frc::GenericHID::kRightHand), sx = m_SecondaryController.GetX(frc::GenericHID::kRightHand);
+//        lib::Logger::Log(lib::Logger::LogLevel::k_Info, lib::Logger::Format("%f, %f, %f, %f, %f", px, math::threshold(px, 0.225), sx, math::threshold(sx, 0.225), m_Command.driveTurn));
+        // When we are flipped over invert the driving controls to make it feel natural
         if (shouldInvertDrive) {
             m_Command.driveForward *= -1;
         }
@@ -267,6 +276,7 @@ namespace garage {
         if (ledMode != m_LedMode) {
             m_LedMode = ledMode;
             auto ledModeInt = static_cast<uint8_t>(ledMode);
+            // Send one byte of data over I2C to Arduino, setting the LED type
             m_LedModule.Transaction(&ledModeInt, 1, nullptr, 0);
         }
     }

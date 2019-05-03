@@ -7,6 +7,9 @@
 
 namespace garage {
     namespace lib {
+        /**
+         * Wrapper around the Limelight network table to provide a clean interface for grabbing values
+         */
         class Limelight {
         public:
             enum class LedMode {

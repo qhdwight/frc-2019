@@ -42,14 +42,20 @@ void loop()
     default:
     case k_Idle:
     {
-        uint8_t hue = beatsin8(8, 0, 255);
-        for (int i = 0; i < LED_COUNT; i++) {
-            CHSV meme(random8(255), 255, 255);
-            leds[i] = meme;
-        }
-        // setAll(CHSV(hue, 255, 255));
-        delay(2000);
+        // uint8_t hue = beatsin8(8, 0, 255);
+        // for (int i = 0; i < LED_COUNT; i++) {
+        //     CHSV meme(random8(255), 255, 255);
+        //     leds[i] = meme;
+        // }
+        // // setAll(CHSV(hue, 255, 255));
+        // delay(2000);
+        // FastLED.show();
+        uint8_t leadLed = beatsin8(20, 0, LED_COUNT - 1);
+        leds[leadLed] = CRGB::Magenta;
         FastLED.show();
+        EVERY_N_MILLIS(10) {
+            fadeToBlackBy(leds, LED_COUNT, 4);
+        }
         break;
     }
     case k_NoTarget:
@@ -73,10 +79,20 @@ void loop()
     }
     case k_BallIntake:
     {
-        uint8_t leadLed = beatsin8(10, 0, LED_COUNT);
-        leds[leadLed] = CRGB::Magenta;
+        for (int i = 0; i < LED_COUNT; i ++) {
+            leds[i] = i % 2 == 0 ? CRGB::Magenta : CRGB::Black;
+        }
         FastLED.show();
-        fadeToBlackBy(leds, LED_COUNT, 2);
+        delay(750);
+        for (int i = 0; i < LED_COUNT; i ++) {
+            leds[i] = i % 2 != 0 ? CRGB::Magenta : CRGB::Black;
+        } 
+        FastLED.show();
+        delay(750);
+        // uint8_t leadLed = beatsin8(10, 0, LED_COUNT);
+        // leds[leadLed] = CRGB::Magenta;
+        // FastLED.show();
+        // fadeToBlackBy(leds, LED_COUNT, 2);
         break;
     }
     case k_Climb:

@@ -9,6 +9,7 @@ namespace garage {
         Logger::LogLevel Logger::s_LogLevel = LogLevel::k_Info;
 
         std::string Logger::Format(const std::string& format, ...) {
+            // TODO fixed size buffer for better performance?
             va_list arguments;
                     va_start(arguments, format);
             auto length = static_cast<size_t>(std::vsnprintf(nullptr, 0, FMT_STR(format), arguments));

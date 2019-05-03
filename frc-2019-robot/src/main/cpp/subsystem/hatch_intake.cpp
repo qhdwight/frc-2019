@@ -27,7 +27,11 @@ namespace garage {
     }
 
     void HatchIntake::Update() {
+        uint16_t oldServoOutput = m_ServoOutput;
         m_ServoOutput = static_cast<uint16_t>(m_IntakeOpen ? HATCH_SERVO_LOWER : HATCH_SERVO_UPPER);
+        if (m_ServoOutput != oldServoOutput) {
+            m_Robot->RumbleControllers();
+        }
         m_Servo.SetRaw(m_ServoOutput);
     }
 

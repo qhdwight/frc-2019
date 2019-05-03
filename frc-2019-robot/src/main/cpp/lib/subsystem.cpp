@@ -40,8 +40,8 @@ namespace garage {
             auto command = m_Robot->GetLatestCommand();
             if (m_IsLocked && ShouldUnlock(command)) {
                 auto activeRoutine = m_Robot->GetRoutineManager()->GetActiveRoutine().lock();
-                if (activeRoutine) {
-                    activeRoutine->ShouldTerminateBasedOnUnlock(shared_from_this());
+                if (activeRoutine && activeRoutine->ShouldTerminateBasedOnUnlock(shared_from_this())) {
+                    activeRoutine->Terminate();
                 }
                 Unlock();
             }

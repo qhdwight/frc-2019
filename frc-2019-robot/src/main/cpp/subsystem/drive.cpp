@@ -233,7 +233,7 @@ namespace garage {
                     ta = m_Limelight.GetTargetPercentArea(),
                     ts = m_Limelight.GetSkew();
 //            drive->LogSample(lib::Logger::LogLevel::k_Info, lib::Logger::Format("TX: %f, TA: %f TS: %f", tx, ta, ts));
-            double thresholdTx = std::fabs(tx) > 1.5 ? tx : 0.0;
+            double thresholdTx = (std::fabs(tx) - 3.0) > 1.5 ? tx : 0.0;
             const double turnOutput = math::clamp(thresholdTx * VISION_TURN_P, -VISION_MAX_TURN, VISION_MAX_TURN),
                     delta = VISION_DESIRED_TARGET_AREA - ta,
                     thresholdDelta = std::fabs(delta) > VISION_AREA_THRESHOLD ? delta : 0.0,

@@ -1,5 +1,9 @@
 # Team 7445 FRC 2019 C++ Robot Code
 
+## Preface
+
+One of the main goals of this project was to use modern C++ features, mainly smart pointer (weak/shared), and a modular architecture for use across multiple years - There is  a routine engine for chaining together actions and also subsystem bases for easy addition.
+
 ## Setup
 
 Development was done completely inside of JetBrains CLion. The makefile is already generated, so do NOT run the gradle command for CLion. Instead, run the gradle task `build` to grab the necessary libraries then `File > Reload CMake Project` to set everything up.
